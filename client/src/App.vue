@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { computed, onMounted, ref } from 'vue'
 
 const ASSET_BASE = '/legacy-assets/'
@@ -164,6 +164,31 @@ const quizScore = ref(0)
 const selectedAnswer = ref('')
 const quizFinished = ref(false)
 const notice = ref('')
+
+// AI Assistant State
+const isChatOpen = ref(false)
+const chatMessages = ref([{ role: 'ai', content: 'Chào bạn! Mình là AI Assistant của EduPress. Mình có thể giúp gì cho bạn hôm nay?' }])
+const chatInput = ref('')
+
+function toggleChat() {
+  isChatOpen.value = !isChatOpen.value
+}
+
+function sendChatMessage() {
+  if (!chatInput.value.trim()) return
+  chatMessages.value.push({ role: 'user', content: chatInput.value })
+  const query = chatInput.value
+  chatInput.value = ''
+  
+  // Mock AI response
+  setTimeout(() => {
+    let reply = 'Mình đang nâng cấp hệ thống AI (Task Tích hợp AI), bạn quay lại sau nhé!'
+    if (query.toLowerCase().includes('khóa học')) {
+      reply = 'EduPress hiện có các khóa học về AI, OOP, Web, và UI/UX. Bạn quan tâm mảng nào?'
+    }
+    chatMessages.value.push({ role: 'ai', content: reply })
+  }, 1000)
+}
 
 const users = computed(() => JSON.parse(localStorage.getItem('users') || '[]'))
 const currentUser = computed(() => users.value.find((user) => user.email === currentUserEmail.value))
@@ -631,5 +656,29 @@ onMounted(async () => {
         </div>
       </div>
     </footer>
+
+    <!-- AI Assistant Widget -->
+    <div class="ai-widget-container" :class="{ 'chat-open': isChatOpen }">
+      <div class="ai-chat-window" v-if="isChatOpen">
+        <div class="ai-chat-header">
+          <div class="ai-chat-title">
+            <span class="ai-icon">✨</span> AI Assistant (ProMax)
+          </div>
+          <button class="close-chat" @click="toggleChat">✕</button>
+        </div>
+        <div class="ai-chat-body">
+          <div v-for="(msg, index) in chatMessages" :key="index" :class="['chat-bubble', msg.role]">
+            {{ msg.content }}
+          </div>
+        </div>
+        <div class="ai-chat-footer">
+          <input v-model="chatInput" @keyup.enter="sendChatMessage" placeholder="Hỏi AI về khóa học..." />
+          <button @click="sendChatMessage" class="send-btn">➤</button>
+        </div>
+      </div>
+      <button class="ai-fab primary-btn" @click="toggleChat">
+        <span class="ai-icon">✨</span> Hỏi AI
+      </button>
+    </div>
   </div>
 </template>
