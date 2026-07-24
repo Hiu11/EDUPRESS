@@ -1,0 +1,392 @@
+// ── Cinema Launch Button ──────────────────────────────────────────
+// (moved to _pages.scss, kept here as reference)
+
+// ── Overlay ───────────────────────────────────────────────────────
+.cinema-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.35s ease;
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+}
+
+// ── Shell ─────────────────────────────────────────────────────────
+.cinema-shell {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  width: min(1100px, 100%);
+  height: min(640px, 90vh);
+  background: #0a0f1e;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 40px 120px rgba(0,0,0,0.8);
+}
+
+// ── Close Button ──────────────────────────────────────────────────
+.cinema-close {
+  position: absolute;
+  top: 16px; right: 16px;
+  z-index: 10;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #fff;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(220,38,38,0.7);
+    border-color: rgba(220,38,38,0.5);
+    transform: rotate(90deg);
+  }
+}
+
+// ── Stage ─────────────────────────────────────────────────────────
+.cinema-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  height: 100%;
+  overflow: hidden;
+}
+
+.ambient-glow {
+  position: absolute;
+  inset: -40px;
+  background: var(--ambient);
+  filter: blur(60px);
+  transition: background 2s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.video-canvas {
+  position: relative;
+  width: 100%; height: 100%;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.cinema-video {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  border: none;
+}
+
+// ── Play Prompt ───────────────────────────────────────────────────
+.play-prompt {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  cursor: pointer;
+}
+
+.video-poster {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 0.6;
+  display: block;
+}
+
+.play-prompt-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.35);
+
+  p { font-size: 0.9rem; color: rgba(255,255,255,0.85); margin: 0; }
+}
+
+.play-prompt-icon {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: rgba(220,38,38,0.9);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin: 0 auto 16px;
+  box-shadow: 0 0 40px rgba(220,38,38,0.6);
+  cursor: pointer;
+  border: none;
+  color: #fff;
+  pointer-events: all;
+  transition: transform 0.2s ease;
+  line-height: 1;
+
+  &:hover { transform: scale(1.1); }
+}
+
+.paused-badge { display: none; }
+
+// ── Control Bar ───────────────────────────────────────────────────
+.cinema-controls {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  z-index: 5;
+  background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.5) 60%, transparent 100%);
+  padding: 48px 20px 16px;
+}
+
+.seek-bar {
+  position: relative;
+  height: 4px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 999px;
+  cursor: pointer;
+  margin-bottom: 12px;
+  overflow: visible;
+}
+
+.seek-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #dc2626, #f59e0b);
+  border-radius: 999px;
+  transition: width 0.5s linear;
+}
+
+.seek-thumb {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 8px rgba(220,38,38,0.8);
+  transition: left 0.5s linear;
+  pointer-events: none;
+}
+
+.controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.controls-left, .controls-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ctrl-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: #fff;
+  width: 36px; height: 36px;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover { background: rgba(255,255,255,0.16); }
+}
+
+.play-btn {
+  width: 44px; height: 44px;
+  background: var(--gradient-1);
+  border: none;
+  font-size: 1.1rem;
+  box-shadow: 0 0 20px rgba(220,38,38,0.4);
+
+  &:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 30px rgba(220,38,38,0.6);
+  }
+}
+
+.ctrl-time {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.6);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.volume-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 72px; height: 4px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.2);
+  outline: none;
+  cursor: pointer;
+  accent-color: #dc2626;
+  margin: 0;
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+  }
+}
+
+.ctrl-label {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.45);
+}
+
+.ctrl-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(220,38,38,0.25);
+  border: 1px solid rgba(220,38,38,0.4);
+  color: #fca5a5;
+  letter-spacing: 0.1em;
+}
+
+// ── Transcript Panel ──────────────────────────────────────────────
+.transcript-panel {
+  display: flex;
+  flex-direction: column;
+  background: #080d1a;
+  border-left: 1px solid rgba(255,255,255,0.05);
+}
+
+.transcript-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.transcript-status {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.3);
+  transition: color 0.4s ease;
+
+  &.active {
+    color: #4ade80;
+    text-shadow: 0 0 12px rgba(74,222,128,0.6);
+  }
+}
+
+.transcript-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &::-webkit-scrollbar       { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.1); border-radius: 10px; }
+}
+
+.transcript-line {
+  display: flex;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  transition: all 0.4s ease;
+  opacity: 0.35;
+
+  &.is-past { opacity: 0.25; }
+
+  &.is-active {
+    background: rgba(220, 38, 38, 0.12);
+    border: 1px solid rgba(220, 38, 38, 0.2);
+    opacity: 1;
+    box-shadow: 0 0 20px rgba(220,38,38,0.08);
+
+    .transcript-ts   { color: #fca5a5; }
+    .transcript-text { color: #f8fafc; font-weight: 500; }
+  }
+}
+
+.transcript-ts {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.3);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  padding-top: 2px;
+  min-width: 36px;
+}
+
+.transcript-text {
+  font-size: 0.875rem;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.5;
+}
+
+// ── Loading ───────────────────────────────────────────────────────
+.player-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.6);
+  color: rgba(255,255,255,0.7);
+  gap: 16px;
+  pointer-events: none;
+
+  p { font-size: 0.85rem; opacity: 0.7; margin: 0; }
+}
+
+.loading-spinner {
+  width: 44px; height: 44px;
+  border: 3px solid rgba(255,255,255,0.1);
+  border-top-color: #dc2626;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+// ── YouTube iframe target ─────────────────────────────────────────
+#yt-player-target {
+  width: 100%; height: 100%;
+  display: block;
+
+  iframe {
+    width: 100% !important;
+    height: 100% !important;
+    border: none;
+  }
+}
+
+// ── Responsive ────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .cinema-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 220px;
+    height: 90vh;
+  }
+}

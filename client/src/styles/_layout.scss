@@ -1,0 +1,193 @@
+.app-frame {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+// ── Header ──────────────────────────────────────────────────────
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: center;
+  padding: 16px 48px;
+  background: var(--bg-glass);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-glass);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+// ── Brand ────────────────────────────────────────────────────────
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-main);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1.5rem;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+
+  img {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+  }
+}
+
+.logo-text {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 1.6rem;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, #dc2626, #ea580c, #f59e0b, #dc2626);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradientMove 8s linear infinite;
+  display: inline-block;
+}
+
+// ── Nav ──────────────────────────────────────────────────────────
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  button {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 0%;
+      height: 2px;
+      background: var(--gradient-1);
+      transition: all 0.3s ease;
+      transform: translateX(-50%);
+    }
+
+    &:hover::after,
+    &.active::after { width: 80%; }
+
+    &:hover,
+    &.active { color: var(--text-main); }
+  }
+}
+
+.ghost-btn, .text-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+
+  &:hover { color: var(--text-main); }
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+// ── Containers ───────────────────────────────────────────────────
+.hero-section,
+.content-section,
+.metric-grid {
+  width: min(1280px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+// ── Footer ───────────────────────────────────────────────────────
+.site-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--border-glass);
+  background: #ffffff;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  padding: 80px 0;
+  width: 100%;
+}
+
+.footer-inner {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 64px;
+  width: min(1280px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.footer-brand {
+  img {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 16px;
+    object-fit: contain;
+  }
+
+  strong { display: block; margin-bottom: 16px; }
+}
+
+.footer-columns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+
+  h3 {
+    font-size: 1.2rem;
+    margin-bottom: 24px;
+    color: var(--text-main);
+  }
+
+  button, span {
+    display: block;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    padding: 8px 0;
+    font-size: 1rem;
+    text-align: left;
+    transition: color 0.2s ease;
+  }
+
+  button:hover { color: var(--secondary); }
+}
+
+// ── Toast ────────────────────────────────────────────────────────
+.toast {
+  position: fixed;
+  right: 32px;
+  bottom: 32px;
+  z-index: 100;
+  background: var(--text-main);
+  border-radius: var(--radius-md);
+  padding: 16px 24px;
+  color: #ffffff;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+  font-weight: 600;
+  animation: fadeIn 0.4s ease-out;
+}

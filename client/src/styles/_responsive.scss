@@ -1,0 +1,73 @@
+@media (max-width: 1024px) {
+  .hero-section,
+  .learning-path,
+  .course-row-card,
+  .detail-hero,
+  .quiz-layout,
+  .site-footer .footer-inner,
+  .auth-layout,
+  .contact-layout,
+  .blog-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-grid,
+  .course-grid,
+  .testimonial-section,
+  .footer-columns,
+  .post-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .category-grid,
+  .detail-content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-media { height: 400px; }
+}
+
+@media (max-width: 768px) {
+  .metric-grid,
+  .course-grid,
+  .testimonial-section,
+  .footer-columns,
+  .post-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .site-header {
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  .bento-dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .bento-welcome,
+  .bento-continue,
+  .bento-profile,
+  .bento-security,
+  .bento-courses {
+    grid-column: span 1;
+  }
+
+  .bento-course-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .quiz-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .quiz-intro { position: static; }
+
+  .page-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+
+    input { width: 100%; }
+  }
+}

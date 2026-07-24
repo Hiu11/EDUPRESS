@@ -135,7 +135,7 @@ function setCourseRef(el, index) {
   </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .universe-container {
   position: relative;
   width: 100%;
