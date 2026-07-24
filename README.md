@@ -1,5 +1,7 @@
 # EduPress
 
+Live demo: https://edupress-lms.vercel.app
+
 EduPress là nền tảng học trực tuyến mô phỏng hệ thống LMS (Learning Management System). Dự án hiện đã được nâng cấp từ bản HTML/CSS/JavaScript tĩnh sang kiến trúc full-stack với Vue 3 ở frontend và FastAPI ở backend.
 
 ## Tính năng chính

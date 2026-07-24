@@ -425,8 +425,8 @@ onMounted(async () => {
   <div class="app-frame">
     <header class="site-header">
       <button class="brand" type="button" @click="navigate('home')">
-        <img :src="generatedAsset('edupress-logo.png')" alt="EduPress" />
-        <span class="logo-text">EDUPRESS</span>
+        <img :src="generatedAsset('edupress-logo.svg')" alt="EduPress" />
+        <span class="logo-text">EduPress</span>
       </button>
 
       <nav class="nav-links" aria-label="Primary">
@@ -775,9 +775,9 @@ onMounted(async () => {
     <footer class="site-footer">
       <div class="footer-inner">
         <div class="footer-brand">
-          <img :src="generatedAsset('edupress-logo.png')" alt="EduPress" />
+          <img :src="generatedAsset('edupress-logo.svg')" alt="EduPress" />
           <div>
-            <strong class="logo-text">EDUPRESS</strong>
+            <strong class="logo-text">EduPress</strong>
             <p>Nền tảng học trực tuyến với khóa học, quiz, tiến trình và tài nguyên học tập.</p>
           </div>
         </div>

@@ -94,7 +94,7 @@ function setCourseRef(el, index) {
       <!-- TRUNG TÂM: LOGO EDUPRESS GLOWING -->
       <Html :position="[0, 0, 0]" center transform :distanceFactor="14">
         <div class="center-logo">
-          <img src="/generated-assets/edupress-logo.png" alt="EduPress Logo" />
+          <img src="/generated-assets/edupress-logo.svg" alt="EduPress Logo" />
           <h2>EDUPRESS</h2>
         </div>
       </Html>
