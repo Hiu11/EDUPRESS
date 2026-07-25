@@ -5,6 +5,7 @@ import CinematicPlayer from './components/CinematicPlayer.vue'
 import InBrowserIDE from './components/InBrowserIDE.vue'
 import TrophyRoom from './components/TrophyRoom.vue'
 import AICompanion from './components/AICompanion.vue'
+import SwipeableFlashcards from './components/SwipeableFlashcards.vue'
 
 const ASSET_BASE = '/legacy-assets/'
 const GENERATED_BASE = '/generated-assets/'
@@ -243,6 +244,7 @@ const quizFinished = ref(false)
 const notice = ref('')
 const showPlayer = ref(false)
 const showIDE = ref(false)
+const showFlashcards = ref(false)
 
 const users = computed(() => JSON.parse(localStorage.getItem('users') || '[]'))
 const currentUser = computed(() => users.value.find((user) => user.email === currentUserEmail.value))
@@ -457,6 +459,9 @@ onMounted(async () => {
     <!-- In-Browser IDE Overlay -->
     <InBrowserIDE v-if="showIDE" :course="selectedCourse" @close="showIDE = false" />
 
+    <!-- Swipeable Flashcards Overlay -->
+    <SwipeableFlashcards v-if="showFlashcards" :course="selectedCourse" @close="showFlashcards = false" />
+
     <main>
       <template v-if="route === 'home'">
         <section class="hero-section">
@@ -592,6 +597,7 @@ onMounted(async () => {
             <div class="card-actions">
               <button class="primary-btn cinema-launch-btn" type="button" @click="showPlayer = true">🎬 Xem bài học</button>
               <button class="ide-launch-btn" type="button" @click="showIDE = true">⚡ Thực hành</button>
+              <button class="flashcard-btn" type="button" @click="showFlashcards = true" style="background: linear-gradient(135deg, #f43f5e, #fb923c); color: white; border: none; padding: 8px 16px; border-radius: 4px; font-weight: bold; cursor: pointer;">📇 Ôn tập nhanh</button>
               <button class="secondary-btn" type="button" @click="enroll(selectedCourse.id)">Đăng ký học</button>
               <button class="secondary-btn" type="button" @click="markCompleted(selectedCourse.id)">Hoàn thành</button>
               <button class="secondary-btn" type="button" @click="navigate('quiz')">Làm quiz</button>
