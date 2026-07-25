@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import LearningUniverse from './components/LearningUniverse.vue'
 import CinematicPlayer from './components/CinematicPlayer.vue'
 import InBrowserIDE from './components/InBrowserIDE.vue'
+import TrophyRoom from './components/TrophyRoom.vue'
 
 const ASSET_BASE = '/legacy-assets/'
 const GENERATED_BASE = '/generated-assets/'
@@ -774,6 +775,16 @@ onMounted(async () => {
               </article>
             </div>
             <p v-else class="text-muted">Chưa có dữ liệu.</p>
+          </div>
+
+          <!-- 6. Trophy Room (Span 4) -->
+          <div class="bento-item bento-courses">
+            <TrophyRoom
+              :completed-courses="completedIds"
+              :enrolled-courses="enrolledIds"
+              :user-name="currentUser.name || currentUser.email"
+              :courses="courses"
+            />
           </div>
         </div>
       </section>
