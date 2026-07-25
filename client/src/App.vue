@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import LearningUniverse from './components/LearningUniverse.vue'
 import CinematicPlayer from './components/CinematicPlayer.vue'
+import InBrowserIDE from './components/InBrowserIDE.vue'
 
 const ASSET_BASE = '/legacy-assets/'
 const GENERATED_BASE = '/generated-assets/'
@@ -239,6 +240,7 @@ const selectedAnswer = ref('')
 const quizFinished = ref(false)
 const notice = ref('')
 const showPlayer = ref(false)
+const showIDE = ref(false)
 
 const users = computed(() => JSON.parse(localStorage.getItem('users') || '[]'))
 const currentUser = computed(() => users.value.find((user) => user.email === currentUserEmail.value))
@@ -436,6 +438,7 @@ onMounted(async () => {
 
       <div class="header-actions">
         <span :class="['api-pill', apiStatus]">{{ apiStatus === 'online' ? 'API live' : 'API offline' }}</span>
+        <button class="ide-launch-btn" type="button" @click="showIDE = true">⚡ IDE</button>
         <button v-if="currentUser" class="ghost-btn" type="button" @click="navigate('profile')">{{ currentUser.name || currentUser.email }}</button>
         <button v-if="currentUser" class="ghost-btn" type="button" @click="logout">Thoát</button>
         <button v-else class="primary-btn" type="button" @click="navigate('auth')">Đăng nhập</button>
@@ -446,6 +449,9 @@ onMounted(async () => {
 
     <!-- Cinematic Player Overlay -->
     <CinematicPlayer v-if="showPlayer" :course="selectedCourse" @close="showPlayer = false" />
+
+    <!-- In-Browser IDE Overlay -->
+    <InBrowserIDE v-if="showIDE" :course="selectedCourse" @close="showIDE = false" />
 
     <main>
       <template v-if="route === 'home'">
@@ -581,6 +587,7 @@ onMounted(async () => {
             <div class="detail-meta"><span>{{ selectedCourse.author }}</span><span>{{ selectedCourse.duration }}</span><span>{{ selectedCourse.rating }}/5</span><span>{{ selectedCourse.students }} học viên</span></div>
             <div class="card-actions">
               <button class="primary-btn cinema-launch-btn" type="button" @click="showPlayer = true">🎬 Xem bài học</button>
+              <button class="ide-launch-btn" type="button" @click="showIDE = true">⚡ Thực hành</button>
               <button class="secondary-btn" type="button" @click="enroll(selectedCourse.id)">Đăng ký học</button>
               <button class="secondary-btn" type="button" @click="markCompleted(selectedCourse.id)">Hoàn thành</button>
               <button class="secondary-btn" type="button" @click="navigate('quiz')">Làm quiz</button>
