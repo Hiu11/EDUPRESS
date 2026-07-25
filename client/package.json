@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@monaco-editor/loader": "^1.7.0",
     "@tresjs/cientos": "^5.8.1",
     "@tresjs/core": "^5.8.3",
     "three": "^0.185.1",
