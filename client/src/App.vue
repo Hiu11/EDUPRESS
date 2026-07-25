@@ -4,6 +4,7 @@ import LearningUniverse from './components/LearningUniverse.vue'
 import CinematicPlayer from './components/CinematicPlayer.vue'
 import InBrowserIDE from './components/InBrowserIDE.vue'
 import TrophyRoom from './components/TrophyRoom.vue'
+import AICompanion from './components/AICompanion.vue'
 
 const ASSET_BASE = '/legacy-assets/'
 const GENERATED_BASE = '/generated-assets/'
@@ -426,6 +427,8 @@ onMounted(async () => {
 
 <template>
   <div class="app-frame">
+    <!-- Floating AI Study Companion -->
+    <AICompanion />
     <header class="site-header">
       <button class="brand" type="button" @click="navigate('home')">
         <img :src="generatedAsset('edupress-logo.svg')" alt="EduPress" />
