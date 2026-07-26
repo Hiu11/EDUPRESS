@@ -1,26 +1,24 @@
 {
-  "name": "client",
+  "name": "edupress-client",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "preview": "nuxt preview"
   },
   "dependencies": {
     "@monaco-editor/loader": "^1.7.0",
     "@tresjs/cientos": "^5.8.1",
     "@tresjs/core": "^5.8.3",
-    "@vueuse/core": "^14.3.0",
-    "@vueuse/motion": "^3.0.3",
-    "canvas-confetti": "^1.9.4",
-    "three": "^0.185.1",
-    "vue": "^3.5.39"
+    "@vueuse/core": "^12.7.0",
+    "@vueuse/motion": "^2.2.6",
+    "canvas-confetti": "^1.9.3",
+    "three": "^0.185.1"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^6.0.7",
-    "sass": "^1.101.7",
-    "vite": "^8.1.1"
+    "nuxt": "latest",
+    "sass": "^1.101.7"
   }
 }
