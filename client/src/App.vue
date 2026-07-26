@@ -6,6 +6,7 @@ import InBrowserIDE from './components/InBrowserIDE.vue'
 import TrophyRoom from './components/TrophyRoom.vue'
 import AICompanion from './components/AICompanion.vue'
 import SwipeableFlashcards from './components/SwipeableFlashcards.vue'
+import CourseCreatorStudio from './components/CourseCreatorStudio.vue'
 
 const ASSET_BASE = '/legacy-assets/'
 const GENERATED_BASE = '/generated-assets/'
@@ -245,8 +246,9 @@ const notice = ref('')
 const showPlayer = ref(false)
 const showIDE = ref(false)
 const showFlashcards = ref(false)
+const showStudio = ref(false)
 
-const users = computed(() => JSON.parse(localStorage.getItem('users') || '[]'))
+const users = ref(JSON.parse(localStorage.getItem('users') || '[]'))
 const currentUser = computed(() => users.value.find((user) => user.email === currentUserEmail.value))
 const selectedCourse = computed(() => courses.find((course) => course.id === selectedCourseId.value) || courses[0])
 const enrolledIds = computed(() => currentUser.value?.registeredCourses || [])
@@ -272,6 +274,7 @@ function courseImage(course) {
 }
 
 function saveUsers(nextUsers) {
+  users.value = nextUsers
   localStorage.setItem('users', JSON.stringify(nextUsers))
 }
 
@@ -298,25 +301,42 @@ function syncProfileForm() {
   }
 }
 
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+}
+
 function register() {
-  const payload = { ...registerForm.value }
+  const payload = {
+    name: registerForm.value.name.trim(),
+    email: registerForm.value.email.trim().toLowerCase(),
+    password: registerForm.value.password
+  }
   if (!payload.name || !payload.email || payload.password.length < 6) return setNotice('Vui lòng nhập đủ thông tin và mật khẩu ít nhất 6 ký tự.')
+  if (!isValidEmail(payload.email)) return setNotice('Email không hợp lệ.')
   if (users.value.some((user) => user.email === payload.email)) return setNotice('Email này đã được đăng ký.')
-  saveUsers([...users.value, { ...payload, registeredCourses: [], completedCourses: [] }])
+  
+  saveUsers([...users.value, { ...payload, role: 'student', registeredCourses: [], completedCourses: [] }])
   localStorage.setItem('loggedInUser', payload.email)
   currentUserEmail.value = payload.email
   registerForm.value = { name: '', email: '', password: '' }
+  loginForm.value = { email: '', password: '' }
   syncProfileForm()
   navigate('profile')
   setNotice('Tạo tài khoản thành công.')
 }
 
 function login() {
-  const found = users.value.find((user) => user.email === loginForm.value.email && user.password === loginForm.value.password)
+  const email = loginForm.value.email.trim().toLowerCase()
+  const password = loginForm.value.password
+  if (!email || !password) return setNotice('Vui lòng nhập email và mật khẩu.')
+  
+  const found = users.value.find((user) => user.email === email && user.password === password)
   if (!found) return setNotice('Email hoặc mật khẩu chưa đúng.')
+  
   localStorage.setItem('loggedInUser', found.email)
   currentUserEmail.value = found.email
   loginForm.value = { email: '', password: '' }
+  registerForm.value = { name: '', email: '', password: '' }
   syncProfileForm()
   navigate('profile')
   setNotice('Đăng nhập thành công.')
@@ -325,14 +345,21 @@ function login() {
 function logout() {
   localStorage.removeItem('loggedInUser')
   currentUserEmail.value = ''
+  profileForm.value = { name: '', phone: '', school: '', bio: '' }
+  loginForm.value = { email: '', password: '' }
+  registerForm.value = { name: '', email: '', password: '' }
   navigate('home')
   setNotice('Đã đăng xuất.')
 }
 
 function resetPassword() {
-  const email = loginForm.value.email.trim()
+  const email = loginForm.value.email.trim().toLowerCase()
   if (!email) return setNotice('Nhập email để đặt lại mật khẩu demo.')
+  if (!isValidEmail(email)) return setNotice('Email không hợp lệ.')
+  if (!users.value.some((u) => u.email === email)) return setNotice('Email này chưa được đăng ký.')
+  
   saveUsers(users.value.map((user) => (user.email === email ? { ...user, password: '123456' } : user)))
+  loginForm.value.password = ''
   setNotice('Mật khẩu demo đã đổi thành 123456.')
 }
 
@@ -444,6 +471,7 @@ onMounted(async () => {
 
       <div class="header-actions">
         <span :class="['api-pill', apiStatus]">{{ apiStatus === 'online' ? 'API live' : 'API offline' }}</span>
+        <button v-if="currentUser && currentUser.role === 'instructor'" class="primary-btn" type="button" @click="showStudio = true" style="background: linear-gradient(135deg, #8b5cf6, #6366f1); border: none;">✍️ Soạn bài</button>
         <button class="ide-launch-btn" type="button" @click="showIDE = true">⚡ IDE</button>
         <button v-if="currentUser" class="ghost-btn" type="button" @click="navigate('profile')">{{ currentUser.name || currentUser.email }}</button>
         <button v-if="currentUser" class="ghost-btn" type="button" @click="logout">Thoát</button>
@@ -461,6 +489,9 @@ onMounted(async () => {
 
     <!-- Swipeable Flashcards Overlay -->
     <SwipeableFlashcards v-if="showFlashcards" :course="selectedCourse" @close="showFlashcards = false" />
+
+    <!-- Course Creator Studio Overlay -->
+    <CourseCreatorStudio v-if="showStudio" @close="showStudio = false" />
 
     <main>
       <template v-if="route === 'home'">
