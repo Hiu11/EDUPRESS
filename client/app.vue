@@ -285,11 +285,21 @@ function setNotice(message) {
   }, 2600)
 }
 
-function navigate(nextRoute, courseId) {
+function executeNavigation(nextRoute, courseId) {
   route.value = nextRoute
   if (courseId) selectedCourseId.value = courseId
   window.location.hash = courseId ? `${nextRoute}/${courseId}` : nextRoute
   window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+function navigate(nextRoute, courseId) {
+  if (document.startViewTransition) {
+    document.startViewTransition(() => {
+      executeNavigation(nextRoute, courseId)
+    })
+  } else {
+    executeNavigation(nextRoute, courseId)
+  }
 }
 
 function syncProfileForm() {
@@ -555,7 +565,7 @@ onMounted(async () => {
           </div>
           <div class="course-grid">
             <article v-for="course in courses.slice(0, 3)" :key="course.id" class="course-card featured-card">
-              <img :src="courseImage(course)" :alt="course.title" />
+              <img :src="courseImage(course)" :alt="course.title" :style="`view-transition-name: course-img-${course.id}`" />
               <div class="course-body">
                 <div class="card-topline"><span>{{ course.tag }}</span><small>{{ course.rating }}/5</small></div>
                 <h3>{{ course.title }}</h3>
@@ -601,7 +611,7 @@ onMounted(async () => {
 
         <div class="course-list">
           <article v-for="course in filteredCourses" :key="course.id" class="course-row-card">
-            <img :src="courseImage(course)" :alt="course.title" />
+            <img :src="courseImage(course)" :alt="course.title" :style="`view-transition-name: course-img-${course.id}`" />
             <div class="course-row-content">
               <div class="card-topline"><span>{{ course.category }}</span><small>{{ course.level }}</small></div>
               <h2>{{ course.title }}</h2>
@@ -618,7 +628,7 @@ onMounted(async () => {
 
       <section v-if="route === 'course-detail'" class="content-section page-section detail-page">
         <div class="detail-hero">
-          <img :src="courseImage(selectedCourse)" :alt="selectedCourse.title" />
+          <img :src="courseImage(selectedCourse)" :alt="selectedCourse.title" :style="`view-transition-name: course-img-${selectedCourse.id}`" />
           <div>
             <button class="text-btn" style="display: block; margin-bottom: 32px; padding-left: 0;" type="button" @click="navigate('courses')">← Quay lại danh sách</button>
             <p class="eyebrow">{{ selectedCourse.category }} · {{ selectedCourse.level }}</p>

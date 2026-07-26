@@ -62,6 +62,12 @@
   border: 1px solid var(--border-glass);
   box-shadow: var(--shadow-glass);
   animation: float 6s ease-in-out infinite;
+
+  @supports (animation-timeline: scroll()) {
+    animation: nativeParallax linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0 800px;
+  }
 }
 
 // ── Floating Cards ────────────────────────────────────────────────
@@ -85,6 +91,12 @@
   }
 
   span { font-size: 0.9rem; color: var(--secondary); }
+
+  @supports (animation-timeline: scroll()) {
+    animation: fadeReveal linear both !important;
+    animation-timeline: scroll(root block);
+    animation-range: entry 10% cover 30%;
+  }
 }
 
 .course-progress-card {
