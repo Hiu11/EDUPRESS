@@ -5,10 +5,15 @@ export default defineNuxtConfig({
   
   // Register SCSS assets
   css: [
-    '~/assets/styles/_animations.scss',
+    '~/assets/styles/_variables.scss',
     '~/assets/styles/_base.scss',
+    '~/assets/styles/_buttons.scss',
+    '~/assets/styles/_layout.scss',
     '~/assets/styles/_cards.scss',
-    '~/assets/styles/_layout.scss'
+    '~/assets/styles/_pages.scss',
+    '~/assets/styles/_cinema.scss',
+    '~/assets/styles/_animations.scss',
+    '~/assets/styles/_responsive.scss'
   ],
 
   // Optional: Auto import components is true by default
