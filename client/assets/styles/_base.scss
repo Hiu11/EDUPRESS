@@ -32,3 +32,80 @@ button, input, textarea {
 button { cursor: pointer; }
 
 .text-muted { color: var(--text-muted); }
+
+// ── Sync Toast Premium UI ────────────────────────────────────────────────
+.sync-toast-container {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  border-radius: 100px;
+  background: rgba(15, 23, 42, 0.85);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  min-width: 380px;
+
+  &.offline { border-color: rgba(245, 158, 11, 0.4); box-shadow: 0 10px 30px rgba(245, 158, 11, 0.15); }
+  &.syncing { border-color: rgba(56, 189, 248, 0.4); box-shadow: 0 10px 30px rgba(56, 189, 248, 0.15); }
+  &.synced  { border-color: rgba(16, 185, 129, 0.4); box-shadow: 0 10px 30px rgba(16, 185, 129, 0.15); }
+
+  .sync-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    
+    .spin { animation: spin 1.2s linear infinite; }
+  }
+
+  &.offline .sync-icon { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+  &.syncing .sync-icon { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+  &.synced .sync-icon  { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+
+  .sync-text {
+    display: flex;
+    flex-direction: column;
+    
+    strong { font-size: 0.95rem; color: #f8fafc; font-weight: 700; line-height: 1.2; }
+    span { font-size: 0.8rem; color: #94a3b8; margin-top: 2px; }
+  }
+}
+
+.sync-toast-enter-active,
+.sync-toast-leave-active {
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.sync-toast-enter-from,
+.sync-toast-leave-to {
+  opacity: 0;
+  transform: translate(-50%, -120%) scale(0.9);
+}
+
+/* Offline Global Visual Cue */
+.app-frame.is-offline::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  border: 3px solid rgba(245, 158, 11, 0.4);
+  pointer-events: none;
+  z-index: 9998;
+  animation: pulseOfflineBorder 2.5s infinite alternate;
+}
+
+@keyframes pulseOfflineBorder {
+  0% { border-color: rgba(245, 158, 11, 0.1); box-shadow: inset 0 0 0 rgba(245, 158, 11, 0); }
+  100% { border-color: rgba(245, 158, 11, 0.5); box-shadow: inset 0 0 30px rgba(245, 158, 11, 0.15); }
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}

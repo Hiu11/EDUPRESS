@@ -237,23 +237,25 @@ const registerForm = ref({ name: '', email: '', password: '' })
 const profileForm = ref({ name: '', phone: '', school: '', bio: '' })
 const passwordForm = ref({ current: '', next: '', confirm: '' })
 const contactForm = ref({ name: '', email: '', message: '' })
-const currentUserEmail = ref(import.meta.client ? (localStorage.getItem('loggedInUser') || '') : '')
-const quizIndex = ref(0)
-const quizScore = ref(0)
-const selectedAnswer = ref('')
-const quizFinished = ref(false)
 const notice = ref('')
 const showPlayer = ref(false)
 const showIDE = ref(false)
 const showFlashcards = ref(false)
 const showStudio = ref(false)
 
-const users = ref(import.meta.client ? JSON.parse(localStorage.getItem('users') || '[]') : [])
+const { data: users, saveData: saveUsersDB } = useLocalSync('users', [])
+const { data: currentUserEmail, saveData: saveEmailDB } = useLocalSync('loggedInUser', '')
+const { data: quizHistory, saveData: saveQuizHistoryDB } = useLocalSync('quizHistory', [])
+const { isOnline, networkState } = useNetworkStatus()
 const currentUser = computed(() => users.value.find((user) => user.email === currentUserEmail.value))
 const selectedCourse = computed(() => courses.find((course) => course.id === selectedCourseId.value) || courses[0])
 const enrolledIds = computed(() => currentUser.value?.registeredCourses || [])
 const completedIds = computed(() => currentUser.value?.completedCourses || [])
-const quizHistory = computed(() => import.meta.client ? JSON.parse(localStorage.getItem('quizHistory') || '[]') : [])
+
+const quizIndex = ref(0)
+const quizScore = ref(0)
+const selectedAnswer = ref('')
+const quizFinished = ref(false)
 const featuredCourse = computed(() => courses[2])
 const filteredCourses = computed(() => {
   const keyword = search.value.trim().toLowerCase()
@@ -274,8 +276,7 @@ function courseImage(course) {
 }
 
 function saveUsers(nextUsers) {
-  users.value = nextUsers
-  localStorage.setItem('users', JSON.stringify(nextUsers))
+  saveUsersDB(nextUsers)
 }
 
 function setNotice(message) {
@@ -326,8 +327,7 @@ function register() {
   if (users.value.some((user) => user.email === payload.email)) return setNotice('Email này đã được đăng ký.')
   
   saveUsers([...users.value, { ...payload, role: 'student', registeredCourses: [], completedCourses: [] }])
-  localStorage.setItem('loggedInUser', payload.email)
-  currentUserEmail.value = payload.email
+  saveEmailDB(payload.email)
   registerForm.value = { name: '', email: '', password: '' }
   loginForm.value = { email: '', password: '' }
   syncProfileForm()
@@ -343,8 +343,7 @@ function login() {
   const found = users.value.find((user) => user.email === email && user.password === password)
   if (!found) return setNotice('Email hoặc mật khẩu chưa đúng.')
   
-  localStorage.setItem('loggedInUser', found.email)
-  currentUserEmail.value = found.email
+  saveEmailDB(found.email)
   loginForm.value = { email: '', password: '' }
   registerForm.value = { name: '', email: '', password: '' }
   syncProfileForm()
@@ -353,8 +352,7 @@ function login() {
 }
 
 function logout() {
-  localStorage.removeItem('loggedInUser')
-  currentUserEmail.value = ''
+  saveEmailDB('')
   profileForm.value = { name: '', phone: '', school: '', bio: '' }
   loginForm.value = { email: '', password: '' }
   registerForm.value = { name: '', email: '', password: '' }
@@ -419,7 +417,7 @@ function answerQuiz() {
   quizScore.value = nextScore
   if (quizIndex.value === quizQuestions.length - 1) {
     quizFinished.value = true
-    localStorage.setItem('quizHistory', JSON.stringify([{ score: nextScore, total: quizQuestions.length, date: new Date().toISOString() }, ...quizHistory.value]))
+    saveQuizHistoryDB([{ score: nextScore, total: quizQuestions.length, date: new Date().toISOString() }, ...quizHistory.value])
     return
   }
   quizIndex.value += 1
@@ -465,7 +463,29 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="app-frame">
+  <div :class="['app-frame', { 'is-offline': networkState === 'offline' }]">
+    <VitePwaManifest />
+    
+    <!-- Floating Sync Status Toast -->
+    <Transition name="sync-toast">
+      <div v-if="networkState !== 'online'" :class="['sync-toast-container', networkState]">
+        <div class="sync-icon">
+          <svg v-if="networkState === 'offline'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.58 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>
+          <svg v-else-if="networkState === 'syncing'" class="spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
+          <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <div class="sync-text">
+          <strong v-if="networkState === 'offline'">Mất kết nối mạng</strong>
+          <strong v-else-if="networkState === 'syncing'">Đang đồng bộ dữ liệu...</strong>
+          <strong v-else>Đã đồng bộ 100%</strong>
+          
+          <span v-if="networkState === 'offline'">EduPress đang chạy chế độ Offline (0-Latency)</span>
+          <span v-else-if="networkState === 'syncing'">Vui lòng không đóng trình duyệt</span>
+          <span v-else>Dữ liệu đã an toàn trên đám mây</span>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Floating AI Study Companion -->
     <AICompanion />
     <header class="site-header">
