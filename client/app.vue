@@ -237,7 +237,7 @@ const registerForm = ref({ name: '', email: '', password: '' })
 const profileForm = ref({ name: '', phone: '', school: '', bio: '' })
 const passwordForm = ref({ current: '', next: '', confirm: '' })
 const contactForm = ref({ name: '', email: '', message: '' })
-const currentUserEmail = ref(localStorage.getItem('loggedInUser') || '')
+const currentUserEmail = ref(import.meta.client ? (localStorage.getItem('loggedInUser') || '') : '')
 const quizIndex = ref(0)
 const quizScore = ref(0)
 const selectedAnswer = ref('')
@@ -248,12 +248,12 @@ const showIDE = ref(false)
 const showFlashcards = ref(false)
 const showStudio = ref(false)
 
-const users = ref(JSON.parse(localStorage.getItem('users') || '[]'))
+const users = ref(import.meta.client ? JSON.parse(localStorage.getItem('users') || '[]') : [])
 const currentUser = computed(() => users.value.find((user) => user.email === currentUserEmail.value))
 const selectedCourse = computed(() => courses.find((course) => course.id === selectedCourseId.value) || courses[0])
 const enrolledIds = computed(() => currentUser.value?.registeredCourses || [])
 const completedIds = computed(() => currentUser.value?.completedCourses || [])
-const quizHistory = computed(() => JSON.parse(localStorage.getItem('quizHistory') || '[]'))
+const quizHistory = computed(() => import.meta.client ? JSON.parse(localStorage.getItem('quizHistory') || '[]') : [])
 const featuredCourse = computed(() => courses[2])
 const filteredCourses = computed(() => {
   const keyword = search.value.trim().toLowerCase()
@@ -285,11 +285,21 @@ function setNotice(message) {
   }, 2600)
 }
 
-function navigate(nextRoute, courseId) {
+function executeNavigation(nextRoute, courseId) {
   route.value = nextRoute
   if (courseId) selectedCourseId.value = courseId
   window.location.hash = courseId ? `${nextRoute}/${courseId}` : nextRoute
   window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+function navigate(nextRoute, courseId) {
+  if (document.startViewTransition) {
+    document.startViewTransition(() => {
+      executeNavigation(nextRoute, courseId)
+    })
+  } else {
+    executeNavigation(nextRoute, courseId)
+  }
 }
 
 function syncProfileForm() {
@@ -555,7 +565,7 @@ onMounted(async () => {
           </div>
           <div class="course-grid">
             <article v-for="course in courses.slice(0, 3)" :key="course.id" class="course-card featured-card">
-              <img :src="courseImage(course)" :alt="course.title" />
+              <img :src="courseImage(course)" :alt="course.title" :style="`view-transition-name: course-img-${course.id}`" />
               <div class="course-body">
                 <div class="card-topline"><span>{{ course.tag }}</span><small>{{ course.rating }}/5</small></div>
                 <h3>{{ course.title }}</h3>
@@ -601,7 +611,7 @@ onMounted(async () => {
 
         <div class="course-list">
           <article v-for="course in filteredCourses" :key="course.id" class="course-row-card">
-            <img :src="courseImage(course)" :alt="course.title" />
+            <img :src="courseImage(course)" :alt="course.title" :style="`view-transition-name: course-img-${course.id}`" />
             <div class="course-row-content">
               <div class="card-topline"><span>{{ course.category }}</span><small>{{ course.level }}</small></div>
               <h2>{{ course.title }}</h2>
@@ -618,7 +628,7 @@ onMounted(async () => {
 
       <section v-if="route === 'course-detail'" class="content-section page-section detail-page">
         <div class="detail-hero">
-          <img :src="courseImage(selectedCourse)" :alt="selectedCourse.title" />
+          <img :src="courseImage(selectedCourse)" :alt="selectedCourse.title" :style="`view-transition-name: course-img-${selectedCourse.id}`" />
           <div>
             <button class="text-btn" style="display: block; margin-bottom: 32px; padding-left: 0;" type="button" @click="navigate('courses')">← Quay lại danh sách</button>
             <p class="eyebrow">{{ selectedCourse.category }} · {{ selectedCourse.level }}</p>
@@ -750,12 +760,12 @@ onMounted(async () => {
                 <div class="animated-progress"><div class="animated-progress-fill" :style="`width: ${enrolledIds.length > 0 ? 65 : 0}%`"></div></div>
               </div>
               <div class="stat-box">
-                <div class="stat-header"><span>Tiến độ hoàn thành</span><span>{{ completedIds.length > 0 ? '100%' : '20%' }}</span></div>
-                <div class="animated-progress"><div class="animated-progress-fill" :style="`width: ${completedIds.length > 0 ? 100 : 20}%`"></div></div>
+                <div class="stat-header"><span>Tiến độ hoàn thành</span><span>{{ completedIds.length > 0 ? '100%' : '0%' }}</span></div>
+                <div class="animated-progress"><div class="animated-progress-fill" :style="`width: ${completedIds.length > 0 ? 100 : 0}%`"></div></div>
               </div>
               <div class="stat-box">
-                <div class="stat-header"><span>Điểm tích lũy</span><span>45%</span></div>
-                <div class="animated-progress"><div class="animated-progress-fill" style="width: 45%"></div></div>
+                <div class="stat-header"><span>Điểm tích lũy</span><span>{{ quizHistory.length > 0 ? '80%' : '0%' }}</span></div>
+                <div class="animated-progress"><div class="animated-progress-fill" :style="`width: ${quizHistory.length > 0 ? 80 : 0}%`"></div></div>
               </div>
             </div>
           </div>
@@ -767,9 +777,9 @@ onMounted(async () => {
             <div v-if="enrolledIds.length > 0" class="current-course-widget">
               <div class="widget-info">
                 <strong>{{ courses.find(c => c.id === enrolledIds[enrolledIds.length - 1])?.title || 'Khóa học' }}</strong>
-                <span>Tiến độ: 45%</span>
+                <span>Tiến độ: {{ completedIds.includes(enrolledIds[enrolledIds.length - 1]) ? '100%' : '15%' }}</span>
               </div>
-              <div class="progress-bar"><div class="progress-fill" style="width: 45%;"></div></div>
+              <div class="progress-bar"><div class="progress-fill" :style="`width: ${completedIds.includes(enrolledIds[enrolledIds.length - 1]) ? 100 : 15}%;`"></div></div>
               <button class="primary-btn small-btn" type="button" @click="navigate('course-detail', enrolledIds[enrolledIds.length - 1])">Tiếp tục học</button>
             </div>
             <div v-else class="empty-state">
