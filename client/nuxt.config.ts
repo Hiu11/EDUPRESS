@@ -1,3 +1,5 @@
+import { defineNuxtConfig } from 'nuxt/config'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   ssr: true, // Enables Server-Side Rendering for FCP < 1s
@@ -36,5 +38,41 @@ export default defineNuxtConfig({
     }
   },
 
-  compatibilityDate: '2026-07-26'
+  compatibilityDate: '2026-07-26',
+
+  modules: [
+    '@vite-pwa/nuxt'
+  ],
+
+  // @ts-expect-error - Vite PWA types are injected automatically by Nuxt during build
+  pwa: {
+    registerType: 'autoUpdate',
+    manifest: {
+      name: 'EduPress',
+      short_name: 'EduPress',
+      theme_color: '#0f172a',
+      description: 'Nền tảng học tập trực tuyến 0-Latency',
+      icons: [
+        {
+          src: '/generated-assets/edupress-logo.svg',
+          sizes: 'any',
+          type: 'image/svg+xml'
+        }
+      ]
+    },
+    workbox: {
+      navigateFallback: '/',
+      globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
+    },
+    client: {
+      installPrompt: true,
+      periodicSyncForUpdates: 3600
+    },
+    devOptions: {
+      enabled: true,
+      suppressWarnings: true,
+      navigateFallbackAllowlist: [/^\/$/],
+      type: 'module',
+    },
+  }
 })
