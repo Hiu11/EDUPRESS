@@ -1,11 +1,12 @@
 import { defineNuxtConfig } from 'nuxt/config'
+import tailwindcss from '@tailwindcss/vite'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   ssr: true, // Enables Server-Side Rendering for FCP < 1s
   devtools: { enabled: false },
   
-  // Register SCSS assets
+  // Register SCSS assets and new Tailwind v4 entry
   css: [
     '~/assets/styles/_variables.scss',
     '~/assets/styles/_base.scss',
@@ -34,6 +35,27 @@ export default defineNuxtConfig({
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
         { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap' }
+      ],
+      script: [
+        {
+          innerHTML: `
+            (function() {
+              try {
+                var storedTheme = localStorage.getItem('theme');
+                if (storedTheme === 'dark' || storedTheme === 'oled') {
+                  document.documentElement.setAttribute('data-theme', storedTheme);
+                } else if (storedTheme === 'light') {
+                  document.documentElement.removeAttribute('data-theme');
+                } else {
+                  if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                  }
+                }
+              } catch (e) {}
+            })();
+          `,
+          type: 'text/javascript'
+        }
       ]
     }
   },
@@ -44,7 +66,7 @@ export default defineNuxtConfig({
     '@vite-pwa/nuxt'
   ],
 
-  // @ts-expect-error - Vite PWA types are injected automatically by Nuxt during build
+  // @ts-ignore - Vite PWA types are injected automatically by Nuxt during build
   pwa: {
     registerType: 'autoUpdate',
     manifest: {
@@ -74,5 +96,8 @@ export default defineNuxtConfig({
       navigateFallbackAllowlist: [/^\/$/],
       type: 'module',
     },
+  },
+  vite: {
+    plugins: []
   }
 })

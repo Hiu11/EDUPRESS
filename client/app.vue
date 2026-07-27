@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import '~/assets/css/tailwind.css'
 import LearningUniverse from './components/LearningUniverse.vue'
 import CinematicPlayer from './components/CinematicPlayer.vue'
 import InBrowserIDE from './components/InBrowserIDE.vue'
@@ -286,6 +287,28 @@ function setNotice(message) {
   }, 2600)
 }
 
+const theme = ref('light')
+if (import.meta.client) {
+  const stored = localStorage.getItem('theme')
+  if (stored) {
+    theme.value = stored
+  } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    theme.value = 'dark'
+  }
+}
+
+function cycleTheme() {
+  const themes = ['light', 'dark', 'oled']
+  const next = themes[(themes.indexOf(theme.value) + 1) % themes.length]
+  theme.value = next
+  localStorage.setItem('theme', next)
+  if (next === 'light') {
+    document.documentElement.removeAttribute('data-theme')
+  } else {
+    document.documentElement.setAttribute('data-theme', next)
+  }
+}
+
 function executeNavigation(nextRoute, courseId) {
   route.value = nextRoute
   if (courseId) selectedCourseId.value = courseId
@@ -500,6 +523,15 @@ onMounted(async () => {
       </nav>
 
       <div class="header-actions">
+        <button 
+          class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--bg-glass)] backdrop-blur-md border border-[var(--border-glass)] shadow-inner hover:scale-105 hover:shadow-[0_4px_15px_var(--border-glow)] transition-all duration-300 group" 
+          type="button" 
+          @click="cycleTheme" 
+          :title="'Current Theme: ' + theme.toUpperCase()"
+        >
+          <span class="text-lg">{{ theme === 'light' ? '☀️' : theme === 'dark' ? '🌙' : '🌌' }}</span>
+          <span class="text-xs font-bold uppercase tracking-widest opacity-80 group-hover:opacity-100 text-[var(--text-main)] group-hover:text-[var(--primary)] transition-colors">{{ theme }}</span>
+        </button>
         <span :class="['api-pill', apiStatus]">{{ apiStatus === 'online' ? 'API live' : 'API offline' }}</span>
         <button v-if="currentUser && currentUser.role === 'instructor'" class="primary-btn" type="button" @click="showStudio = true" style="background: linear-gradient(135deg, #8b5cf6, #6366f1); border: none;">✍️ Soạn bài</button>
         <button class="ide-launch-btn" type="button" @click="showIDE = true">⚡ IDE</button>

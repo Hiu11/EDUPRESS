@@ -91,6 +91,28 @@
   letter-spacing: 0.02em;
   transition: all 0.25s ease;
   white-space: nowrap;
+  &:hover {
+    background: rgba(79, 70, 229, 0.2);
+    border-color: rgba(79, 70, 229, 0.7);
+    color: #312e81;
+    box-shadow: 0 0 16px rgba(79, 70, 229, 0.2);
+    transform: translateY(-1px);
+  }
+}
+.ide-launch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(79, 70, 229, 0.4);
+  background: rgba(79, 70, 229, 0.1);
+  color: #4338ca;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  transition: all 0.25s ease;
+  white-space: nowrap;
 
   &:hover {
     background: rgba(79, 70, 229, 0.2);
@@ -100,4 +122,3 @@
     transform: translateY(-1px);
   }
 }
-
