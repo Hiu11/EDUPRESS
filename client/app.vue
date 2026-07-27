@@ -760,12 +760,12 @@ onMounted(async () => {
                 <div class="animated-progress"><div class="animated-progress-fill" :style="`width: ${enrolledIds.length > 0 ? 65 : 0}%`"></div></div>
               </div>
               <div class="stat-box">
-                <div class="stat-header"><span>Tiến độ hoàn thành</span><span>{{ completedIds.length > 0 ? '100%' : '20%' }}</span></div>
-                <div class="animated-progress"><div class="animated-progress-fill" :style="`width: ${completedIds.length > 0 ? 100 : 20}%`"></div></div>
+                <div class="stat-header"><span>Tiến độ hoàn thành</span><span>{{ completedIds.length > 0 ? '100%' : '0%' }}</span></div>
+                <div class="animated-progress"><div class="animated-progress-fill" :style="`width: ${completedIds.length > 0 ? 100 : 0}%`"></div></div>
               </div>
               <div class="stat-box">
-                <div class="stat-header"><span>Điểm tích lũy</span><span>45%</span></div>
-                <div class="animated-progress"><div class="animated-progress-fill" style="width: 45%"></div></div>
+                <div class="stat-header"><span>Điểm tích lũy</span><span>{{ quizHistory.length > 0 ? '80%' : '0%' }}</span></div>
+                <div class="animated-progress"><div class="animated-progress-fill" :style="`width: ${quizHistory.length > 0 ? 80 : 0}%`"></div></div>
               </div>
             </div>
           </div>
@@ -777,9 +777,9 @@ onMounted(async () => {
             <div v-if="enrolledIds.length > 0" class="current-course-widget">
               <div class="widget-info">
                 <strong>{{ courses.find(c => c.id === enrolledIds[enrolledIds.length - 1])?.title || 'Khóa học' }}</strong>
-                <span>Tiến độ: 45%</span>
+                <span>Tiến độ: {{ completedIds.includes(enrolledIds[enrolledIds.length - 1]) ? '100%' : '15%' }}</span>
               </div>
-              <div class="progress-bar"><div class="progress-fill" style="width: 45%;"></div></div>
+              <div class="progress-bar"><div class="progress-fill" :style="`width: ${completedIds.includes(enrolledIds[enrolledIds.length - 1]) ? 100 : 15}%;`"></div></div>
               <button class="primary-btn small-btn" type="button" @click="navigate('course-detail', enrolledIds[enrolledIds.length - 1])">Tiếp tục học</button>
             </div>
             <div v-else class="empty-state">
