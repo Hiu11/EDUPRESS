@@ -126,7 +126,7 @@
 .site-footer {
   margin-top: auto;
   border-top: 1px solid var(--border-glass);
-  background: #ffffff;
+  background: var(--bg-glass);
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   padding: 80px 0;

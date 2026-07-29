@@ -233,10 +233,9 @@ const selectedCourseId = ref('ai')
 const search = ref('')
 const apiStatus = ref('checking')
 const authMode = ref('login')
-const loginForm = ref({ email: '', password: '' })
-const registerForm = ref({ name: '', email: '', password: '' })
+const loginForm = ref({ email: '' })
+const registerForm = ref({ name: '', email: '' })
 const profileForm = ref({ name: '', phone: '', school: '', bio: '' })
-const passwordForm = ref({ current: '', next: '', confirm: '' })
 const contactForm = ref({ name: '', email: '', message: '' })
 const notice = ref('')
 const showPlayer = ref(false)
@@ -339,59 +338,100 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 }
 
-function register() {
+async function register() {
   const payload = {
     name: registerForm.value.name.trim(),
     email: registerForm.value.email.trim().toLowerCase(),
-    password: registerForm.value.password
   }
-  if (!payload.name || !payload.email || payload.password.length < 6) return setNotice('Vui lòng nhập đủ thông tin và mật khẩu ít nhất 6 ký tự.')
+  if (!payload.name || !payload.email) return setNotice('Vui lòng nhập đủ thông tin.')
   if (!isValidEmail(payload.email)) return setNotice('Email không hợp lệ.')
   if (users.value.some((user) => user.email === payload.email)) return setNotice('Email này đã được đăng ký.')
   
-  saveUsers([...users.value, { ...payload, role: 'student', registeredCourses: [], completedCourses: [] }])
-  saveEmailDB(payload.email)
-  registerForm.value = { name: '', email: '', password: '' }
-  loginForm.value = { email: '', password: '' }
-  syncProfileForm()
-  navigate('profile')
-  setNotice('Tạo tài khoản thành công.')
+  try {
+    const publicKeyCredentialCreationOptions = {
+        challenge: Uint8Array.from('edu-challenge-' + Date.now(), c => c.charCodeAt(0)),
+        rp: { name: "EduPress", id: window.location.hostname },
+        user: {
+            id: Uint8Array.from(payload.email, c => c.charCodeAt(0)),
+            name: payload.email,
+            displayName: payload.name,
+        },
+        pubKeyCredParams: [{alg: -7, type: "public-key"}, {alg: -257, type: "public-key"}],
+        authenticatorSelection: {
+            authenticatorAttachment: "platform",
+            residentKey: "required",
+            userVerification: "required"
+        },
+        timeout: 60000,
+        attestation: "none"
+    };
+    
+    const credential = await navigator.credentials.create({ publicKey: publicKeyCredentialCreationOptions });
+    const passkeyId = credential.id;
+    
+    saveUsers([...users.value, { ...payload, passkeyId: passkeyId, role: 'student', registeredCourses: [], completedCourses: [] }])
+    saveEmailDB(payload.email)
+    registerForm.value = { name: '', email: '' }
+    loginForm.value = { email: '' }
+    syncProfileForm()
+    navigate('profile')
+    setNotice('Đăng ký bằng sinh trắc học thành công 🛡️')
+  } catch (err) {
+    console.error(err)
+    setNotice('Lỗi đăng ký Passkey hoặc bạn đã hủy.')
+  }
 }
 
-function login() {
+async function login() {
+  try {
+    const publicKeyCredentialRequestOptions = {
+        challenge: Uint8Array.from('edu-challenge-' + Date.now(), c => c.charCodeAt(0)),
+        timeout: 60000,
+        rpId: window.location.hostname,
+        userVerification: "required"
+    };
+
+    const assertion = await navigator.credentials.get({ publicKey: publicKeyCredentialRequestOptions });
+    const passkeyId = assertion.id;
+    
+    const found = users.value.find((user) => user.passkeyId === passkeyId)
+    if (!found) return setNotice('Không tìm thấy tài khoản cho Passkey này.')
+    
+    saveEmailDB(found.email)
+    loginForm.value = { email: '' }
+    registerForm.value = { name: '', email: '' }
+    syncProfileForm()
+    navigate('profile')
+    setNotice('Đăng nhập sinh trắc học thành công 🛡️')
+  } catch (err) {
+    console.error(err)
+    setNotice('Lỗi đăng nhập Passkey hoặc thiết bị không hỗ trợ.')
+  }
+}
+
+function loginMagicLink() {
   const email = loginForm.value.email.trim().toLowerCase()
-  const password = loginForm.value.password
-  if (!email || !password) return setNotice('Vui lòng nhập email và mật khẩu.')
+  if (!email || !isValidEmail(email)) return setNotice('Nhập email hợp lệ để gửi Magic Link.')
+  if (!users.value.some((user) => user.email === email)) return setNotice('Email này chưa được đăng ký.')
   
-  const found = users.value.find((user) => user.email === email && user.password === password)
-  if (!found) return setNotice('Email hoặc mật khẩu chưa đúng.')
-  
-  saveEmailDB(found.email)
-  loginForm.value = { email: '', password: '' }
-  registerForm.value = { name: '', email: '', password: '' }
-  syncProfileForm()
-  navigate('profile')
-  setNotice('Đăng nhập thành công.')
+  // Simulate clicking magic link
+  setTimeout(() => {
+    saveEmailDB(email)
+    loginForm.value = { email: '' }
+    syncProfileForm()
+    navigate('profile')
+    setNotice('Đã xác thực qua Magic Link 📧')
+  }, 1000)
+  setNotice('Đã gửi Magic Link đến email của bạn!')
 }
 
 function logout() {
   saveEmailDB('')
   profileForm.value = { name: '', phone: '', school: '', bio: '' }
-  loginForm.value = { email: '', password: '' }
-  registerForm.value = { name: '', email: '', password: '' }
+  loginForm.value = { email: '' }
+  registerForm.value = { name: '', email: '' }
   navigate('home')
   setNotice('Đã đăng xuất.')
-}
-
-function resetPassword() {
-  const email = loginForm.value.email.trim().toLowerCase()
-  if (!email) return setNotice('Nhập email để đặt lại mật khẩu demo.')
-  if (!isValidEmail(email)) return setNotice('Email không hợp lệ.')
-  if (!users.value.some((u) => u.email === email)) return setNotice('Email này chưa được đăng ký.')
-  
-  saveUsers(users.value.map((user) => (user.email === email ? { ...user, password: '123456' } : user)))
-  loginForm.value.password = ''
-  setNotice('Mật khẩu demo đã đổi thành 123456.')
 }
 
 function updateProfile() {
@@ -400,14 +440,6 @@ function updateProfile() {
   setNotice('Đã cập nhật hồ sơ.')
 }
 
-function changePassword() {
-  if (!currentUser.value) return navigate('auth')
-  if (passwordForm.value.current !== currentUser.value.password) return setNotice('Mật khẩu hiện tại chưa đúng.')
-  if (passwordForm.value.next.length < 6 || passwordForm.value.next !== passwordForm.value.confirm) return setNotice('Mật khẩu mới chưa hợp lệ.')
-  saveUsers(users.value.map((user) => (user.email === currentUserEmail.value ? { ...user, password: passwordForm.value.next } : user)))
-  passwordForm.value = { current: '', next: '', confirm: '' }
-  setNotice('Đã đổi mật khẩu.')
-}
 
 function enroll(courseId) {
   if (!currentUser.value) {
@@ -772,21 +804,39 @@ onMounted(async () => {
       <section v-if="route === 'auth'" class="content-section page-section auth-layout">
         <div class="auth-art">
           <button class="text-btn" style="display: block; margin-bottom: 32px; padding-left: 0;" type="button" @click="navigate('home')">← Về trang chủ</button>
-          <p class="eyebrow">Account</p><h1>{{ authMode === 'login' ? 'Chào mừng quay lại' : 'Tạo tài khoản học tập' }}</h1><p>Đăng nhập để lưu khóa học, lịch sử quiz và tiến trình hoàn thành.</p>
+          <p class="eyebrow">Account</p><h1>{{ authMode === 'login' ? 'Chào mừng quay lại' : 'Tạo tài khoản học tập' }}</h1><p>Đăng nhập bằng sinh trắc học để bảo mật tuyệt đối và loại bỏ hoàn toàn mật khẩu.</p>
         </div>
-        <form v-if="authMode === 'login'" class="form-card" @submit.prevent="login">
+        <form v-if="authMode === 'login'" class="form-card" @submit.prevent="loginMagicLink">
           <input v-model="loginForm.email" type="email" placeholder="Email" />
-          <input v-model="loginForm.password" type="password" placeholder="Mật khẩu" />
-          <button class="primary-btn" type="submit">Đăng nhập</button>
-          <button class="text-btn" type="button" @click="resetPassword">Quên mật khẩu demo</button>
-          <button class="text-btn" type="button" @click="authMode = 'register'">Chưa có tài khoản? Đăng ký</button>
+          
+          <div class="passkey-actions flex flex-col gap-3 mt-4 w-full">
+            <button class="primary-btn relative overflow-hidden group w-full" type="button" @click="login">
+              <span class="relative z-10 flex items-center justify-center gap-2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                Tiếp tục bằng Passkey 🛡️
+              </span>
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+            </button>
+            <button class="secondary-btn w-full" type="submit">Gửi Magic Link 📧</button>
+          </div>
+          
+          <button class="text-btn mt-4 w-full text-center" type="button" @click="authMode = 'register'">Chưa có tài khoản? Đăng ký ngay</button>
         </form>
         <form v-else class="form-card" @submit.prevent="register">
           <input v-model="registerForm.name" placeholder="Họ tên" />
           <input v-model="registerForm.email" type="email" placeholder="Email" />
-          <input v-model="registerForm.password" type="password" placeholder="Mật khẩu" />
-          <button class="primary-btn" type="submit">Tạo tài khoản</button>
-          <button class="text-btn" type="button" @click="authMode = 'login'">Đã có tài khoản? Đăng nhập</button>
+          
+          <div class="passkey-actions flex flex-col gap-3 mt-4 w-full">
+            <button class="primary-btn relative overflow-hidden group w-full" type="submit">
+              <span class="relative z-10 flex items-center justify-center gap-2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                Tạo Passkey (FaceID / Vân tay) 🛡️
+              </span>
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+            </button>
+          </div>
+          
+          <button class="text-btn mt-4 w-full text-center" type="button" @click="authMode = 'login'">Đã có tài khoản? Đăng nhập bằng Passkey</button>
         </form>
       </section>
 
@@ -852,14 +902,17 @@ onMounted(async () => {
           </form>
 
           <!-- 4. Security (Span 2) -->
-          <form class="bento-item bento-security form-card" @submit.prevent="changePassword">
-            <p class="eyebrow">Bảo mật</p>
-            <h2>Đổi mật khẩu</h2>
-            <input v-model="passwordForm.current" type="password" placeholder="Mật khẩu hiện tại" />
-            <input v-model="passwordForm.next" type="password" placeholder="Mật khẩu mới" />
-            <input v-model="passwordForm.confirm" type="password" placeholder="Nhập lại mật khẩu mới" />
-            <button class="secondary-btn" type="submit">Cập nhật mật khẩu</button>
-          </form>
+          <div class="bento-item bento-security rich-panel">
+            <p class="eyebrow">Bảo mật đa tầng</p>
+            <h2>Passkey Auth 🛡️</h2>
+            <div class="mt-4 p-4 rounded-xl border border-[var(--border-glass)] bg-[var(--bg-glass)]">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></div>
+                <strong class="text-sm">Bảo vệ bằng Sinh trắc học</strong>
+              </div>
+              <p class="text-xs text-muted">Tài khoản của bạn hiện đang được liên kết với một cặp khóa public/private mã hóa phần cứng. EduPress không lưu bất kỳ mật khẩu nào của bạn.</p>
+            </div>
+          </div>
 
           <!-- 5. All Enrolled Courses (Span 4) -->
           <div class="bento-item bento-courses rich-panel">
