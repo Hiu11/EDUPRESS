@@ -8,6 +8,7 @@ import TrophyRoom from './components/TrophyRoom.vue'
 import AICompanion from './components/AICompanion.vue'
 import SwipeableFlashcards from './components/SwipeableFlashcards.vue'
 import CourseCreatorStudio from './components/CourseCreatorStudio.vue'
+import WhiteboardPro from './components/WhiteboardPro.vue'
 
 const ASSET_BASE = '/legacy-assets/'
 const GENERATED_BASE = '/generated-assets/'
@@ -242,6 +243,7 @@ const showPlayer = ref(false)
 const showIDE = ref(false)
 const showFlashcards = ref(false)
 const showStudio = ref(false)
+const showWhiteboard = ref(false)
 
 const { data: users, saveData: saveUsersDB } = useLocalSync('users', [])
 const { data: currentUserEmail, saveData: saveEmailDB } = useLocalSync('loggedInUser', '')
@@ -465,6 +467,16 @@ function markCompleted(courseId) {
   }))
   setNotice('Đã đánh dấu hoàn thành.')
 }
+
+const isEnrolled = computed(() => {
+  if (!currentUser.value || !selectedCourse.value) return false
+  return (currentUser.value.registeredCourses || []).includes(selectedCourse.value.id)
+})
+
+const isCompleted = computed(() => {
+  if (!currentUser.value || !selectedCourse.value) return false
+  return (currentUser.value.completedCourses || []).includes(selectedCourse.value.id)
+})
 
 function answerQuiz() {
   if (!selectedAnswer.value) return setNotice('Chọn một đáp án trước đã.')
@@ -719,13 +731,25 @@ onMounted(async () => {
             <h1>{{ selectedCourse.title }}</h1>
             <p>{{ selectedCourse.description }}</p>
             <div class="detail-meta"><span>{{ selectedCourse.author }}</span><span>{{ selectedCourse.duration }}</span><span>{{ selectedCourse.rating }}/5</span><span>{{ selectedCourse.students }} học viên</span></div>
-            <div class="card-actions">
-              <button class="primary-btn cinema-launch-btn" type="button" @click="showPlayer = true">🎬 Xem bài học</button>
-              <button class="ide-launch-btn" type="button" @click="showIDE = true">⚡ Thực hành</button>
-              <button class="flashcard-btn" type="button" @click="showFlashcards = true" style="background: linear-gradient(135deg, #f43f5e, #fb923c); color: white; border: none; padding: 8px 16px; border-radius: 4px; font-weight: bold; cursor: pointer;">📇 Ôn tập nhanh</button>
-              <button class="secondary-btn" type="button" @click="enroll(selectedCourse.id)">Đăng ký học</button>
-              <button class="secondary-btn" type="button" @click="markCompleted(selectedCourse.id)">Hoàn thành</button>
-              <button class="secondary-btn" type="button" @click="navigate('quiz')">Làm quiz</button>
+            <div class="card-actions action-grid">
+              <!-- Primary action -->
+              <button class="btn-hero" type="button" @click="showPlayer = true">🎬 Xem bài học</button>
+              
+              <!-- Tools -->
+              <div class="action-tools">
+                <button class="btn-tool ide-tool" type="button" @click="showIDE = true">⚡ Thực hành</button>
+                <button class="btn-tool flashcard-tool" type="button" @click="showFlashcards = true">📇 Ôn tập nhanh</button>
+                <button class="btn-tool whiteboard-tool" type="button" @click="showWhiteboard = true">🎨 Bảng vẽ nhóm</button>
+              </div>
+
+              <!-- Secondary -->
+              <div class="action-secondary">
+                <button v-if="!isEnrolled" class="btn-outline" type="button" @click="enroll(selectedCourse.id)">Đăng ký học</button>
+                <button v-else-if="!isCompleted" class="btn-outline" style="border-color: #10b981; color: #10b981;" type="button" @click="markCompleted(selectedCourse.id)">Đánh dấu hoàn thành</button>
+                <button v-else class="btn-outline" style="border-color: #10b981; background: rgba(16, 185, 129, 0.1); color: #10b981; cursor: default;" type="button">🎉 Đã hoàn thành</button>
+                
+                <button class="btn-outline" type="button" @click="navigate('quiz')">Làm quiz</button>
+              </div>
             </div>
           </div>
         </div>
@@ -976,5 +1000,12 @@ onMounted(async () => {
         </div>
       </div>
     </footer>
+
+    <!-- Whiteboard Sandbox -->
+    <WhiteboardPro 
+      v-if="showWhiteboard" 
+      :current-user="currentUser || { name: currentUserEmail || 'Ẩn danh' }" 
+      @close="showWhiteboard = false" 
+    />
   </div>
 </template>
