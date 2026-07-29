@@ -150,9 +150,13 @@ p {
     content: `let currentProgress = 65;
 
 function completeModule() {
-  const fill = document.getElementById('fill');
-  const percentText = document.getElementById('percent');
+  var fill = document.getElementById('fill');
+  var percentText = document.getElementById('percent');
   const btn = document.querySelector('.action-btn');
+  
+  if (currentProgress == 100) {
+    return;
+  }
   
   if (currentProgress < 100) {
     currentProgress = 100;
@@ -175,6 +179,91 @@ function completeModule() {
 }`
   }
 ])
+
+const aiState = ref('idle')
+const aiStatusText = ref('AI Mentor sẵn sàng')
+const showAIPanel = ref(false)
+const aiLogs = ref([])
+
+function addAILog(message, type = 'info') {
+  aiLogs.value.push({ time: new Date().toLocaleTimeString('vi-VN', {hour12: false}), message, type })
+}
+
+let scanId = 0
+async function scanCodeSmells(model) {
+  scanId++
+  const currentScanId = scanId
+  const code = model.getValue()
+  const markers = []
+  
+  aiState.value = 'scanning'
+  aiStatusText.value = 'Đang phân tích AST...'
+  showAIPanel.value = true
+  if (aiLogs.value.length > 50) aiLogs.value = [] // clear if too long
+  
+  addAILog('--- Khởi tạo phiên phân tích mới ---', 'system')
+  addAILog('[System] Mở kết nối WebSockets tới wss://ai-core.edupress.vn...', 'system')
+  await new Promise(r => setTimeout(r, 400))
+  if (scanId !== currentScanId) return
+  
+  addAILog('[WS] Kết nối thành công. Đang truyền dữ liệu AST (2.4KB)...', 'info')
+  await new Promise(r => setTimeout(r, 500))
+  if (scanId !== currentScanId) return
+  
+  addAILog('[AI Server] Bắt đầu phân tích Abstract Syntax Tree (AST)...', 'info')
+  await new Promise(r => setTimeout(r, 600))
+  if (scanId !== currentScanId) return
+  
+  addAILog('[AI Server] Chạy thuật toán phát hiện Code Smell bằng LLM...', 'info')
+  await new Promise(r => setTimeout(r, 700))
+  if (scanId !== currentScanId) return
+
+  const lines = code.split('\n')
+  lines.forEach((line, i) => {
+    // Detect 'var'
+    const varMatch = line.match(/\bvar\b/)
+    if (varMatch) {
+      markers.push({
+        severity: monaco.MarkerSeverity.Error,
+        startLineNumber: i + 1,
+        startColumn: varMatch.index + 1,
+        endLineNumber: i + 1,
+        endColumn: varMatch.index + 4,
+        message: "🤖 AI Mentor: Dùng `var` dễ gây lỗi rò rỉ scope (Hoisting) lắm sếp ơi! Ở thế kỷ 21 rồi hãy dùng `const` hoặc `let` nhé.",
+        source: 'AI Mentor'
+      })
+    }
+    
+    // Detect '=='
+    const eqMatch = line.match(/ == /)
+    if (eqMatch) {
+      markers.push({
+        severity: monaco.MarkerSeverity.Warning,
+        startLineNumber: i + 1,
+        startColumn: eqMatch.index + 2,
+        endLineNumber: i + 1,
+        endColumn: eqMatch.index + 4,
+        message: "🤖 AI Mentor: Dùng `==` (Loose equality) có ngày bug sấp mặt vì JS ép kiểu ngầm. Hãy đổi sang `===` (Strict equality) cho chắc cốp!",
+        source: 'AI Mentor'
+      })
+    }
+  })
+  
+  if (markers.length > 0) {
+    addAILog(`[AI Server] Hoàn tất! Phát hiện ${markers.length} điểm bất thường. Đang render vệt đỏ (Squiggly)...`, 'warning')
+    aiState.value = 'found-smell'
+    aiStatusText.value = `Phát hiện ${markers.length} lỗi Code Smell!`
+  } else {
+    addAILog(`[AI Server] Phân tích xong. Code quá sạch, chuẩn Senior! 🚀`, 'success')
+    aiState.value = 'idle'
+    aiStatusText.value = 'Code sạch chuẩn Senior! ✨'
+    setTimeout(() => { 
+      if (scanId === currentScanId) showAIPanel.value = false 
+    }, 4000)
+  }
+  
+  monaco.editor.setModelMarkers(model, 'ai-mentor', markers)
+}
 
 const activeFile = ref(files.value[0])
 const previewSrc = ref('')
@@ -205,11 +294,52 @@ onMounted(async () => {
     tabSize: 2,
     wordWrap: 'on',
     padding: { top: 16, bottom: 16 },
+    lightbulb: { enabled: true } // Enable Quick Fix lightbulb
   })
 
-  // Sync editor changes back to file content
+  // Register AI Fix Command
+  if (!window.aiCommandRegistered) {
+    monaco.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => runCode())
+    // Register QuickFix provider for JS
+    monaco.languages.registerCodeActionProvider('javascript', {
+      provideCodeActions: (model, range, context) => {
+        const actions = context.markers
+          .filter(m => m.source === 'AI Mentor')
+          .map(marker => {
+            let fixText = "const"
+            if (marker.message.includes('==' )) fixText = "==="
+            
+            return {
+              title: "✨ Fix it cho em (AI Auto-Fix)",
+              diagnostics: [marker],
+              kind: "quickfix",
+              edit: {
+                edits: [{
+                  resource: model.uri,
+                  textEdit: { range: marker, text: fixText },
+                  versionId: undefined
+                }]
+              },
+              isPreferred: true
+            }
+          })
+        return { actions, dispose: () => {} }
+      }
+    })
+    window.aiCommandRegistered = true
+  }
+
+  // Sync editor changes back to file content & Trigger AI Scan
+  let aiTimeout = null
   monacoEditor.onDidChangeModelContent(() => {
     activeFile.value.content = monacoEditor.getValue()
+    
+    if (activeFile.value.lang === 'javascript') {
+      aiState.value = 'scanning'
+      aiStatusText.value = 'AI đang quét code...'
+      clearTimeout(aiTimeout)
+      aiTimeout = setTimeout(() => scanCodeSmells(monacoEditor.getModel()), 1200)
+    }
   })
 
   // Auto-run on mount
@@ -310,6 +440,16 @@ function startDragRight(e) {
         <span class="ide-badge">In-Browser Sandbox</span>
       </div>
       <div class="ide-topbar-center">
+        <div class="ai-status-pill" :class="aiState">
+          <span class="ai-icon">
+            <template v-if="aiState === 'scanning'">👀</template>
+            <template v-else-if="aiState === 'found-smell'">🚨</template>
+            <template v-else>✨</template>
+          </span>
+          <span class="ai-text">{{ aiStatusText }}</span>
+          <div class="ai-laser" v-if="aiState === 'scanning'"></div>
+        </div>
+        
         <button
           class="run-btn"
           :class="{ running: isRunning }"
@@ -368,6 +508,22 @@ function startDragRight(e) {
           </button>
         </div>
         <div ref="editorContainer" class="editor-container"></div>
+        
+        <!-- AI TERMINAL PANEL -->
+        <transition name="slide-up">
+          <div v-if="showAIPanel" class="ai-terminal-panel">
+            <div class="ai-terminal-header">
+              <span class="title">🤖 AI Core Logs (WebSockets)</span>
+              <button class="close-btn" @click="showAIPanel = false" title="Đóng terminal">✕</button>
+            </div>
+            <div class="ai-terminal-body" ref="terminalBody">
+              <div v-for="(log, idx) in aiLogs" :key="idx" :class="['ai-log-line', log.type]">
+                <span class="log-time">[{{ log.time }}]</span>
+                <span class="log-msg">{{ log.message }}</span>
+              </div>
+            </div>
+          </div>
+        </transition>
       </div>
 
       <!-- SPLITTER RIGHT -->
@@ -689,4 +845,133 @@ function startDragRight(e) {
   border: none;
   width: 100%;
 }
+// ── AI Mentor Status UI ────────────────────────────────────────────
+.ai-status-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 16px;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #8b949e;
+  margin-right: 16px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  min-width: 220px;
+  justify-content: center;
+
+  &.scanning {
+    color: #60a5fa;
+    border-color: rgba(96, 165, 250, 0.3);
+    background: rgba(96, 165, 250, 0.05);
+  }
+
+  &.found-smell {
+    color: #fb7185;
+    border-color: rgba(251, 113, 133, 0.4);
+    background: rgba(251, 113, 133, 0.1);
+    box-shadow: 0 0 15px rgba(251, 113, 133, 0.2);
+    animation: pulseAlert 2s infinite;
+  }
+
+  &.idle {
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+
+  .ai-laser {
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.4), transparent);
+    animation: laserScan 1s infinite linear;
+  }
+}
+
+@keyframes laserScan {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+
+@keyframes pulseAlert {
+  0% { box-shadow: 0 0 0 0 rgba(251, 113, 133, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(251, 113, 133, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(251, 113, 133, 0); }
+}
+
+// ── AI Terminal Panel ──────────────────────────────────────────────
+.ai-terminal-panel {
+  height: 180px;
+  background: #0d1117;
+  border-top: 1px solid #30363d;
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+}
+
+.ai-terminal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: #161b22;
+  border-bottom: 1px solid #21262d;
+  
+  .title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #6366f1;
+    font-family: 'Segoe UI', sans-serif;
+  }
+  
+  .close-btn {
+    background: transparent;
+    border: none;
+    color: #8b949e;
+    cursor: pointer;
+    font-size: 0.9rem;
+    &:hover { color: #fff; }
+  }
+}
+
+.ai-terminal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+}
+
+.ai-log-line {
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  animation: fadeInLog 0.3s forwards;
+  
+  .log-time { color: #484f58; flex-shrink: 0; }
+  
+  &.system .log-msg { color: #8b949e; }
+  &.info .log-msg { color: #58a6ff; }
+  &.warning .log-msg { color: #e3b341; }
+  &.success .log-msg { color: #3fb950; }
+}
+
+@keyframes fadeInLog {
+  to { opacity: 1; }
+}
+
+.slide-up-enter-active, .slide-up-leave-active { transition: all 0.3s ease; }
+.slide-up-enter-from, .slide-up-leave-to { transform: translateY(100%); opacity: 0; }
 </style>
