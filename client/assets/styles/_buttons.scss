@@ -1,14 +1,21 @@
-.primary-btn, .secondary-btn {
+// ── Shared Button Base ────────────────────────────────────────────
+.primary-btn, .secondary-btn, .btn-hero, .btn-tool, .btn-outline {
   white-space: nowrap;
   display: inline-flex;
   justify-content: center;
   align-items: center;
+  font-family: var(--font-heading);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// ── Legacy Buttons (Used elsewhere) ───────────────────────────────
+.primary-btn, .secondary-btn {
   min-height: 48px;
   border-radius: var(--radius-md);
   padding: 0 24px;
   font-weight: 700;
   font-size: 1rem;
-  font-family: var(--font-heading);
   letter-spacing: 0.02em;
 }
 
@@ -66,6 +73,7 @@
   }
 }
 
+// ── Layout Wrappers ───────────────────────────────────────────────
 .card-actions, .hero-actions, .detail-meta {
   display: flex;
   align-items: center;
@@ -76,49 +84,81 @@
 .card-actions { margin-top: auto; }
 .hero-actions { margin-top: 40px; }
 
-// ── IDE Launch Button ─────────────────────────────────────────────
-.ide-launch-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(79, 70, 229, 0.4);
-  background: rgba(79, 70, 229, 0.1);
-  color: #4338ca;
-  font-weight: 700;
-  font-size: 0.85rem;
-  letter-spacing: 0.02em;
-  transition: all 0.25s ease;
-  white-space: nowrap;
-  &:hover {
-    background: rgba(79, 70, 229, 0.2);
-    border-color: rgba(79, 70, 229, 0.7);
-    color: #312e81;
-    box-shadow: 0 0 16px rgba(79, 70, 229, 0.2);
-    transform: translateY(-1px);
-  }
+// ── Action Grid (Course Details) ──────────────────────────────────
+.action-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  margin-top: 32px;
 }
-.ide-launch-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(79, 70, 229, 0.4);
-  background: rgba(79, 70, 229, 0.1);
-  color: #4338ca;
-  font-weight: 700;
-  font-size: 0.85rem;
-  letter-spacing: 0.02em;
-  transition: all 0.25s ease;
-  white-space: nowrap;
+
+.action-tools, .action-secondary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+// ── Modern Buttons ────────────────────────────────────────────────
+.btn-hero {
+  gap: 8px;
+  width: 100%;
+  padding: 16px 24px;
+  border-radius: var(--radius-md);
+  background: var(--gradient-1);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 1.1rem;
+  border: none;
+  box-shadow: 0 10px 30px rgba(220, 38, 38, 0.3);
 
   &:hover {
-    background: rgba(79, 70, 229, 0.2);
-    border-color: rgba(79, 70, 229, 0.7);
-    color: #312e81;
-    box-shadow: 0 0 16px rgba(79, 70, 229, 0.2);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(220, 38, 38, 0.5);
+  }
+}
+
+.btn-tool {
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.85rem;
+  border: none;
+  color: #ffffff;
+  
+  &.ide-tool {
+    background: linear-gradient(135deg, #4f46e5, #3730a3);
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+    &:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4); }
+  }
+  
+  &.flashcard-tool {
+    background: linear-gradient(135deg, #f43f5e, #be123c);
+    box-shadow: 0 4px 15px rgba(244, 63, 94, 0.3);
+    &:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(244, 63, 94, 0.4); }
+  }
+  
+  &.whiteboard-tool {
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    &:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4); }
+  }
+}
+
+.btn-outline {
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid var(--border-glass);
+  color: var(--text-main);
+  font-weight: 600;
+  font-size: 0.9rem;
+
+  &:hover {
+    background: rgba(15, 23, 42, 0.05);
+    border-color: var(--text-muted);
     transform: translateY(-1px);
   }
 }

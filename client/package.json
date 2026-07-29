@@ -20,7 +20,9 @@
     "canvas-confetti": "^1.9.3",
     "idb-keyval": "^6.3.0",
     "tailwindcss": "^4.0.0",
-    "three": "^0.185.1"
+    "three": "^0.185.1",
+    "y-webrtc": "^10.3.0",
+    "yjs": "^13.6.31"
   },
   "devDependencies": {
     "nuxt": "latest",

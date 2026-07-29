@@ -21,6 +21,7 @@ interface _GlobalComponents {
   LearningUniverse: typeof import("../../components/LearningUniverse.vue")['default']
   SwipeableFlashcards: typeof import("../../components/SwipeableFlashcards.vue")['default']
   TrophyRoom: typeof import("../../components/TrophyRoom.vue")['default']
+  WhiteboardPro: typeof import("../../components/WhiteboardPro.vue")['default']
   NuxtWelcome: typeof import("../../node_modules/nuxt/dist/app/components/welcome.vue")['default']
   NuxtLayout: typeof import("../../node_modules/nuxt/dist/app/components/nuxt-layout")['default']
   NuxtErrorBoundary: typeof import("../../node_modules/nuxt/dist/app/components/nuxt-error-boundary.vue")['default']
@@ -60,6 +61,7 @@ interface _GlobalComponents {
   LazyLearningUniverse: LazyComponent<typeof import("../../components/LearningUniverse.vue")['default']>
   LazySwipeableFlashcards: LazyComponent<typeof import("../../components/SwipeableFlashcards.vue")['default']>
   LazyTrophyRoom: LazyComponent<typeof import("../../components/TrophyRoom.vue")['default']>
+  LazyWhiteboardPro: LazyComponent<typeof import("../../components/WhiteboardPro.vue")['default']>
   LazyNuxtWelcome: LazyComponent<typeof import("../../node_modules/nuxt/dist/app/components/welcome.vue")['default']>
   LazyNuxtLayout: LazyComponent<typeof import("../../node_modules/nuxt/dist/app/components/nuxt-layout")['default']>
   LazyNuxtErrorBoundary: LazyComponent<typeof import("../../node_modules/nuxt/dist/app/components/nuxt-error-boundary.vue")['default']>
