@@ -248,6 +248,24 @@ const showWhiteboard = ref(false)
 const { data: users, saveData: saveUsersDB } = useLocalSync('users', [])
 const { data: currentUserEmail, saveData: saveEmailDB } = useLocalSync('loggedInUser', '')
 const { data: quizHistory, saveData: saveQuizHistoryDB } = useLocalSync('quizHistory', [])
+const { data: courseInteractions, saveData: saveInteractionsDB } = useLocalSync('courseInteractions', {})
+
+const courseRoadmaps = {
+  ai: [
+    { title: '🧮 Toán & Phân tích', links: [{ text: 'AI & Data Scientist Roadmap', url: 'https://roadmap.sh/ai-data-scientist' }, { text: 'Python for AI', url: 'https://www.w3schools.com/python/' }] },
+    { title: '🤖 Machine Learning', links: [{ text: 'Prompt Engineering Roadmap', url: 'https://roadmap.sh/prompt-engineering' }, { text: 'TensorFlow Docs', url: 'https://www.tensorflow.org/' }] }
+  ],
+  web: [
+    { title: '🎨 Frontend (Giao diện)', links: [{ text: 'Frontend Developer Roadmap', url: 'https://roadmap.sh/frontend' }, { text: 'W3Schools: HTML/CSS/JS', url: 'https://www.w3schools.com/html/' }, { text: 'Vue.js Official Docs', url: 'https://vuejs.org/guide/introduction.html' }] },
+    { title: '⚙️ Backend (Xử lý Logic)', links: [{ text: 'Backend Developer Roadmap', url: 'https://roadmap.sh/backend' }, { text: 'Node.js API Reference', url: 'https://nodejs.org/en/docs/' }, { text: 'Express Framework', url: 'https://expressjs.com/' }] },
+    { title: '🗄️ Database (Lưu trữ)', links: [{ text: 'PostgreSQL DBA Roadmap', url: 'https://roadmap.sh/postgresql-dba' }, { text: 'W3Schools: SQL Tutorial', url: 'https://www.w3schools.com/sql/' }, { text: 'MongoDB NoSQL Docs', url: 'https://www.mongodb.com/docs/' }] }
+  ],
+  security: [
+    { title: '🛡️ Cyber Security', links: [{ text: 'Cyber Security Roadmap', url: 'https://roadmap.sh/cyber-security' }, { text: 'OWASP Top 10', url: 'https://owasp.org/www-project-top-ten/' }] }
+  ]
+}
+const activeRoadmap = computed(() => courseRoadmaps[selectedCourseId.value] || courseRoadmaps.web)
+
 const { isOnline, networkState } = useNetworkStatus()
 const currentUser = computed(() => users.value.find((user) => user.email === currentUserEmail.value))
 const selectedCourse = computed(() => courses.find((course) => course.id === selectedCourseId.value) || courses[0])
@@ -258,6 +276,7 @@ const quizIndex = ref(0)
 const quizScore = ref(0)
 const selectedAnswer = ref('')
 const quizFinished = ref(false)
+const showPodcast = ref(false)
 const featuredCourse = computed(() => courses[2])
 const filteredCourses = computed(() => {
   const keyword = search.value.trim().toLowerCase()
@@ -498,6 +517,45 @@ function restartQuiz() {
   quizFinished.value = false
 }
 
+function trackInteraction(courseId, action) {
+  const interactions = courseInteractions.value[courseId] || []
+  if (!interactions.includes(action)) {
+    courseInteractions.value[courseId] = [...interactions, action]
+    saveInteractionsDB(courseInteractions.value)
+  }
+}
+
+function openTool(tool) {
+  if (tool === 'video') showPlayer.value = true
+  if (tool === 'ide') showIDE.value = true
+  if (tool === 'flashcards') showFlashcards.value = true
+  if (tool === 'whiteboard') showWhiteboard.value = true
+  if (tool === 'podcast') showPodcast.value = true
+  
+  if (selectedCourseId.value) {
+    trackInteraction(selectedCourseId.value, tool)
+  }
+}
+
+const showCompletionModal = ref(false)
+const completionConditions = computed(() => {
+  const id = selectedCourseId.value
+  const interactions = courseInteractions.value[id] || []
+  return [
+    { id: 'video', name: 'Xem video bài giảng ít nhất 1 lần', met: interactions.includes('video') },
+    { id: 'ide', name: 'Mở không gian Thực hành (IDE)', met: interactions.includes('ide') },
+    { id: 'podcast', name: 'Nghe Podcast tổng ôn kiến thức', met: interactions.includes('podcast') }
+  ]
+})
+
+function tryMarkCompleted() {
+  if (completionConditions.value.every(c => c.met)) {
+    markCompleted(selectedCourseId.value)
+  } else {
+    showCompletionModal.value = true
+  }
+}
+
 function sendContact() {
   if (!contactForm.value.name || !contactForm.value.email || !contactForm.value.message) return setNotice('Vui lòng nhập đủ thông tin liên hệ.')
   contactForm.value = { name: '', email: '', message: '' }
@@ -733,19 +791,20 @@ onMounted(async () => {
             <div class="detail-meta"><span>{{ selectedCourse.author }}</span><span>{{ selectedCourse.duration }}</span><span>{{ selectedCourse.rating }}/5</span><span>{{ selectedCourse.students }} học viên</span></div>
             <div class="card-actions action-grid">
               <!-- Primary action -->
-              <button class="btn-hero" type="button" @click="showPlayer = true">🎬 Xem bài học</button>
+              <button class="btn-hero" type="button" @click="openTool('video')">🎬 Xem bài học</button>
               
               <!-- Tools -->
               <div class="action-tools">
-                <button class="btn-tool ide-tool" type="button" @click="showIDE = true">⚡ Thực hành</button>
-                <button class="btn-tool flashcard-tool" type="button" @click="showFlashcards = true">📇 Ôn tập nhanh</button>
-                <button class="btn-tool whiteboard-tool" type="button" @click="showWhiteboard = true">🎨 Bảng vẽ nhóm</button>
+                <button class="btn-tool ide-tool" type="button" @click="openTool('ide')">⚡ Thực hành</button>
+                <button class="btn-tool flashcard-tool" type="button" @click="openTool('flashcards')">📇 Ôn tập nhanh</button>
+                <button class="btn-tool whiteboard-tool" type="button" @click="openTool('whiteboard')">🎨 Bảng vẽ nhóm</button>
+                <button class="btn-tool podcast-tool" type="button" @click="openTool('podcast')">🎧 Nghe Podcast</button>
               </div>
 
               <!-- Secondary -->
               <div class="action-secondary">
                 <button v-if="!isEnrolled" class="btn-outline" type="button" @click="enroll(selectedCourse.id)">Đăng ký học</button>
-                <button v-else-if="!isCompleted" class="btn-outline" style="border-color: #10b981; color: #10b981;" type="button" @click="markCompleted(selectedCourse.id)">Đánh dấu hoàn thành</button>
+                <button v-else-if="!isCompleted" class="btn-outline" style="border-color: #10b981; color: #10b981;" type="button" @click="tryMarkCompleted">Đánh dấu hoàn thành</button>
                 <button v-else class="btn-outline" style="border-color: #10b981; background: rgba(16, 185, 129, 0.1); color: #10b981; cursor: default;" type="button">🎉 Đã hoàn thành</button>
                 
                 <button class="btn-outline" type="button" @click="navigate('quiz')">Làm quiz</button>
@@ -766,9 +825,18 @@ onMounted(async () => {
             <ol class="module-list"><li v-for="item in selectedCourse.syllabus" :key="item">{{ item }}</li></ol>
           </section>
           <aside class="panel rich-panel resource-panel">
-            <p class="eyebrow">Tài nguyên</p>
-            <h2>Học liệu đi kèm</h2>
-            <ul class="resource-list"><li v-for="item in selectedCourse.resources" :key="item">{{ item }}</li></ul>
+            <p class="eyebrow">Tài nguyên & Lộ trình</p>
+            <h2>Học liệu Mở rộng</h2>
+            <div class="roadmap-links">
+              <div class="roadmap-group" v-for="group in activeRoadmap" :key="group.title">
+                <h4>{{ group.title }}</h4>
+                <ul>
+                  <li v-for="link in group.links" :key="link.text">
+                    <a :href="link.url" target="_blank">{{ link.text }}</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </aside>
         </div>
       </section>
@@ -1007,5 +1075,80 @@ onMounted(async () => {
       :current-user="currentUser || { name: currentUserEmail || 'Ẩn danh' }" 
       @close="showWhiteboard = false" 
     />
+
+    <!-- Podcast Sandbox -->
+    <PodcastPlayer
+      v-if="showPodcast"
+      :courseTitle="selectedCourse.title"
+      @close="showPodcast = false"
+    />
+    
+    <ConfettiExplosion v-if="showConfetti" />
+    
+    <!-- Completion Conditions Modal -->
+    <div v-if="showCompletionModal" class="completion-modal-overlay">
+      <div class="completion-modal-card">
+        <button class="close-btn" @click="showCompletionModal = false">✕</button>
+        <h2>Chưa đủ điều kiện hoàn thành 🎓</h2>
+        <p>Để nhận chứng chỉ khóa học <strong>{{ selectedCourse.title }}</strong>, bạn cần hoàn thành các tiêu chí sau:</p>
+        
+        <ul class="condition-list">
+          <li v-for="cond in completionConditions" :key="cond.id" :class="{ 'is-met': cond.met }">
+            <span class="icon">{{ cond.met ? '✅' : '⏳' }}</span>
+            <span class="text">{{ cond.name }}</span>
+          </li>
+        </ul>
+        
+        <button class="primary-btn mt-6 w-full" style="width: 100%; margin-top: 24px;" @click="showCompletionModal = false">Tiếp tục học</button>
+      </div>
+    </div>
   </div>
 </template>
+
+<style scoped>
+.roadmap-links {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.roadmap-group h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.roadmap-group ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.roadmap-group li a {
+  display: block;
+  padding: 10px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.roadmap-group li a:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateX(5px);
+}
+</style>
