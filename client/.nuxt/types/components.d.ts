@@ -19,6 +19,7 @@ interface _GlobalComponents {
   CourseCreatorStudio: typeof import("../../components/CourseCreatorStudio.vue")['default']
   InBrowserIDE: typeof import("../../components/InBrowserIDE.vue")['default']
   LearningUniverse: typeof import("../../components/LearningUniverse.vue")['default']
+  PodcastPlayer: typeof import("../../components/PodcastPlayer.vue")['default']
   SwipeableFlashcards: typeof import("../../components/SwipeableFlashcards.vue")['default']
   TrophyRoom: typeof import("../../components/TrophyRoom.vue")['default']
   WhiteboardPro: typeof import("../../components/WhiteboardPro.vue")['default']
@@ -59,6 +60,7 @@ interface _GlobalComponents {
   LazyCourseCreatorStudio: LazyComponent<typeof import("../../components/CourseCreatorStudio.vue")['default']>
   LazyInBrowserIDE: LazyComponent<typeof import("../../components/InBrowserIDE.vue")['default']>
   LazyLearningUniverse: LazyComponent<typeof import("../../components/LearningUniverse.vue")['default']>
+  LazyPodcastPlayer: LazyComponent<typeof import("../../components/PodcastPlayer.vue")['default']>
   LazySwipeableFlashcards: LazyComponent<typeof import("../../components/SwipeableFlashcards.vue")['default']>
   LazyTrophyRoom: LazyComponent<typeof import("../../components/TrophyRoom.vue")['default']>
   LazyWhiteboardPro: LazyComponent<typeof import("../../components/WhiteboardPro.vue")['default']>

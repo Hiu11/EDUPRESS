@@ -145,6 +145,12 @@
     box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
     &:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4); }
   }
+  
+  &.podcast-tool {
+    background: linear-gradient(135deg, #0ea5e9, #0369a1);
+    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+    &:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(14, 165, 233, 0.4); }
+  }
 }
 
 .btn-outline {
