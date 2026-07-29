@@ -15,15 +15,28 @@ const files = ref([
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My App</title>
+  <title>UI Component</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>Xin chào EduPress! 👋</h1>
-    <p>Chỉnh sửa code bên trái và nhấn <strong>Run</strong> để xem kết quả.</p>
-    <button onclick="greet()">Click me!</button>
-    <p id="output"></p>
+  <div class="course-card">
+    <div class="card-header">
+      <span class="badge">Lập trình Web</span>
+      <h2>Khoá học UI/UX Toàn diện</h2>
+    </div>
+    <div class="card-body">
+      <p>Học cách thiết kế giao diện tinh tế, hiện đại và thực tế. 🎨</p>
+      <div class="progress-wrapper">
+        <div class="progress-info">
+          <span>Tiến độ</span>
+          <span id="percent">65%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="fill"></div>
+        </div>
+      </div>
+    </div>
+    <button class="action-btn" onclick="completeModule()">Hoàn thành bài học</button>
   </div>
   <script src="script.js"><\/script>
 </body>
@@ -33,79 +46,133 @@ const files = ref([
     name: 'style.css',
     lang: 'css',
     icon: '🎨',
-    content: `* { box-sizing: border-box; margin: 0; padding: 0; }
+    content: `@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  font-family: 'Outfit', sans-serif;
+  background-color: #f8fafc;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: #0f172a;
 }
 
-.container {
-  text-align: center;
-  padding: 48px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 24px;
-  backdrop-filter: blur(20px);
-  max-width: 500px;
+.course-card {
+  background: #ffffff;
+  padding: 32px;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  max-width: 400px;
   width: 90%;
+  border: 1px solid #e2e8f0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-h1 {
-  font-size: 2.5rem;
+.course-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.12);
+}
+
+.badge {
+  display: inline-block;
+  background: #eff6ff;
+  color: #3b82f6;
+  padding: 6px 12px;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 600;
   margin-bottom: 16px;
-  background: linear-gradient(to right, #818cf8, #c084fc);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  letter-spacing: 0.5px;
 }
 
-p { color: rgba(255,255,255,0.7); margin-bottom: 24px; line-height: 1.6; }
+h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
 
-button {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+p {
+  color: #64748b;
+  font-size: 1rem;
+  margin-bottom: 24px;
+}
+
+.progress-wrapper { margin-bottom: 32px; }
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 8px;
+}
+
+.progress-bar {
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 65%;
+  background: #3b82f6;
+  border-radius: 4px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s;
+}
+
+.action-btn {
+  width: 100%;
+  background: #0f172a;
   color: white;
   border: none;
-  padding: 12px 32px;
+  padding: 14px;
   border-radius: 12px;
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  margin-bottom: 16px;
+  transition: background 0.2s, transform 0.1s;
 }
 
-button:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(99,102,241,0.4); }
-
-#output { color: #a5b4fc; font-weight: 600; font-size: 1.1rem; }`
+.action-btn:hover { background: #334155; }
+.action-btn:active { transform: scale(0.98); }`
   },
   {
     name: 'script.js',
     lang: 'javascript',
     icon: '⚡',
-    content: `function greet() {
-  const messages = [
-    'Hello from EduPress! 🚀',
-    'Keep coding, keep learning! 💡',
-    'You are doing great! ⭐',
-    'Code is art! 🎨',
-  ]
-  const output = document.getElementById('output')
-  const random = messages[Math.floor(Math.random() * messages.length)]
-  output.textContent = random
-  output.style.opacity = '0'
-  setTimeout(() => { output.style.transition = 'opacity 0.5s'; output.style.opacity = '1' }, 10)
-}
+    content: `let currentProgress = 65;
 
-// Auto-greet on load
-window.addEventListener('load', () => {
-  setTimeout(greet, 800)
-})`
+function completeModule() {
+  const fill = document.getElementById('fill');
+  const percentText = document.getElementById('percent');
+  const btn = document.querySelector('.action-btn');
+  
+  if (currentProgress < 100) {
+    currentProgress = 100;
+    fill.style.width = currentProgress + '%';
+    
+    // Animate percentage text
+    let counter = 65;
+    const interval = setInterval(() => {
+      counter += 1;
+      percentText.textContent = counter + '%';
+      if (counter >= 100) {
+        clearInterval(interval);
+        fill.style.background = '#10b981'; // Success green
+        percentText.style.color = '#10b981';
+        btn.textContent = 'Khóa học hoàn tất 🎉';
+        btn.style.background = '#10b981';
+      }
+    }, 15);
+  }
+}`
   }
 ])
 

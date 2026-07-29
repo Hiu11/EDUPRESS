@@ -184,7 +184,7 @@
   margin-bottom: 24px;
   padding: 20px;
   gap: 32px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-base) 100%);
   border: 1px solid rgba(0,0,0,0.05);
   box-shadow: 0 10px 40px rgba(0,0,0,0.04);
 
@@ -267,7 +267,7 @@
   @extend %card-base;
   padding: 40px;
   position: relative;
-  background: #ffffff;
+  background: var(--bg-surface);
   border-radius: var(--radius-md);
   border: 1px solid rgba(0,0,0,0.05);
   box-shadow: 0 10px 30px rgba(0,0,0,0.04);
@@ -369,7 +369,7 @@
 .mini-course-card {
   display: flex;
   flex-direction: column;
-  background: #ffffff;
+  background: var(--bg-surface);
   border: 1px solid rgba(0,0,0,0.04);
   border-radius: var(--radius-md);
   overflow: hidden;

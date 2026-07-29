@@ -1,5 +1,4 @@
 import { defineNuxtConfig } from 'nuxt/config'
-import tailwindcss from '@tailwindcss/vite'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -96,6 +95,11 @@ export default defineNuxtConfig({
       navigateFallbackAllowlist: [/^\/$/],
       type: 'module',
     },
+  },
+  postcss: {
+    plugins: {
+      '@tailwindcss/postcss': {},
+    }
   },
   vite: {
     plugins: []
