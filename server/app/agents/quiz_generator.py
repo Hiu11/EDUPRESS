@@ -207,7 +207,9 @@ def build_quiz_graph():
     return wf.compile()
 
 
-quiz_graph = build_quiz_graph()
+quiz_graph = None
+if os.environ.get("OPENAI_API_KEY"):
+    quiz_graph = build_quiz_graph()
 
 
 def _generate_one(base_state: dict, topic_override: Optional[str] = None) -> dict:
