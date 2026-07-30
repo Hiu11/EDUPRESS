@@ -1,6 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from typing import List
+import httpx
+import base64
+from app.core.config import settings
 
 router = APIRouter()
 
@@ -8,42 +11,45 @@ class CaptionLine(BaseModel):
     time: int
     text: str
 
+# Dữ liệu Mock (Dùng khi chưa cấu hình Modal URL)
 curated_transcripts = {
     "aircAruvnKk": [
         { "time": 0,   "text": "Giới thiệu: Mạng nơ-ron là gì?" },
         { "time": 15,  "text": "Mỗi lớp nơ-ron học một tính năng khác nhau của dữ liệu." },
         { "time": 40,  "text": "Hàm kích hoạt (activation function) quyết định nơ-ron có 'bật' không." },
-        { "time": 70,  "text": "Backpropagation: lan truyền ngược để điều chỉnh trọng số." },
-        { "time": 100, "text": "Gradient descent: thuật toán tối ưu hóa trọng số theo từng bước." },
-        { "time": 130, "text": "Ví dụ thực tế: nhận diện chữ viết tay với MNIST dataset." },
     ],
-    "pTB0EiLXUC8": [
-        { "time": 0,   "text": "OOP giải quyết vấn đề gì trong lập trình truyền thống?" },
-        { "time": 20,  "text": "4 Pillars: Encapsulation — gói dữ liệu vào trong class." },
-        { "time": 50,  "text": "Abstraction — ẩn chi tiết, chỉ lộ ra interface cần thiết." },
-        { "time": 90,  "text": "Inheritance — class con kế thừa tính năng của class cha." },
-        { "time": 130, "text": "Polymorphism — cùng phương thức, hành vi khác nhau theo object." },
-        { "time": 170, "text": "Demo: xây class Animal → Dog, Cat với override method speak()." },
-    ],
-    "ysEN5RaKOlA": [
-        { "time": 0,   "text": "HTML5 — cấu trúc trang với semantic elements." },
-        { "time": 25,  "text": "CSS Flexbox và Grid — bố cục responsive hiện đại." },
-        { "time": 55,  "text": "JavaScript ES6+: arrow functions, destructuring, async/await." },
-        { "time": 90,  "text": "React/Vue component model — tái sử dụng UI." },
-        { "time": 130, "text": "REST API — giao tiếp giữa client và server." },
-        { "time": 170, "text": "Deploy: Vercel, Netlify — CI/CD tự động khi push code." },
+    "default": [
+        { "time": 0,   "text": "Bắt đầu bài học — hãy chuẩn bị ghi chú!" },
+        { "time": 20,  "text": "Khái niệm nền tảng và ứng dụng thực tế." },
     ]
 }
 
-default_transcript = [
-    { "time": 0,   "text": "Bắt đầu bài học — hãy chuẩn bị ghi chú!" },
-    { "time": 20,  "text": "Khái niệm nền tảng và ứng dụng thực tế." },
-    { "time": 50,  "text": "Ví dụ minh họa từng bước." },
-    { "time": 80,  "text": "Bài tập thực hành cuối module." },
-]
-
 @router.get("/captions/{video_id}", response_model=List[CaptionLine])
 async def get_captions(video_id: str):
-    captions = curated_transcripts.get(video_id, default_transcript)
+    captions = curated_transcripts.get(video_id, curated_transcripts["default"])
     return captions
 
+@router.post("/captions/transcribe")
+async def transcribe_audio(file: UploadFile = File(...)):
+    """
+    Nhận audio từ client, gọi lên Serverless GPU (Modal) để xử lý.
+    """
+    if not settings.modal_whisper_url:
+        # Fallback to Mock Data if no URL configured
+        return {"text": "Đây là kết quả mock vì chưa cấu hình MODAL_WHISPER_URL."}
+        
+    try:
+        audio_bytes = await file.read()
+        audio_b64 = base64.b64encode(audio_bytes).decode('utf-8')
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                settings.modal_whisper_url,
+                json={"audio_b64": audio_b64},
+                timeout=30.0  # Cold start trên GPU có thể mất vài giây
+            )
+            response.raise_for_status()
+            result = response.json()
+            return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Inference Error: {str(e)}")
