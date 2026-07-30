@@ -4,7 +4,7 @@
 
 EduPress is a high-performance, real-time Online Learning Management System (LMS) built with an **Enterprise-grade Event-Driven Architecture**. The platform has evolved from a simple Vue 3/FastAPI setup into a scalable micro-services ecosystem using CQRS, Redis Pub/Sub, Serverless AI, and Edge CDN deployment.
 
-## 🚀 Key Architectural Features
+## Key Architectural Features
 
 - **Global Edge CDN (Frontend):** Powered by **Nuxt 3** and `vercel_edge` preset, delivering blazing fast Time To First Byte (TTFB < 50ms) worldwide.
 - **Real-time Event Streaming:** Utilizes **Redis Pub/Sub** and **Server-Sent Events (SSE)** for real-time video commenting and synchronization.
@@ -12,7 +12,7 @@ EduPress is a high-performance, real-time Online Learning Management System (LMS
 - **Serverless GPU AI Inference:** Offloads heavy AI tasks (Whisper audio transcription) to **Modal.com** Serverless T4 GPUs with Scale-to-Zero capability.
 - **Autonomous E2E Testing:** Integrated with **Midscene.js** & **Playwright** via Github Actions for autonomous, LLM Vision-based UI testing.
 
-## 🛠 Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 | --- | --- |
@@ -24,7 +24,7 @@ EduPress is a high-performance, real-time Online Learning Management System (LMS
 | **Testing & CI/CD**| Playwright, Midscene.js (AI Vision), GitHub Actions |
 | **Deployment** | Vercel (Edge Network), Docker Compose |
 
-## 📂 Project Structure
+## Project Structure
 
 ```txt
 EDUPRESS/
@@ -45,7 +45,7 @@ EDUPRESS/
 └── .github/workflows/          # CI/CD Pipelines (Deploy & E2E Testing)
 ```
 
-## ⚙️ Local Development Setup
+## Local Development Setup
 
 ### 1. Start Infrastructure (Databases & Event Broker)
 
@@ -81,7 +81,7 @@ cd server
 modal deploy ai_inference/whisper_modal.py
 ```
 
-## 🤖 CI/CD & Testing
+## CI/CD & Testing
 
 The project uses GitHub Actions for continuous integration:
 - **`ai-e2e-cdn.yml`**: Runs autonomous UI tests using GPT-4o Vision to visually verify core user flows, records test videos, and automatically deploys successful builds to Vercel Edge.
