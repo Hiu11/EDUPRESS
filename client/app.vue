@@ -337,6 +337,66 @@ function executeNavigation(nextRoute, courseId) {
   if (courseId) selectedCourseId.value = courseId
   window.location.hash = courseId ? `${nextRoute}/${courseId}` : nextRoute
   window.scrollTo({ top: 0, behavior: 'smooth' })
+  
+  if (nextRoute === 'course-detail' && courseId) {
+    loadCourseComments(courseId)
+    connectSSE(courseId)
+  } else {
+    if (sseConnection.value) {
+      sseConnection.value.close()
+      sseConnection.value = null
+    }
+  }
+}
+
+// ── Realtime Comments Logic ──────────────────────────────────────────
+const courseComments = ref([])
+const commentInput = ref("")
+const sseConnection = ref(null)
+
+async function loadCourseComments(courseId) {
+  try {
+    const res = await fetch(`http://localhost:8001/api/comments/${courseId}`)
+    const data = await res.json()
+    courseComments.value = data
+  } catch (e) {
+    console.error("Failed to load comments", e)
+  }
+}
+
+async function submitComment() {
+  if (!commentInput.value.trim() || !selectedCourseId.value) return
+  const content = commentInput.value.trim()
+  commentInput.value = ""
+  try {
+    await fetch("http://localhost:8001/api/comments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        post_id: selectedCourseId.value,
+        user_id: currentUser.value?.name || currentUser.value?.email || "Guest",
+        content: content
+      })
+    })
+  } catch (e) {
+    console.error("Failed to submit comment", e)
+  }
+}
+
+function connectSSE(courseId) {
+  if (sseConnection.value) sseConnection.value.close()
+  sseConnection.value = new EventSource("http://localhost:8001/api/stream")
+  sseConnection.value.onmessage = (event) => {
+    try {
+      const parsed = JSON.parse(event.data)
+      if (parsed.event === "CommentCreated" && parsed.data.post_id === courseId) {
+        // SSE trigger: Add directly to top
+        courseComments.value.unshift(parsed.data)
+      }
+    } catch (e) {
+      console.error("SSE parse error", e)
+    }
+  }
 }
 
 function navigate(nextRoute, courseId) {
@@ -1064,7 +1124,56 @@ onMounted(async () => {
             </div>
           </aside>
         </div>
+
+        <!-- Live Comments Section (Realtime Event Sourcing) -->
+        <div class="live-comments-section" style="margin-top: 48px;">
+          <div class="section-heading">
+            <p class="eyebrow">Real-time Discussion</p>
+            <h2>Thảo luận trực tiếp</h2>
+            <p>Hệ thống Backend Kafka CQRS: Gửi bình luận sẽ đẩy Event qua Kafka, người khác nhận được qua SSE ngay lập tức.</p>
+          </div>
+          
+          <div class="comment-input-area" style="display:flex;gap:12px;margin-bottom:24px;">
+            <input v-model="commentInput" @keyup.enter="submitComment" type="text" placeholder="Viết bình luận của bạn..." style="flex:1;padding:12px 16px;border-radius:var(--radius-sm);border:1px solid var(--border-glass);background:var(--bg-surface);color:var(--text-main);" />
+            <button class="primary-btn" type="button" @click="submitComment">Gửi bình luận</button>
+          </div>
+          
+          <div class="comments-list" style="display:flex;flex-direction:column;gap:16px;">
+            <transition-group name="slide-up">
+              <div v-for="(comment, index) in courseComments" :key="comment.id" class="comment-card" :style="{ padding:'16px', background:'var(--bg-surface)', border:'1px solid var(--border-glass)', borderRadius:'var(--radius-sm)', transition:'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', animation: index === 0 ? 'pulse-border 2s ease-out' : 'none' }">
+                <div style="display:flex; gap: 12px; align-items: flex-start;">
+                  <div class="comment-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), #7c3aed); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; flex-shrink: 0; box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);">
+                    {{ comment.user_id.charAt(0).toUpperCase() }}
+                  </div>
+                  <div style="flex: 1;">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:4px;align-items:center;">
+                      <div style="display:flex; align-items:center; gap: 8px;">
+                        <strong style="color:var(--text-main); font-size: 1.05rem;">{{ comment.user_id }}</strong>
+                        <span v-if="index === 0" style="background: rgba(16,185,129,0.15); color: #10b981; padding: 2px 8px; border-radius: 999px; font-size: 0.7rem; font-weight: bold; border: 1px solid rgba(16,185,129,0.3);">Vừa xong</span>
+                      </div>
+                      <small style="color:var(--text-muted); font-size: 0.8rem;">{{ new Date(comment.created_at).toLocaleString() }}</small>
+                    </div>
+                    <p style="margin:0;color:var(--text-main);font-size:0.95rem;line-height:1.5;">{{ comment.content }}</p>
+                  </div>
+                </div>
+              </div>
+            </transition-group>
+            <p v-if="courseComments.length === 0" style="color:var(--text-muted);text-align:center;">Chưa có bình luận nào. Hãy là người đầu tiên!</p>
+          </div>
+        </div>
       </section>
+
+      <style scoped>
+      @keyframes pulse-border {
+        0% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4); border-color: var(--primary); }
+        70% { box-shadow: 0 0 0 10px rgba(124, 58, 237, 0); border-color: var(--border-glass); }
+        100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0); }
+      }
+      .slide-up-enter-active { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+      .slide-up-leave-active { transition: all 0.3s ease; position: absolute; }
+      .slide-up-enter-from, .slide-up-leave-to { opacity: 0; transform: translateY(20px) scale(0.95); }
+      .slide-up-move { transition: transform 0.4s ease; }
+      </style>
 
       <section v-if="route === 'quiz'" class="content-section page-section quiz-layout">
         <!-- Header -->
