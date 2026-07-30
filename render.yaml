@@ -25,14 +25,14 @@ services:
       - key: MONGO_URL
         sync: false # Requires manual entry in the Render Dashboard (MongoDB Atlas URL)
 
-  # Managed PostgreSQL Database
-  - type: psql
-    name: edupress-db
-    region: singapore
-    plan: free
-
   # Managed Redis for Pub/Sub
   - type: redis
     name: edupress-redis
+    region: singapore
+    plan: free
+
+databases:
+  # Managed PostgreSQL Database
+  - name: edupress-db
     region: singapore
     plan: free
