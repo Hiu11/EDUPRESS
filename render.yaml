@@ -1,0 +1,38 @@
+services:
+  # The FastAPI Backend
+  - type: web
+    name: edupress-api
+    env: docker
+    region: singapore
+    plan: free
+    rootDir: server
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: CLIENT_ORIGIN
+        value: https://edupress.vercel.app
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: edupress-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: edupress-redis
+          property: connectionString
+      - key: MONGO_URL
+        sync: false # Requires manual entry in the Render Dashboard (MongoDB Atlas URL)
+
+  # Managed PostgreSQL Database
+  - type: psql
+    name: edupress-db
+    region: singapore
+    plan: free
+
+  # Managed Redis for Pub/Sub
+  - type: redis
+    name: edupress-redis
+    region: singapore
+    plan: free
