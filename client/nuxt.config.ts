@@ -9,6 +9,12 @@ export default defineNuxtConfig({
   nitro: {
     preset: 'vercel_edge'
   },
+
+  runtimeConfig: {
+    public: {
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8001'
+    }
+  },
   
   // Register SCSS assets and new Tailwind v4 entry
   css: [

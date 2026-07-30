@@ -54,7 +54,8 @@ async function askAI(text, actionMode) {
   response.value = ''
 
   try {
-    const res = await fetch('http://localhost:8001/api/ai-companion', {
+    const config = useRuntimeConfig()
+    const res = await fetch(`${config.public.apiBase}/api/ai-companion`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, mode: actionMode }),

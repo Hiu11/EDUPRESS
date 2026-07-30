@@ -11,6 +11,7 @@ import SwipeableFlashcards from './components/SwipeableFlashcards.vue'
 import CourseCreatorStudio from './components/CourseCreatorStudio.vue'
 import WhiteboardPro from './components/WhiteboardPro.vue'
 
+const config = useRuntimeConfig()
 const ASSET_BASE = '/legacy-assets/'
 const GENERATED_BASE = '/generated-assets/'
 
@@ -356,7 +357,7 @@ const sseConnection = ref(null)
 
 async function loadCourseComments(courseId) {
   try {
-    const res = await fetch(`http://localhost:8001/api/comments/${courseId}`)
+    const res = await fetch(`${config.public.apiBase}/api/comments/${courseId}`)
     const data = await res.json()
     courseComments.value = data
   } catch (e) {
@@ -369,7 +370,7 @@ async function submitComment() {
   const content = commentInput.value.trim()
   commentInput.value = ""
   try {
-    await fetch("http://localhost:8001/api/comments", {
+    await fetch(`${config.public.apiBase}/api/comments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -385,7 +386,7 @@ async function submitComment() {
 
 function connectSSE(courseId) {
   if (sseConnection.value) sseConnection.value.close()
-  sseConnection.value = new EventSource("http://localhost:8001/api/stream")
+  sseConnection.value = new EventSource(`${config.public.apiBase}/api/stream`)
   sseConnection.value.onmessage = (event) => {
     try {
       const parsed = JSON.parse(event.data)
@@ -626,7 +627,7 @@ const syncSuccess = ref(false)
 async function syncQuizHistoryToDB(score, total, topic, maxStreak) {
   isSyncing.value = true
   try {
-    const res = await fetch('http://localhost:8001/api/quiz/sync', {
+    const res = await fetch(`${config.public.apiBase}/api/quiz/sync`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -749,7 +750,7 @@ async function generateAutoQuiz() {
   isGeneratingQuiz.value = true
   stopTimer()
   try {
-    const res = await fetch('http://localhost:8001/api/quiz/generate', {
+    const res = await fetch(`${config.public.apiBase}/api/quiz/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -864,7 +865,7 @@ onMounted(async () => {
   
   syncProfileForm()
   try {
-    const response = await fetch('http://localhost:8001/health')
+    const response = await fetch(`${config.public.apiBase}/health`)
     apiStatus.value = response.ok ? 'online' : 'offline'
   } catch {
     apiStatus.value = 'offline'

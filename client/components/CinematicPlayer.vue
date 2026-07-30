@@ -59,7 +59,8 @@ const captionSrc = ref('fallback')  // 'youtube' | 'fallback'
 async function loadCaptions(vid) {
   try {
     // Gọi qua backend của mình để vừa fetch vừa dịch sang Tiếng Việt
-    const res = await fetch(`http://localhost:8001/api/captions/${vid}`)
+    const config = useRuntimeConfig()
+    const res = await fetch(`${config.public.apiBase}/api/captions/${vid}`)
     if (!res.ok) throw new Error('HTTP ' + res.status)
     const data = await res.json()
     if (!data.length) throw new Error('No captions')
