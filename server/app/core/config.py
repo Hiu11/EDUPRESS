@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     mongo_url: str = "mongodb://admin:adminpassword@localhost:27017"
     
     # Serverless GPU URLs
-    modal_whisper_url: str = ""
+    modal_whisper_url: str = "https://tronghieudo2k4--edupress-whisper-inference-api-transcribe.modal.run"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

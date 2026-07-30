@@ -3,13 +3,13 @@ from pydantic import BaseModel
 
 # 1. Định nghĩa môi trường Docker chạy trên Serverless GPU
 image = modal.Image.debian_slim(python_version="3.10").pip_install(
-    "transformers", "torch", "librosa", "soundfile", "accelerate"
+    "transformers", "torch", "librosa", "soundfile", "accelerate", "fastapi[standard]"
 )
 
 app = modal.App("edupress-whisper-inference")
 
 # 2. Mount model vào Memory khi container khởi động (Cold Start Optimization)
-@app.cls(gpu="T4", image=image, keep_warm=0, container_idle_timeout=60)
+@app.cls(gpu="T4", image=image, min_containers=0, scaledown_window=60)
 class WhisperModel:
     @modal.enter()
     def load_model(self):
@@ -34,7 +34,7 @@ class WhisperModel:
 
 # 3. Tạo REST API tự động scale về 0 khi không có Request
 @app.function(image=image)
-@modal.web_endpoint(method="POST")
+@modal.fastapi_endpoint(method="POST")
 def api_transcribe(item: dict):
     # Lấy model ra chạy
     model = WhisperModel()
