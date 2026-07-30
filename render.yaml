@@ -30,9 +30,11 @@ services:
     name: edupress-redis
     region: singapore
     plan: free
+    ipAllowList: [] # Allow internal traffic only
 
 databases:
   # Managed PostgreSQL Database
   - name: edupress-db
     region: singapore
     plan: free
+    ipAllowList: [] # Allow internal traffic only
