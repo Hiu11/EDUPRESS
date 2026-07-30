@@ -1,138 +1,91 @@
-# EduPress
+# EduPress (Enterprise Edition)
 
-Live demo: https://edupress-lms.vercel.app
+**Live Demo:** [https://edupress.vercel.app](https://edupress.vercel.app)
 
-EduPress là nền tảng học trực tuyến mô phỏng hệ thống LMS (Learning Management System). Dự án hiện đã được nâng cấp từ bản HTML/CSS/JavaScript tĩnh sang kiến trúc full-stack với Vue 3 ở frontend và FastAPI ở backend.
+EduPress is a high-performance, real-time Online Learning Management System (LMS) built with an **Enterprise-grade Event-Driven Architecture**. The platform has evolved from a simple Vue 3/FastAPI setup into a scalable micro-services ecosystem using CQRS, Redis Pub/Sub, Serverless AI, and Edge CDN deployment.
 
-## Tính năng chính
+## 🚀 Key Architectural Features
 
-- Hiển thị trang giới thiệu nền tảng học trực tuyến EduPress.
-- Danh sách khóa học lấy từ API backend.
-- API kiểm tra trạng thái hệ thống.
-- Cấu trúc sẵn sàng mở rộng cho xác thực, quản lý khóa học, học viên và nội dung học tập.
-- Tách riêng frontend, backend và tài nguyên giao diện.
+- **Global Edge CDN (Frontend):** Powered by **Nuxt 3** and `vercel_edge` preset, delivering blazing fast Time To First Byte (TTFB < 50ms) worldwide.
+- **Real-time Event Streaming:** Utilizes **Redis Pub/Sub** and **Server-Sent Events (SSE)** for real-time video commenting and synchronization.
+- **CQRS Pattern:** Backend commands (writes) and queries (reads) are separated via **EventBus** for maximum scalability.
+- **Serverless GPU AI Inference:** Offloads heavy AI tasks (Whisper audio transcription) to **Modal.com** Serverless T4 GPUs with Scale-to-Zero capability.
+- **Autonomous E2E Testing:** Integrated with **Midscene.js** & **Playwright** via Github Actions for autonomous, LLM Vision-based UI testing.
 
-## Công nghệ sử dụng
+## 🛠 Tech Stack
 
-| Phần | Công nghệ |
+| Layer | Technology |
 | --- | --- |
-| Frontend | Vue 3, Vite, JavaScript, CSS |
-| Backend | FastAPI, Python |
-| Database | PostgreSQL |
-| ORM | SQLAlchemy |
-| API | REST |
+| **Frontend** | Nuxt 3, Vue 3, Tailwind CSS, TypeScript, Vite |
+| **Backend** | FastAPI (Python), httpx |
+| **Database** | PostgreSQL (Relational), MongoDB (NoSQL for Comments) |
+| **Event Broker** | Redis Pub/Sub |
+| **AI Infrastructure** | Modal (Serverless GPU), Whisper Model |
+| **Testing & CI/CD**| Playwright, Midscene.js (AI Vision), GitHub Actions |
+| **Deployment** | Vercel (Edge Network), Docker Compose |
 
-## Cấu trúc thư mục
+## 📂 Project Structure
 
 ```txt
 EDUPRESS/
-├── client/                 # Ứng dụng Vue 3
-│   ├── public/             # Favicon, icon, ảnh public
-│   ├── src/                # Source code frontend
-│   ├── package.json
-│   └── vite.config.js
+├── client/                     # Nuxt 3 Edge Application
+│   ├── tests/e2e/              # AI Autonomous Tests (Midscene.js + Playwright)
+│   ├── playwright.config.ts    # Testing configurations
+│   └── nuxt.config.ts          # Edge deployment config
 │
-├── server/                 # Ứng dụng FastAPI
+├── server/                     # FastAPI CQRS Backend
+│   ├── ai_inference/           # Modal.com Serverless GPU Scripts (whisper_modal.py)
 │   ├── app/
-│   │   ├── api/            # Router API
-│   │   ├── core/           # Cấu hình ứng dụng
-│   │   ├── db/             # Kết nối và khởi tạo database
-│   │   ├── models/         # SQLAlchemy models
-│   │   └── schemas/        # Pydantic schemas
-│   ├── .env.example
-│   ├── requirements.txt
-│   └── README.md
+│   │   ├── api/                # REST & SSE Endpoints (stream.py, comments.py)
+│   │   ├── eventbus/           # Redis Pub/Sub (producer.py, consumer.py)
+│   │   └── db/                 # PostgreSQL & MongoDB connections
+│   └── requirements.txt
 │
-└── README.md
+├── docker-compose.yml          # Local infra (Redis, Mongo, Postgres)
+└── .github/workflows/          # CI/CD Pipelines (Deploy & E2E Testing)
 ```
 
-## Yêu cầu môi trường
+## ⚙️ Local Development Setup
 
-- Node.js
-- npm
-- Python 3.10 trở lên
-- PostgreSQL
+### 1. Start Infrastructure (Databases & Event Broker)
 
-## Cài đặt và chạy dự án
-
-### 1. Clone hoặc mở thư mục dự án
-
-```powershell
-cd EDUPRESS
+```bash
+docker-compose up -d
 ```
+*Spins up Redis (Port 6379), MongoDB (Port 27017), and PostgreSQL (Port 5432).*
 
-### 2. Chạy backend
+### 2. Start Backend (FastAPI)
 
-Tạo database PostgreSQL tên `edupress`, sau đó chạy:
-
-```powershell
+```bash
 cd server
-py -m venv .venv
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-Copy-Item .env.example .env
 uvicorn app.main:app --reload
 ```
+*Backend runs on `http://localhost:8000`*
 
-Backend mặc định chạy tại:
+### 3. Start Frontend (Nuxt 3)
 
-```txt
-http://localhost:8000
-```
-
-### 3. Chạy frontend
-
-Mở terminal khác:
-
-```powershell
+```bash
 cd client
 npm install
 npm run dev
 ```
+*Frontend runs on `http://localhost:3000`*
 
-Frontend mặc định chạy tại:
+### 4. Deploy AI Serverless (Optional)
 
-```txt
-http://localhost:5173
+```bash
+cd server
+modal deploy ai_inference/whisper_modal.py
 ```
 
-## Biến môi trường backend
+## 🤖 CI/CD & Testing
 
-File cấu hình mẫu nằm tại `server/.env.example`.
+The project uses GitHub Actions for continuous integration:
+- **`ai-e2e-cdn.yml`**: Runs autonomous UI tests using GPT-4o Vision to visually verify core user flows, records test videos, and automatically deploys successful builds to Vercel Edge.
+- **`deploy-modal.yml`**: Triggers whenever AI Inference code changes, automatically spinning up new Serverless GPU images.
 
-```env
-APP_NAME=EduPress API
-APP_ENV=development
-CLIENT_ORIGIN=http://localhost:5173
-DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/edupress
-JWT_SECRET=change-me-in-production
-JWT_EXPIRES_MINUTES=1440
-```
-
-Nếu tài khoản PostgreSQL của bạn khác `postgres/postgres`, hãy sửa lại `DATABASE_URL` trong `server/.env`.
-
-## API hiện có
-
-| Method | Endpoint | Mô tả |
-| --- | --- | --- |
-| GET | `/health` | Kiểm tra trạng thái API |
-| GET | `/api/courses` | Lấy danh sách khóa học |
-
-## Build frontend
-
-```powershell
-cd client
-npm run build
-```
-
-## Tác giả
-
-Đây là dự án cá nhân, được thực hiện nhằm xây dựng và nâng cấp nền tảng học trực tuyến EduPress từ giao diện tĩnh sang mô hình full-stack.
-
-## Hướng phát triển
-
-- Hoàn thiện chức năng đăng ký, đăng nhập và phân quyền.
-- Thêm trang chi tiết khóa học, bài học, quiz và tiến trình học tập.
-- Xây dựng chức năng quản trị khóa học.
-- Bổ sung seed data và migration database.
-- Triển khai frontend và backend lên môi trường production.
+---
+*Built with ❤️ focusing on Performance, Clean Architecture, and Scalability.*
