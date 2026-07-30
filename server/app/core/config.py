@@ -19,5 +19,15 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
+    @property
+    def sync_database_url(self) -> str:
+        # SQLAlchemy 2.0 requires postgresql:// instead of postgres://
+        # and since we use psycopg3, we should enforce postgresql+psycopg://
+        url = self.database_url
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql+psycopg://", 1)
+        elif url.startswith("postgresql://"):
+            url = url.replace("postgresql://", "postgresql+psycopg://", 1)
+        return url
 
 settings = Settings()
