@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import confetti from 'canvas-confetti'
 import '~/assets/css/tailwind.css'
 import LearningUniverse from './components/LearningUniverse.vue'
 import CinematicPlayer from './components/CinematicPlayer.vue'
@@ -209,17 +210,19 @@ const posts = [
   },
 ]
 
+const defaultQuizQuestions = [
+  { q: 'HTML dùng để làm gì trong lập trình web?', a: 'Cấu trúc nội dung trang web', options: ['Thiết kế giao diện màu sắc', 'Cấu trúc nội dung trang web', 'Xử lý logic phía server', 'Quản lý database'], explanation: 'HTML phụ trách cấu trúc và ngữ nghĩa nội dung. CSS phụ trách giao diện, JS xử lý tương tác, server-side languages xử lý logic backend.', difficulty: 'easy', topic_tag: 'HTML Basics' },
+  { q: 'CSS Flexbox và CSS Grid khác nhau ở điểm nào chính?', a: 'Flexbox là 1 chiều, Grid là 2 chiều', options: ['Flexbox nhanh hơn Grid', 'Flexbox là 1 chiều, Grid là 2 chiều', 'Grid chỉ dùng được trên Desktop', 'Chúng hoàn toàn giống nhau'], explanation: 'Flexbox được thiết kế để bố cục 1 chiều (hàng hoặc cột). Grid xử lý 2 chiều đồng thời (cả hàng và cột). Dùng kết hợp cả hai là best practice.', difficulty: 'medium', topic_tag: 'CSS Layout' },
+  { q: 'Trong JavaScript, sự khác biệt giữa == và === là gì?', a: '=== kiểm tra cả giá trị và kiểu dữ liệu', options: ['=== chạy nhanh hơn ==', '=== kiểm tra cả giá trị và kiểu dữ liệu', '== luôn trả về true', 'Chúng không có sự khác biệt'], explanation: '== thực hiện type coercion (ép kiểu) trước so sánh nên "1" == 1 là true. === so sánh strict không coerce nên "1" === 1 là false. Luôn dùng === trong thực tế.', difficulty: 'easy', topic_tag: 'JavaScript Core' },
+  { q: 'REST API sử dụng HTTP method nào để cập nhật toàn bộ một resource?', a: 'PUT', options: ['GET', 'POST', 'PUT', 'DELETE'], explanation: 'PUT thay thế toàn bộ resource. PATCH chỉ cập nhật một phần. POST tạo resource mới. GET chỉ đọc. Đây là convention của RESTful API design.', difficulty: 'medium', topic_tag: 'REST API' },
+  { q: 'Event bubbling trong JavaScript hoạt động như thế nào?', a: 'Sự kiện lan truyền từ phần tử con lên phần tử cha', options: ['Sự kiện lan truyền từ phần tử cha xuống con', 'Sự kiện chỉ xảy ra ở phần tử được click', 'Sự kiện lan truyền từ phần tử con lên phần tử cha', 'Sự kiện xảy ra ngẫu nhiên'], explanation: 'Event Bubbling: khi click vào button con, sự kiện "nổi" lên qua div cha, rồi body, rồi document. Dùng event.stopPropagation() để dừng. Event Capturing là chiều ngược lại.', difficulty: 'hard', topic_tag: 'JavaScript DOM' },
+]
+const quizQuestions = ref([...defaultQuizQuestions])
+
 const testimonials = [
   { name: 'Minh Anh', role: 'Sinh viên CNTT', quote: 'EduPress giúp mình nhìn rõ tiến trình học và biết bài nào cần ôn lại trước khi làm project.' },
   { name: 'Gia Huy', role: 'Frontend learner', quote: 'Khóa web có bài tập sát thực tế, phần quiz sau mỗi module làm mình nhớ kiến thức lâu hơn.' },
   { name: 'Thanh Trúc', role: 'Giảng viên', quote: 'Dashboard quản lý khóa học rõ ràng, nội dung dễ cập nhật và phù hợp cho lớp hybrid.' },
-]
-
-const quizQuestions = [
-  { q: 'HTML dùng để làm gì?', a: 'Cấu trúc nội dung trang web', options: ['Thiết kế database', 'Cấu trúc nội dung trang web', 'Biên dịch Python'] },
-  { q: 'CSS phụ trách phần nào?', a: 'Giao diện và bố cục', options: ['Giao diện và bố cục', 'Xác thực người dùng', 'Lưu trữ server'] },
-  { q: 'FastAPI thường dùng để xây gì?', a: 'Backend API', options: ['Backend API', 'Ảnh minh họa', 'File CSS'] },
-  { q: 'PostgreSQL là gì?', a: 'Hệ quản trị cơ sở dữ liệu', options: ['Framework frontend', 'Hệ quản trị cơ sở dữ liệu', 'Công cụ vẽ icon'] },
 ]
 
 const learningSteps = [
@@ -497,24 +500,246 @@ const isCompleted = computed(() => {
   return (currentUser.value.completedCourses || []).includes(selectedCourse.value.id)
 })
 
+// ── Quiz State (V3) ─────────────────────────────────────────────
+const quizAnswered = ref(false)
+const quizAnswers = ref([])
+const quizStreak = ref(0)
+const quizMaxStreak = ref(0)
+const quizAIReasoning = ref('')
+const quizWeakTopic = ref('')
+const quizTimeLeft = ref(30)
+const quizTimerActive = ref(false)
+let quizTimerInterval = null
+
+function startTimer() {
+  clearInterval(quizTimerInterval)
+  quizTimeLeft.value = 30
+  quizTimerActive.value = true
+  quizTimerInterval = setInterval(() => {
+    if (quizAnswered.value || quizFinished.value) { clearInterval(quizTimerInterval); return }
+    if (quizTimeLeft.value <= 0) {
+      clearInterval(quizTimerInterval)
+      quizTimerActive.value = false
+      if (!quizAnswered.value) { selectedAnswer.value = '__timeout__'; answerQuiz() }
+    } else {
+      quizTimeLeft.value -= 1
+    }
+  }, 1000)
+}
+
+function stopTimer() {
+  clearInterval(quizTimerInterval)
+  quizTimerActive.value = false
+}
+
+function playSound(type) {
+  if (!import.meta.client) return
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)()
+    const osc = ctx.createOscillator()
+    const gainNode = ctx.createGain()
+    osc.connect(gainNode)
+    gainNode.connect(ctx.destination)
+    if (type === 'correct') {
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(500, ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(1000, ctx.currentTime + 0.1)
+      gainNode.gain.setValueAtTime(0.1, ctx.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1)
+      osc.start()
+      osc.stop(ctx.currentTime + 0.1)
+    } else {
+      osc.type = 'sawtooth'
+      osc.frequency.setValueAtTime(300, ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.2)
+      gainNode.gain.setValueAtTime(0.1, ctx.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2)
+      osc.start()
+      osc.stop(ctx.currentTime + 0.2)
+    }
+  } catch (e) {}
+}
+
+const isSyncing = ref(false)
+const syncSuccess = ref(false)
+
+async function syncQuizHistoryToDB(score, total, topic, maxStreak) {
+  isSyncing.value = true
+  try {
+    const res = await fetch('http://localhost:8001/api/quiz/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: currentUser.value?.id || 'guest',
+        course_id: selectedCourseId.value || 'course_1',
+        score,
+        total,
+        topic,
+        max_streak: maxStreak
+      })
+    })
+    const data = await res.json()
+    if (data.success) {
+      syncSuccess.value = true
+      setTimeout(() => syncSuccess.value = false, 3000)
+    }
+  } catch(e) {
+    console.error("Sync failed", e)
+  } finally {
+    isSyncing.value = false
+  }
+}
+
 function answerQuiz() {
   if (!selectedAnswer.value) return setNotice('Chọn một đáp án trước đã.')
-  const nextScore = selectedAnswer.value === quizQuestions[quizIndex.value].a ? quizScore.value + 1 : quizScore.value
-  quizScore.value = nextScore
-  if (quizIndex.value === quizQuestions.length - 1) {
-    quizFinished.value = true
-    saveQuizHistoryDB([{ score: nextScore, total: quizQuestions.length, date: new Date().toISOString() }, ...quizHistory.value])
-    return
+  stopTimer()
+  const current = quizQuestions.value[quizIndex.value]
+  const isRight = selectedAnswer.value !== '__timeout__' && selectedAnswer.value === current.a
+  if (isRight) {
+    playSound('correct')
+    quizScore.value += 1
+    quizStreak.value += 1
+    if (quizStreak.value > quizMaxStreak.value) quizMaxStreak.value = quizStreak.value
+  } else {
+    playSound('wrong')
+    quizStreak.value = 0
   }
-  quizIndex.value += 1
+  quizAnswers.value.push({
+    question: current.q,
+    chosen: selectedAnswer.value === '__timeout__' ? '(Hết giờ)' : selectedAnswer.value,
+    correct: current.a,
+    isRight,
+    explanation: current.explanation || '',
+    topic_tag: current.topic_tag || '',
+    difficulty: current.difficulty || 'medium',
+    timeSpent: 30 - quizTimeLeft.value
+  })
+  quizAnswered.value = true
+}
+
+function nextQuestion() {
+  quizAnswered.value = false
+  if (quizIndex.value === quizQuestions.value.length - 1) {
+    quizFinished.value = true
+    const score = quizScore.value
+    const total = quizQuestions.value.length
+    const topic = quizWeakTopic.value || quizQuestions.value[0]?.topic_tag || ''
+    
+    if (score === total && import.meta.client) {
+      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } })
+    }
+
+    localStorage.setItem('quizHistory', JSON.stringify([
+      { score, total, topic, maxStreak: quizMaxStreak.value, date: new Date().toISOString() },
+      ...quizHistory.value
+    ]))
+
+    syncQuizHistoryToDB(score, total, topic, quizMaxStreak.value)
+  } else {
+    quizIndex.value += 1
+    selectedAnswer.value = ''
+    startTimer()
+  }
+}
+
+function retryWrongAnswers() {
+  const wrongAnswers = quizAnswers.value.filter(a => !a.isRight)
+  if (!wrongAnswers.length) return
+  quizQuestions.value = wrongAnswers.map(w => {
+    return {
+      q: w.question,
+      a: w.correct,
+      options: quizQuestions.value.find(q => q.q === w.question)?.options || [],
+      explanation: w.explanation,
+      topic_tag: w.topic_tag,
+      difficulty: w.difficulty
+    }
+  })
+  quizIndex.value = 0
+  quizScore.value = 0
+  quizStreak.value = 0
+  quizMaxStreak.value = 0
   selectedAnswer.value = ''
+  quizFinished.value = false
+  quizAnswered.value = false
+  quizAnswers.value = []
+  quizAIReasoning.value = "Chế độ ôn tập: Chỉ làm lại các câu bạn vừa chọn sai."
+  stopTimer()
+  startTimer()
 }
 
 function restartQuiz() {
+  quizQuestions.value = [...defaultQuizQuestions]
   quizIndex.value = 0
   quizScore.value = 0
+  quizStreak.value = 0
+  quizMaxStreak.value = 0
   selectedAnswer.value = ''
   quizFinished.value = false
+  quizAnswered.value = false
+  quizAnswers.value = []
+  quizAIReasoning.value = ''
+  quizWeakTopic.value = ''
+  stopTimer()
+  startTimer()
+}
+
+const isGeneratingQuiz = ref(false)
+async function generateAutoQuiz() {
+  isGeneratingQuiz.value = true
+  stopTimer()
+  try {
+    const res = await fetch('http://localhost:8001/api/quiz/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        history: quizHistory.value.map(h => ({ score: h.score, total: h.total, topic: h.topic || '', date: h.date })),
+        course_title: selectedCourse.value?.title || 'Lập trình Web',
+        course_category: selectedCourse.value?.category || 'Technology',
+        batch_size: 5
+      })
+    })
+    const json = await res.json()
+    if (json.success && json.data?.length) {
+      quizQuestions.value = json.data.map(d => ({
+        q: d.question, a: d.correct_answer, options: d.options,
+        explanation: d.explanation, topic_tag: d.topic_tag, difficulty: d.difficulty
+      }))
+      quizAIReasoning.value = json.analyzer_reasoning || ''
+      quizWeakTopic.value = json.weak_topic || ''
+      quizIndex.value = 0
+      quizScore.value = 0
+      quizStreak.value = 0
+      quizMaxStreak.value = 0
+      quizFinished.value = false
+      quizAnswered.value = false
+      quizAnswers.value = []
+      selectedAnswer.value = ''
+      startTimer()
+      setNotice(`Đã tạo ${json.question_count} câu hỏi về "${json.weak_topic}" (${json.generated_in_seconds}s)`)
+    } else {
+      setNotice('Lỗi khi tạo quiz từ AI.')
+    }
+  } catch {
+    setNotice('Không thể kết nối backend AI. Dùng bộ câu hỏi mẫu.')
+  } finally {
+    isGeneratingQuiz.value = false
+  }
+}
+
+if (import.meta.client) {
+  window.addEventListener('keydown', (e) => {
+    if (route.value !== 'quiz' || quizFinished.value || quizAnswered.value) return
+    const current = quizQuestions.value[quizIndex.value]
+    if (!current) return
+    const keyMap = { '1': 0, '2': 1, '3': 2, '4': 3 }
+    if (keyMap[e.key] !== undefined && current.options[keyMap[e.key]]) {
+      selectedAnswer.value = current.options[keyMap[e.key]]
+    }
+    if ((e.key === 'Enter') && selectedAnswer.value && !quizAnswered.value) {
+      answerQuiz()
+    }
+  })
 }
 
 function trackInteraction(courseId, action) {
@@ -842,24 +1067,155 @@ onMounted(async () => {
       </section>
 
       <section v-if="route === 'quiz'" class="content-section page-section quiz-layout">
+        <!-- Header -->
         <div class="quiz-intro">
-          <button class="text-btn" style="display: block; margin-bottom: 32px; padding-left: 0;" type="button" @click="navigate('course-detail', selectedCourseId)">← Quay lại khóa học</button>
-          <p class="eyebrow">Interactive quiz</p>
-          <h1>Kiểm tra kiến thức sau mỗi module</h1>
-          <p>Quiz được thiết kế ngắn, rõ, có lưu lịch sử để học viên tự theo dõi tiến bộ.</p>
-          <div class="quiz-stats"><span>{{ quizQuestions.length }} câu hỏi</span><span>{{ quizHistory.length }} lượt đã lưu</span></div>
+          <button class="text-btn" style="display:block;margin-bottom:24px;padding-left:0;" type="button" @click="navigate('course-detail', selectedCourseId)">← Quay lại khóa học</button>
+          <p class="eyebrow">AI-Powered Quiz</p>
+          <h1>Kiểm tra kiến thức cá nhân hóa</h1>
+          <p>AI phân tích lịch sử học của bạn để tạo câu hỏi nhắm đúng điểm yếu cần cải thiện.</p>
+
+          <!-- AI Reasoning Banner -->
+          <div v-if="quizAIReasoning" class="ai-reasoning-banner">
+            <span class="ai-reasoning-icon">🤖</span>
+            <p>{{ quizAIReasoning }}</p>
+          </div>
+
+          <div class="quiz-meta-bar">
+            <span class="quiz-meta-pill">{{ quizQuestions.length }} câu hỏi</span>
+            <span class="quiz-meta-pill">{{ quizHistory.length }} lượt đã làm</span>
+            <span v-if="quizWeakTopic || quizQuestions[0]?.topic_tag" class="quiz-meta-pill topic-pill">🎯 {{ quizWeakTopic || quizQuestions[0]?.topic_tag }}</span>
+            <span v-if="quizQuestions[0]?.difficulty" :class="['quiz-meta-pill', 'diff-pill', quizQuestions[0].difficulty]">
+              {{ quizQuestions[0].difficulty === 'easy' ? '⚪ Cơ bản' : quizQuestions[0].difficulty === 'hard' ? '🔴 Nâng cao' : '🟡 Trung bình' }}
+            </span>
+            <button class="ai-gen-btn" type="button" @click="generateAutoQuiz" :disabled="isGeneratingQuiz">
+              <span v-if="isGeneratingQuiz" class="gen-spinner"></span>
+              <span>{{ isGeneratingQuiz ? 'Đang phân tích...' : '✨ Tạo bộ 5 câu AI' }}</span>
+            </button>
+          </div>
+          <p class="quiz-keyboard-hint">💻 Tip: Bấm phím <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd> để chọn, <kbd>Enter</kbd> để xác nhận</p>
         </div>
-        <div v-if="!quizFinished" class="quiz-card">
-          <div class="progress-line"><span :style="{ width: `${((quizIndex + 1) / quizQuestions.length) * 100}%` }"></span></div>
-          <small>Câu {{ quizIndex + 1 }}/{{ quizQuestions.length }}</small>
-          <h2>{{ quizQuestions[quizIndex].q }}</h2>
-          <label v-for="option in quizQuestions[quizIndex].options" :key="option" class="option-row"><input v-model="selectedAnswer" type="radio" :value="option" /><span>{{ option }}</span></label>
-          <button class="primary-btn" type="button" @click="answerQuiz">{{ quizIndex === quizQuestions.length - 1 ? 'Hoàn thành' : 'Câu tiếp theo' }}</button>
+
+        <!-- Active Question -->
+        <div v-if="!quizFinished" class="quiz-card-v2">
+          <!-- Top bar: progress + timer + streak -->
+          <div class="quiz-top-bar">
+            <div class="quiz-progress-track" style="flex:1">
+              <div class="quiz-progress-fill" :style="{ width: `${(quizIndex / quizQuestions.length) * 100}%` }"></div>
+            </div>
+            <!-- Timer -->
+            <div :class="['quiz-timer', { 'danger': quizTimeLeft <= 10 && !quizAnswered }]">
+              <svg width="36" height="36" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="15" fill="none" stroke="var(--border-glass)" stroke-width="3"/>
+                <circle cx="18" cy="18" r="15" fill="none" stroke="currentColor" stroke-width="3"
+                  stroke-dasharray="94.2" :stroke-dashoffset="94.2 * (1 - quizTimeLeft / 30)"
+                  stroke-linecap="round" transform="rotate(-90 18 18)"
+                  style="transition: stroke-dashoffset 1s linear;"/>
+              </svg>
+              <span class="timer-number">{{ quizTimeLeft }}</span>
+            </div>
+            <!-- Streak -->
+            <div v-if="quizStreak >= 2" class="quiz-streak">
+              <span>🔥 {{ quizStreak }}x</span>
+            </div>
+          </div>
+          <div class="quiz-q-header">
+            <small class="quiz-q-counter">Câu {{ quizIndex + 1 }} / {{ quizQuestions.length }}</small>
+          </div>
+          <h2 class="quiz-question-text">{{ quizQuestions[quizIndex].q }}</h2>
+
+          <!-- Options -->
+          <div class="quiz-options-grid">
+            <button
+              v-for="(option, idx) in quizQuestions[quizIndex].options"
+              :key="option"
+              class="quiz-option-btn"
+              :class="{
+                'selected': !quizAnswered && selectedAnswer === option,
+                'correct': quizAnswered && option === quizQuestions[quizIndex].a,
+                'wrong': quizAnswered && selectedAnswer === option && option !== quizQuestions[quizIndex].a,
+                'dimmed': quizAnswered && option !== quizQuestions[quizIndex].a && selectedAnswer !== option
+              }"
+              :disabled="quizAnswered"
+              @click="selectedAnswer = option"
+            >
+              <span class="option-letter">{{ ['A', 'B', 'C', 'D'][idx] }}</span>
+              <span class="option-text">{{ option }}</span>
+              <span v-if="quizAnswered && option === quizQuestions[quizIndex].a" class="option-icon">✓</span>
+              <span v-else-if="quizAnswered && selectedAnswer === option && option !== quizQuestions[quizIndex].a" class="option-icon wrong-icon">✗</span>
+            </button>
+          </div>
+
+          <!-- Explanation panel (after answering) -->
+          <Transition name="slide-up">
+            <div v-if="quizAnswered" :class="['quiz-explanation', quizAnswers[quizAnswers.length-1]?.isRight ? 'correct-explanation' : 'wrong-explanation']">
+              <div class="explanation-header">
+                <strong>{{ quizAnswers[quizAnswers.length-1]?.isRight ? '✓ Chính xác!' : '✗ Chưa đúng' }}</strong>
+                <span v-if="!quizAnswers[quizAnswers.length-1]?.isRight" class="explanation-correct-label">Đáp án đúng: {{ quizQuestions[quizIndex].a }}</span>
+              </div>
+              <p v-if="quizQuestions[quizIndex].explanation" class="explanation-body">{{ quizQuestions[quizIndex].explanation }}</p>
+              <button class="next-question-btn" @click="nextQuestion">
+                {{ quizIndex === quizQuestions.length - 1 ? 'Xem kết quả' : 'Câu tiếp theo →' }}
+              </button>
+            </div>
+          </Transition>
+
+          <!-- Submit button (before answering) -->
+          <button v-if="!quizAnswered" class="quiz-submit-btn" type="button" @click="answerQuiz" :disabled="!selectedAnswer">
+            Xác nhận đáp án
+          </button>
         </div>
-        <div v-else class="quiz-card result-card">
-          <h2>Kết quả: {{ quizScore }}/{{ quizQuestions.length }}</h2>
-          <p>Lịch sử quiz đã được lưu trong trình duyệt.</p>
-          <button class="primary-btn" type="button" @click="restartQuiz">Làm lại</button>
+
+        <!-- Result Screen -->
+        <div v-else class="quiz-result-v2">
+          <div class="result-circle" :class="{ 'perfect': quizScore === quizQuestions.length, 'pass': quizScore >= quizQuestions.length * 0.6 }">
+            <span class="result-score">{{ quizScore }}/{{ quizQuestions.length }}</span>
+            <span class="result-label">{{ quizScore === quizQuestions.length ? '🌟 Hoàn hảo!' : quizScore >= quizQuestions.length * 0.6 ? '🍊 Tốt lắm!' : '📚 Cần ôn thêm' }}</span>
+          </div>
+
+          <!-- Stats row -->
+          <div class="result-stats-row">
+            <div class="result-stat">
+              <span class="stat-num">{{ Math.round((quizScore / quizQuestions.length) * 100) }}%</span>
+              <span class="stat-label">Tỷ lệ đúng</span>
+            </div>
+            <div class="result-stat">
+              <span class="stat-num">🔥 {{ quizMaxStreak }}</span>
+              <span class="stat-label">Streak cao nhất</span>
+            </div>
+            <div class="result-stat">
+              <span class="stat-num">{{ quizAnswers.filter(a => a.isRight).length }}</span>
+              <span class="stat-label">Câu đúng</span>
+            </div>
+            <div class="result-stat">
+              <span class="stat-num">{{ quizAnswers.filter(a => !a.isRight).length }}</span>
+              <span class="stat-label">Cần xem lại</span>
+            </div>
+          </div>
+
+          <div class="result-breakdown">
+            <h3>Chi tiết từng câu</h3>
+            <div class="breakdown-list">
+              <div v-for="(ans, i) in quizAnswers" :key="i" :class="['breakdown-item', ans.isRight ? 'right' : 'wrong']">
+                <span class="breakdown-icon">{{ ans.isRight ? '✓' : '✗' }}</span>
+                <div class="breakdown-body">
+                  <p class="breakdown-q">{{ ans.question }}</p>
+                  <p v-if="!ans.isRight" class="breakdown-correct">Đáp án đúng: <strong>{{ ans.correct }}</strong></p>
+                  <p v-if="ans.explanation" class="breakdown-exp">{{ ans.explanation }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="result-actions">
+            <button class="primary-btn" type="button" @click="restartQuiz">Làm lại từ đầu</button>
+            <button v-if="quizAnswers.filter(a => !a.isRight).length > 0" class="btn-outline" type="button" @click="retryWrongAnswers">Làm lại câu sai</button>
+            <button class="ai-gen-btn" type="button" @click="generateAutoQuiz" :disabled="isGeneratingQuiz">
+              {{ isGeneratingQuiz ? 'Đang tạo...' : 'Tạo câu hỏi AI mới' }}
+            </button>
+          </div>
+          
+          <p v-if="isSyncing" style="color:var(--text-muted);font-size:0.85rem;text-align:center;">Đang đồng bộ điểm lên Cloud...</p>
+          <p v-if="syncSuccess" style="color:#10b981;font-size:0.85rem;text-align:center;">✓ Đã đồng bộ điểm lên PostgreSQL Cloud!</p>
         </div>
       </section>
 
