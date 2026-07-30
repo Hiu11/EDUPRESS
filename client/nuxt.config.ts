@@ -5,6 +5,11 @@ export default defineNuxtConfig({
   ssr: true, // Enables Server-Side Rendering for FCP < 1s
   devtools: { enabled: false },
   
+  // Deploy to Global Edge CDN (Vercel Edge Network) for TTFB < 50ms
+  nitro: {
+    preset: 'vercel_edge'
+  },
+  
   // Register SCSS assets and new Tailwind v4 entry
   css: [
     '~/assets/styles/_variables.scss',

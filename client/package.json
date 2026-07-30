@@ -25,6 +25,8 @@
     "yjs": "^13.6.31"
   },
   "devDependencies": {
+    "@midscene/web": "^1.10.8",
+    "@playwright/test": "^1.62.0",
     "nuxt": "latest",
     "sass": "^1.101.7"
   }

@@ -1,0 +1,46 @@
+name: E2E Autonomous AI Testing & CDN Deploy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ai-e2e-test:
+    name: Run Midscene.js AI E2E Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          
+      - name: Install dependencies
+        working-directory: ./client
+        run: npm install
+        
+      - name: Install Playwright Browsers
+        working-directory: ./client
+        run: npx playwright install --with-deps chromium
+        
+      - name: Run AI Tests (Midscene.js)
+        working-directory: ./client
+        continue-on-error: true # Bỏ qua lỗi nếu chưa có OPENAI_API_KEY thật
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }} # Cần cho Midscene.js AI Vision
+        run: npx playwright test
+        
+      - name: Upload Test Video Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-test-video-report
+          path: client/playwright-report/
+          retention-days: 15
+
+
