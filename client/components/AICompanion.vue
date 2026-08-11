@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { formatSafeMarkdown } from '../utils/safeMarkdown'
 
 // ── State ──────────────────────────────────────────────────────────
 const isOpen       = ref(false)
@@ -105,13 +106,6 @@ async function sendChat() {
   isStreaming.value = false
 }
 
-// ── Parsed markdown (minimal) ──────────────────────────────────────
-function parseMarkdown(text) {
-  return text
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\n/g, '<br>')
-}
-
 // ── Lifecycle ─────────────────────────────────────────────────────
 onMounted(() => {
   document.addEventListener('mouseup', onSelectionChange)
@@ -199,8 +193,15 @@ function onOverlayClick(e) {
         <div
           v-else
           class="ai-response-text"
-          v-html="parseMarkdown(response)"
-        ></div>
+        >
+          <template v-for="(line, lineIndex) in formatSafeMarkdown(response)" :key="line.id">
+            <br v-if="lineIndex > 0" />
+            <template v-for="(segment, segmentIndex) in line.segments" :key="`${line.id}-${segmentIndex}`">
+              <strong v-if="segment.strong">{{ segment.text }}</strong>
+              <span v-else>{{ segment.text }}</span>
+            </template>
+          </template>
+        </div>
         <span v-if="isStreaming" class="ai-cursor">|</span>
       </div>
 
@@ -214,7 +215,15 @@ function onOverlayClick(e) {
           :key="i"
           :class="['ai-chat-msg', msg.role]"
         >
-          <div class="msg-bubble" v-html="parseMarkdown(msg.text || '...')"></div>
+          <div class="msg-bubble">
+            <template v-for="(line, lineIndex) in formatSafeMarkdown(msg.text || '...')" :key="line.id">
+              <br v-if="lineIndex > 0" />
+              <template v-for="(segment, segmentIndex) in line.segments" :key="`${line.id}-${segmentIndex}`">
+                <strong v-if="segment.strong">{{ segment.text }}</strong>
+                <span v-else>{{ segment.text }}</span>
+              </template>
+            </template>
+          </div>
         </div>
       </div>
 

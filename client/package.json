@@ -8,7 +8,8 @@
     "build": "nuxt build",
     "preview": "nuxt preview",
     "test:e2e": "playwright test",
-    "test:smoke": "playwright test production-smoke.spec.ts"
+    "test:smoke": "playwright test production-smoke.spec.ts",
+    "test:safe-markdown": "node --test tests/unit/safeMarkdown.test.js"
   },
   "dependencies": {
     "@monaco-editor/loader": "^1.7.0",
