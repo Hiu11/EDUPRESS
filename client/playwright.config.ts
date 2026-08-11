@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
+const shouldStartLocalServer = !process.env.PLAYWRIGHT_BASE_URL;
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
@@ -9,10 +12,10 @@ export default defineConfig({
   reporter: 'html',
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://localhost:3000',
+    baseURL,
 
     /* Ghi video tự động 100% để báo cáo quá trình test */
-    video: 'on',
+    video: 'retain-on-failure',
     trace: 'on-first-retry',
   },
 
@@ -24,10 +27,10 @@ export default defineConfig({
   ],
 
   /* Chạy Nuxt server tự động trước khi test */
-  webServer: {
+  webServer: shouldStartLocalServer ? {
     command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
-  },
+  } : undefined,
 });
