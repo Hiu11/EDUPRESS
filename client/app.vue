@@ -28,7 +28,7 @@ const categories = [
   { name: 'UX/UI Design', count: 6, tone: 'rose', copy: 'Layout, visual systems, product thinking' },
 ]
 
-const courses = [
+const fallbackCourses = [
   {
     id: 'ai',
     title: 'Trí tuệ nhân tạo ứng dụng',
@@ -175,7 +175,7 @@ const courses = [
   }
 ]
 
-const posts = [
+const fallbackPosts = [
   {
     id: 1,
     title: 'Xu hướng học trực tuyến năm 2026',
@@ -217,6 +217,9 @@ const defaultQuizQuestions = [
   { q: 'REST API sử dụng HTTP method nào để cập nhật toàn bộ một resource?', a: 'PUT', options: ['GET', 'POST', 'PUT', 'DELETE'], explanation: 'PUT thay thế toàn bộ resource. PATCH chỉ cập nhật một phần. POST tạo resource mới. GET chỉ đọc. Đây là convention của RESTful API design.', difficulty: 'medium', topic_tag: 'REST API' },
   { q: 'Event bubbling trong JavaScript hoạt động như thế nào?', a: 'Sự kiện lan truyền từ phần tử con lên phần tử cha', options: ['Sự kiện lan truyền từ phần tử cha xuống con', 'Sự kiện chỉ xảy ra ở phần tử được click', 'Sự kiện lan truyền từ phần tử con lên phần tử cha', 'Sự kiện xảy ra ngẫu nhiên'], explanation: 'Event Bubbling: khi click vào button con, sự kiện "nổi" lên qua div cha, rồi body, rồi document. Dùng event.stopPropagation() để dừng. Event Capturing là chiều ngược lại.', difficulty: 'hard', topic_tag: 'JavaScript DOM' },
 ]
+const courses = ref([...fallbackCourses])
+const posts = ref([...fallbackPosts])
+const backendQuizQuestions = ref([])
 const quizQuestions = ref([...defaultQuizQuestions])
 
 const testimonials = [
@@ -271,7 +274,7 @@ const activeRoadmap = computed(() => courseRoadmaps[selectedCourseId.value] || c
 
 const { isOnline, networkState } = useNetworkStatus()
 const currentUser = computed(() => users.value.find((user) => user.email === currentUserEmail.value))
-const selectedCourse = computed(() => courses.find((course) => course.id === selectedCourseId.value) || courses[0])
+const selectedCourse = computed(() => courses.value.find((course) => course.id === selectedCourseId.value) || courses.value[0])
 const enrolledIds = computed(() => currentUser.value?.registeredCourses || [])
 const completedIds = computed(() => currentUser.value?.completedCourses || [])
 
@@ -280,11 +283,11 @@ const quizScore = ref(0)
 const selectedAnswer = ref('')
 const quizFinished = ref(false)
 const showPodcast = ref(false)
-const featuredCourse = computed(() => courses[2])
+const featuredCourse = computed(() => courses.value[2] || courses.value[0])
 const filteredCourses = computed(() => {
   const keyword = search.value.trim().toLowerCase()
-  if (!keyword) return courses
-  return courses.filter((course) => [course.title, course.author, course.category, course.level, course.description].join(' ').toLowerCase().includes(keyword))
+  if (!keyword) return courses.value
+  return courses.value.filter((course) => [course.title, course.author, course.category, course.level, course.description].join(' ').toLowerCase().includes(keyword))
 })
 
 function asset(name) {
@@ -296,7 +299,70 @@ function generatedAsset(name) {
 }
 
 function courseImage(course) {
+  if (!course?.image) return generatedAsset('course-web-bg.png')
+  if (/^https?:\/\//.test(course.image)) return course.image
   return generatedAsset(course.image)
+}
+
+function normalizeCourse(course, index) {
+  const fallback = fallbackCourses[index] || fallbackCourses[0]
+  return {
+    id: course.slug || String(course.id),
+    title: course.title || fallback.title,
+    author: course.author || fallback.author,
+    category: course.category || fallback.category,
+    image: course.image || course.image_url || fallback.image,
+    level: course.level || fallback.level,
+    lessons: Number(course.lessons ?? fallback.lessons ?? 0),
+    duration: course.duration || fallback.duration,
+    rating: Number(course.rating ?? fallback.rating ?? 0),
+    students: Number(course.students ?? fallback.students ?? 0),
+    progress: Number(course.progress ?? fallback.progress ?? 0),
+    tag: course.tag || fallback.tag,
+    description: course.description || fallback.description,
+    outcomes: Array.isArray(course.outcomes) && course.outcomes.length ? course.outcomes : fallback.outcomes,
+    syllabus: Array.isArray(course.syllabus) && course.syllabus.length ? course.syllabus : fallback.syllabus,
+    resources: Array.isArray(course.resources) && course.resources.length ? course.resources : fallback.resources,
+  }
+}
+
+function normalizeQuizQuestion(question) {
+  return {
+    q: question.q || question.question || question.title,
+    a: question.a || question.correct_answer,
+    options: Array.isArray(question.options) ? question.options : [],
+    explanation: question.explanation || '',
+    difficulty: question.difficulty || 'medium',
+    topic_tag: question.topic_tag || question.topic || '',
+  }
+}
+
+async function fetchJson(path) {
+  const response = await fetch(`${config.public.apiBase}${path}`)
+  if (!response.ok) throw new Error(`Request failed: ${path}`)
+  return response.json()
+}
+
+async function loadBackendContent() {
+  const [courseData, postData, quizData] = await Promise.all([
+    fetchJson('/api/courses'),
+    fetchJson('/api/content/blog-posts'),
+    fetchJson('/api/content/quiz-questions'),
+  ])
+
+  if (Array.isArray(courseData) && courseData.length) {
+    courses.value = courseData.map(normalizeCourse)
+    if (!courses.value.some((course) => course.id === selectedCourseId.value)) {
+      selectedCourseId.value = courses.value[0].id
+    }
+  }
+  if (Array.isArray(postData) && postData.length) {
+    posts.value = postData
+  }
+  if (Array.isArray(quizData) && quizData.length) {
+    backendQuizQuestions.value = quizData.map(normalizeQuizQuestion).filter((question) => question.q && question.a && question.options.length)
+    if (backendQuizQuestions.value.length) quizQuestions.value = [...backendQuizQuestions.value]
+  }
 }
 
 function saveUsers(nextUsers) {
@@ -735,7 +801,7 @@ function retryWrongAnswers() {
 }
 
 function restartQuiz() {
-  quizQuestions.value = [...defaultQuizQuestions]
+  quizQuestions.value = backendQuizQuestions.value.length ? [...backendQuizQuestions.value] : [...defaultQuizQuestions]
   quizIndex.value = 0
   quizScore.value = 0
   quizStreak.value = 0
@@ -871,7 +937,9 @@ onMounted(async () => {
   syncProfileForm()
   try {
     const response = await fetch(`${config.public.apiBase}/health`)
-    apiStatus.value = response.ok ? 'online' : 'offline'
+    if (!response.ok) throw new Error('Health check failed')
+    await loadBackendContent()
+    apiStatus.value = 'online'
   } catch {
     apiStatus.value = 'offline'
   }
