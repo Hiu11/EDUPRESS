@@ -9,7 +9,7 @@ const files = ref([
   {
     name: 'index.html',
     lang: 'html',
-    icon: '🌐',
+    icon: 'HTML',
     content: `<!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -25,7 +25,7 @@ const files = ref([
       <h2>Khoá học UI/UX Toàn diện</h2>
     </div>
     <div class="card-body">
-      <p>Học cách thiết kế giao diện tinh tế, hiện đại và thực tế. 🎨</p>
+      <p>Học cách thiết kế giao diện tinh tế, hiện đại và thực tế.</p>
       <div class="progress-wrapper">
         <div class="progress-info">
           <span>Tiến độ</span>
@@ -45,7 +45,7 @@ const files = ref([
   {
     name: 'style.css',
     lang: 'css',
-    icon: '🎨',
+    icon: 'CSS',
     content: `@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap');
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -146,7 +146,7 @@ p {
   {
     name: 'script.js',
     lang: 'javascript',
-    icon: '⚡',
+    icon: 'JS',
     content: `let currentProgress = 65;
 
 function completeModule() {
@@ -171,7 +171,7 @@ function completeModule() {
         clearInterval(interval);
         fill.style.background = '#10b981'; // Success green
         percentText.style.color = '#10b981';
-        btn.textContent = 'Khóa học hoàn tất 🎉';
+        btn.textContent = 'Khóa học hoàn tất';
         btn.style.background = '#10b981';
       }
     }, 15);
@@ -181,7 +181,7 @@ function completeModule() {
 ])
 
 const aiState = ref('idle')
-const aiStatusText = ref('AI Mentor sẵn sàng')
+const aiStatusText = ref('Trợ lý kiểm tra mã sẵn sàng')
 const showAIPanel = ref(false)
 const aiLogs = ref([])
 
@@ -202,19 +202,19 @@ async function scanCodeSmells(model) {
   if (aiLogs.value.length > 50) aiLogs.value = [] // clear if too long
   
   addAILog('--- Khởi tạo phiên phân tích mới ---', 'system')
-  addAILog('[System] Mở kết nối WebSockets tới wss://ai-core.edupress.vn...', 'system')
+  addAILog('Khởi tạo bộ kiểm tra mã trong trình duyệt.', 'system')
   await new Promise(r => setTimeout(r, 400))
   if (scanId !== currentScanId) return
   
-  addAILog('[WS] Kết nối thành công. Đang truyền dữ liệu AST (2.4KB)...', 'info')
+  addAILog('Đang đọc cấu trúc mã nguồn.', 'info')
   await new Promise(r => setTimeout(r, 500))
   if (scanId !== currentScanId) return
   
-  addAILog('[AI Server] Bắt đầu phân tích Abstract Syntax Tree (AST)...', 'info')
+  addAILog('Bắt đầu phân tích JavaScript.', 'info')
   await new Promise(r => setTimeout(r, 600))
   if (scanId !== currentScanId) return
   
-  addAILog('[AI Server] Chạy thuật toán phát hiện Code Smell bằng LLM...', 'info')
+  addAILog('Kiểm tra các lỗi thường gặp.', 'info')
   await new Promise(r => setTimeout(r, 700))
   if (scanId !== currentScanId) return
 
@@ -229,8 +229,8 @@ async function scanCodeSmells(model) {
         startColumn: varMatch.index + 1,
         endLineNumber: i + 1,
         endColumn: varMatch.index + 4,
-        message: "🤖 AI Mentor: Dùng `var` dễ gây lỗi rò rỉ scope (Hoisting) lắm sếp ơi! Ở thế kỷ 21 rồi hãy dùng `const` hoặc `let` nhé.",
-        source: 'AI Mentor'
+        message: "Nên thay `var` bằng `const` hoặc `let` để tránh lỗi scope và hoisting.",
+        source: 'Code Review'
       })
     }
     
@@ -243,20 +243,20 @@ async function scanCodeSmells(model) {
         startColumn: eqMatch.index + 2,
         endLineNumber: i + 1,
         endColumn: eqMatch.index + 4,
-        message: "🤖 AI Mentor: Dùng `==` (Loose equality) có ngày bug sấp mặt vì JS ép kiểu ngầm. Hãy đổi sang `===` (Strict equality) cho chắc cốp!",
-        source: 'AI Mentor'
+        message: "Nên dùng `===` để tránh ép kiểu ngầm khi so sánh.",
+        source: 'Code Review'
       })
     }
   })
   
   if (markers.length > 0) {
-    addAILog(`[AI Server] Hoàn tất! Phát hiện ${markers.length} điểm bất thường. Đang render vệt đỏ (Squiggly)...`, 'warning')
+    addAILog(`Phát hiện ${markers.length} điểm cần xem lại.`, 'warning')
     aiState.value = 'found-smell'
-    aiStatusText.value = `Phát hiện ${markers.length} lỗi Code Smell!`
+    aiStatusText.value = `Phát hiện ${markers.length} điểm cần sửa`
   } else {
-    addAILog(`[AI Server] Phân tích xong. Code quá sạch, chuẩn Senior! 🚀`, 'success')
+    addAILog('Không phát hiện vấn đề nổi bật.', 'success')
     aiState.value = 'idle'
-    aiStatusText.value = 'Code sạch chuẩn Senior! ✨'
+    aiStatusText.value = 'Mã nguồn ổn định'
     setTimeout(() => { 
       if (scanId === currentScanId) showAIPanel.value = false 
     }, 4000)
@@ -297,20 +297,20 @@ onMounted(async () => {
     lightbulb: { enabled: true } // Enable Quick Fix lightbulb
   })
 
-  // Register AI Fix Command
+  // Register quick-fix command
   if (!window.aiCommandRegistered) {
     monaco.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => runCode())
     // Register QuickFix provider for JS
     monaco.languages.registerCodeActionProvider('javascript', {
       provideCodeActions: (model, range, context) => {
         const actions = context.markers
-          .filter(m => m.source === 'AI Mentor')
+          .filter(m => m.source === 'Code Review')
           .map(marker => {
             let fixText = "const"
             if (marker.message.includes('==' )) fixText = "==="
             
             return {
-              title: "✨ Fix it cho em (AI Auto-Fix)",
+              title: "Áp dụng gợi ý sửa",
               diagnostics: [marker],
               kind: "quickfix",
               edit: {
@@ -329,14 +329,14 @@ onMounted(async () => {
     window.aiCommandRegistered = true
   }
 
-  // Sync editor changes back to file content & Trigger AI Scan
+  // Sync editor changes back to file content and trigger review
   let aiTimeout = null
   monacoEditor.onDidChangeModelContent(() => {
     activeFile.value.content = monacoEditor.getValue()
     
     if (activeFile.value.lang === 'javascript') {
       aiState.value = 'scanning'
-      aiStatusText.value = 'AI đang quét code...'
+      aiStatusText.value = 'Đang kiểm tra mã...'
       clearTimeout(aiTimeout)
       aiTimeout = setTimeout(() => scanCodeSmells(monacoEditor.getModel()), 1200)
     }
@@ -436,16 +436,11 @@ function startDragRight(e) {
     <!-- ── TOP BAR ── -->
     <div class="ide-topbar">
       <div class="ide-topbar-left">
-        <span class="ide-logo">⚡ EduPress IDE</span>
+        <span class="ide-logo">EduPress Practice</span>
         <span class="ide-badge">In-Browser Sandbox</span>
       </div>
       <div class="ide-topbar-center">
         <div class="ai-status-pill" :class="aiState">
-          <span class="ai-icon">
-            <template v-if="aiState === 'scanning'">👀</template>
-            <template v-else-if="aiState === 'found-smell'">🚨</template>
-            <template v-else>✨</template>
-          </span>
           <span class="ai-text">{{ aiStatusText }}</span>
           <div class="ai-laser" v-if="aiState === 'scanning'"></div>
         </div>
@@ -456,13 +451,12 @@ function startDragRight(e) {
           @click="runCode"
           title="Ctrl + Enter"
         >
-          <span>{{ isRunning ? '⟳' : '▶' }}</span>
           {{ isRunning ? 'Running...' : 'Run' }}
         </button>
       </div>
       <div class="ide-topbar-right">
         <span class="kbd-hint">Ctrl+Enter để chạy</span>
-        <button class="ide-close" @click="emit('close')" title="Đóng (Esc)">✕</button>
+        <button class="ide-close" @click="emit('close')" title="Đóng (Esc)">Đóng</button>
       </div>
     </div>
 
@@ -472,7 +466,7 @@ function startDragRight(e) {
       <!-- FILE EXPLORER -->
       <aside class="file-explorer" :style="{ width: explorerWidth + 'px' }">
         <div class="explorer-header">
-          <span>📁 FILES</span>
+          <span>FILES</span>
         </div>
         <ul class="file-list">
           <li
@@ -504,17 +498,17 @@ function startDragRight(e) {
             :class="['tab', { active: activeFile.name === file.name }]"
             @click="switchFile(file)"
           >
-            {{ file.icon }} {{ file.name }}
+            {{ file.name }}
           </button>
         </div>
         <div ref="editorContainer" class="editor-container"></div>
         
-        <!-- AI TERMINAL PANEL -->
+        <!-- REVIEW LOG PANEL -->
         <transition name="slide-up">
           <div v-if="showAIPanel" class="ai-terminal-panel">
             <div class="ai-terminal-header">
-              <span class="title">🤖 AI Core Logs (WebSockets)</span>
-              <button class="close-btn" @click="showAIPanel = false" title="Đóng terminal">✕</button>
+              <span class="title">Nhật ký kiểm tra mã</span>
+              <button class="close-btn" @click="showAIPanel = false" title="Đóng terminal">Đóng</button>
             </div>
             <div class="ai-terminal-body" ref="terminalBody">
               <div v-for="(log, idx) in aiLogs" :key="idx" :class="['ai-log-line', log.type]">
@@ -845,7 +839,7 @@ function startDragRight(e) {
   border: none;
   width: 100%;
 }
-// ── AI Mentor Status UI ────────────────────────────────────────────
+// ── Code Review Status UI ──────────────────────────────────────────
 .ai-status-pill {
   display: flex;
   align-items: center;
@@ -904,7 +898,7 @@ function startDragRight(e) {
   100% { box-shadow: 0 0 0 0 rgba(251, 113, 133, 0); }
 }
 
-// ── AI Terminal Panel ──────────────────────────────────────────────
+// ── Review Log Panel ───────────────────────────────────────────────
 .ai-terminal-panel {
   height: 180px;
   background: #0d1117;

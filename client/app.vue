@@ -1,7 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import confetti from 'canvas-confetti'
-import '~/assets/css/tailwind.css'
 import LearningUniverse from './components/LearningUniverse.vue'
 import CinematicPlayer from './components/CinematicPlayer.vue'
 import InBrowserIDE from './components/InBrowserIDE.vue'
@@ -256,16 +255,16 @@ const { data: courseInteractions, saveData: saveInteractionsDB } = useLocalSync(
 
 const courseRoadmaps = {
   ai: [
-    { title: '🧮 Toán & Phân tích', links: [{ text: 'AI & Data Scientist Roadmap', url: 'https://roadmap.sh/ai-data-scientist' }, { text: 'Python for AI', url: 'https://www.w3schools.com/python/' }] },
-    { title: '🤖 Machine Learning', links: [{ text: 'Prompt Engineering Roadmap', url: 'https://roadmap.sh/prompt-engineering' }, { text: 'TensorFlow Docs', url: 'https://www.tensorflow.org/' }] }
+    { title: 'Toán & Phân tích', links: [{ text: 'AI & Data Scientist Roadmap', url: 'https://roadmap.sh/ai-data-scientist' }, { text: 'Python for AI', url: 'https://www.w3schools.com/python/' }] },
+    { title: 'Machine Learning', links: [{ text: 'Prompt Engineering Roadmap', url: 'https://roadmap.sh/prompt-engineering' }, { text: 'TensorFlow Docs', url: 'https://www.tensorflow.org/' }] }
   ],
   web: [
-    { title: '🎨 Frontend (Giao diện)', links: [{ text: 'Frontend Developer Roadmap', url: 'https://roadmap.sh/frontend' }, { text: 'W3Schools: HTML/CSS/JS', url: 'https://www.w3schools.com/html/' }, { text: 'Vue.js Official Docs', url: 'https://vuejs.org/guide/introduction.html' }] },
-    { title: '⚙️ Backend (Xử lý Logic)', links: [{ text: 'Backend Developer Roadmap', url: 'https://roadmap.sh/backend' }, { text: 'Node.js API Reference', url: 'https://nodejs.org/en/docs/' }, { text: 'Express Framework', url: 'https://expressjs.com/' }] },
-    { title: '🗄️ Database (Lưu trữ)', links: [{ text: 'PostgreSQL DBA Roadmap', url: 'https://roadmap.sh/postgresql-dba' }, { text: 'W3Schools: SQL Tutorial', url: 'https://www.w3schools.com/sql/' }, { text: 'MongoDB NoSQL Docs', url: 'https://www.mongodb.com/docs/' }] }
+    { title: 'Frontend (Giao diện)', links: [{ text: 'Frontend Developer Roadmap', url: 'https://roadmap.sh/frontend' }, { text: 'W3Schools: HTML/CSS/JS', url: 'https://www.w3schools.com/html/' }, { text: 'Vue.js Official Docs', url: 'https://vuejs.org/guide/introduction.html' }] },
+    { title: 'Backend (Xử lý Logic)', links: [{ text: 'Backend Developer Roadmap', url: 'https://roadmap.sh/backend' }, { text: 'Node.js API Reference', url: 'https://nodejs.org/en/docs/' }, { text: 'Express Framework', url: 'https://expressjs.com/' }] },
+    { title: 'Database (Lưu trữ)', links: [{ text: 'PostgreSQL DBA Roadmap', url: 'https://roadmap.sh/postgresql-dba' }, { text: 'W3Schools: SQL Tutorial', url: 'https://www.w3schools.com/sql/' }, { text: 'MongoDB NoSQL Docs', url: 'https://www.mongodb.com/docs/' }] }
   ],
   security: [
-    { title: '🛡️ Cyber Security', links: [{ text: 'Cyber Security Roadmap', url: 'https://roadmap.sh/cyber-security' }, { text: 'OWASP Top 10', url: 'https://owasp.org/www-project-top-ten/' }] }
+    { title: 'Cyber Security', links: [{ text: 'Cyber Security Roadmap', url: 'https://roadmap.sh/cyber-security' }, { text: 'OWASP Top 10', url: 'https://owasp.org/www-project-top-ten/' }] }
   ]
 }
 const activeRoadmap = computed(() => courseRoadmaps[selectedCourseId.value] || courseRoadmaps.web)
@@ -312,6 +311,12 @@ function setNotice(message) {
 }
 
 const theme = ref('light')
+const themeLabel = computed(() => ({ light: 'Sáng', dark: 'Tối', oled: 'Đêm' }[theme.value] || 'Sáng'))
+const apiStatusLabel = computed(() => {
+  if (apiStatus.value === 'online') return 'Đã kết nối'
+  if (apiStatus.value === 'checking') return 'Đang đồng bộ'
+  return 'Dữ liệu mẫu'
+})
 if (import.meta.client) {
   const stored = localStorage.getItem('theme')
   if (stored) {
@@ -460,7 +465,7 @@ async function register() {
     loginForm.value = { email: '' }
     syncProfileForm()
     navigate('profile')
-    setNotice('Đăng ký bằng sinh trắc học thành công 🛡️')
+    setNotice('Đăng ký bằng sinh trắc học thành công')
   } catch (err) {
     console.error(err)
     setNotice('Lỗi đăng ký Passkey hoặc bạn đã hủy.')
@@ -487,7 +492,7 @@ async function login() {
     registerForm.value = { name: '', email: '' }
     syncProfileForm()
     navigate('profile')
-    setNotice('Đăng nhập sinh trắc học thành công 🛡️')
+    setNotice('Đăng nhập sinh trắc học thành công')
   } catch (err) {
     console.error(err)
     setNotice('Lỗi đăng nhập Passkey hoặc thiết bị không hỗ trợ.')
@@ -505,7 +510,7 @@ function loginMagicLink() {
     loginForm.value = { email: '' }
     syncProfileForm()
     navigate('profile')
-    setNotice('Đã xác thực qua Magic Link 📧')
+    setNotice('Đã xác thực qua Magic Link')
   }, 1000)
   setNotice('Đã gửi Magic Link đến email của bạn!')
 }
@@ -779,10 +784,10 @@ async function generateAutoQuiz() {
       startTimer()
       setNotice(`Đã tạo ${json.question_count} câu hỏi về "${json.weak_topic}" (${json.generated_in_seconds}s)`)
     } else {
-      setNotice('Lỗi khi tạo quiz từ AI.')
+      setNotice('Lỗi khi tạo quiz.')
     }
   } catch {
-    setNotice('Không thể kết nối backend AI. Dùng bộ câu hỏi mẫu.')
+    setNotice('Không thể kết nối backend. Dùng bộ câu hỏi mẫu.')
   } finally {
     isGeneratingQuiz.value = false
   }
@@ -897,7 +902,7 @@ onMounted(async () => {
       </div>
     </Transition>
 
-    <!-- Floating AI Study Companion -->
+    <!-- Floating study companion -->
     <AICompanion />
     <header class="site-header">
       <button class="brand" type="button" @click="navigate('home')">
@@ -911,20 +916,20 @@ onMounted(async () => {
       </nav>
 
       <div class="header-actions">
-        <button 
-          class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--bg-glass)] backdrop-blur-md border border-[var(--border-glass)] shadow-inner hover:scale-105 hover:shadow-[0_4px_15px_var(--border-glow)] transition-all duration-300 group" 
-          type="button" 
-          @click="cycleTheme" 
-          :title="'Current Theme: ' + theme.toUpperCase()"
+        <button
+          class="theme-toggle"
+          type="button"
+          @click="cycleTheme"
+          title="Đổi giao diện"
         >
-          <span class="text-lg">{{ theme === 'light' ? '☀️' : theme === 'dark' ? '🌙' : '🌌' }}</span>
-          <span class="text-xs font-bold uppercase tracking-widest opacity-80 group-hover:opacity-100 text-[var(--text-main)] group-hover:text-[var(--primary)] transition-colors">{{ theme }}</span>
+          <span class="theme-dot" aria-hidden="true"></span>
+          <span>{{ themeLabel }}</span>
         </button>
-        <span :class="['api-pill', apiStatus]">{{ apiStatus === 'online' ? 'API live' : 'API offline' }}</span>
-        <button v-if="currentUser && currentUser.role === 'instructor'" class="primary-btn" type="button" @click="showStudio = true" style="background: linear-gradient(135deg, #8b5cf6, #6366f1); border: none;">✍️ Soạn bài</button>
-        <button class="ide-launch-btn" type="button" @click="showIDE = true">⚡ IDE</button>
-        <button v-if="currentUser" class="ghost-btn" type="button" @click="navigate('profile')">{{ currentUser.name || currentUser.email }}</button>
-        <button v-if="currentUser" class="ghost-btn" type="button" @click="logout">Thoát</button>
+        <span :class="['status-pill', apiStatus]">{{ apiStatusLabel }}</span>
+        <button v-if="currentUser && currentUser.role === 'instructor'" class="primary-btn" type="button" @click="showStudio = true" style="background: linear-gradient(135deg, #8b5cf6, #6366f1); border: none;">Soạn bài</button>
+        <button class="practice-btn" type="button" @click="showIDE = true">Thực hành</button>
+        <button v-if="currentUser" class="user-chip" type="button" @click="navigate('profile')">{{ currentUser.name || currentUser.email }}</button>
+        <button v-if="currentUser" class="logout-link" type="button" @click="logout">Đăng xuất</button>
         <button v-else class="primary-btn" type="button" @click="navigate('auth')">Đăng nhập</button>
       </div>
     </header>
@@ -1070,28 +1075,28 @@ onMounted(async () => {
         <div class="detail-hero">
           <img :src="courseImage(selectedCourse)" :alt="selectedCourse.title" :style="`view-transition-name: course-img-${selectedCourse.id}`" />
           <div>
-            <button class="text-btn" style="display: block; margin-bottom: 32px; padding-left: 0;" type="button" @click="navigate('courses')">← Quay lại danh sách</button>
+            <button class="text-btn" style="display: block; margin-bottom: 32px; padding-left: 0;" type="button" @click="navigate('courses')">Quay lại danh sách</button>
             <p class="eyebrow">{{ selectedCourse.category }} · {{ selectedCourse.level }}</p>
             <h1>{{ selectedCourse.title }}</h1>
             <p>{{ selectedCourse.description }}</p>
             <div class="detail-meta"><span>{{ selectedCourse.author }}</span><span>{{ selectedCourse.duration }}</span><span>{{ selectedCourse.rating }}/5</span><span>{{ selectedCourse.students }} học viên</span></div>
             <div class="card-actions action-grid">
               <!-- Primary action -->
-              <button class="btn-hero" type="button" @click="openTool('video')">🎬 Xem bài học</button>
+              <button class="btn-hero" type="button" @click="openTool('video')">Xem bài học</button>
               
               <!-- Tools -->
               <div class="action-tools">
-                <button class="btn-tool ide-tool" type="button" @click="openTool('ide')">⚡ Thực hành</button>
-                <button class="btn-tool flashcard-tool" type="button" @click="openTool('flashcards')">📇 Ôn tập nhanh</button>
-                <button class="btn-tool whiteboard-tool" type="button" @click="openTool('whiteboard')">🎨 Bảng vẽ nhóm</button>
-                <button class="btn-tool podcast-tool" type="button" @click="openTool('podcast')">🎧 Nghe Podcast</button>
+                <button class="btn-tool ide-tool" type="button" @click="openTool('ide')">Thực hành</button>
+                <button class="btn-tool flashcard-tool" type="button" @click="openTool('flashcards')">Ôn tập nhanh</button>
+                <button class="btn-tool whiteboard-tool" type="button" @click="openTool('whiteboard')">Bảng vẽ nhóm</button>
+                <button class="btn-tool podcast-tool" type="button" @click="openTool('podcast')">Nghe Podcast</button>
               </div>
 
               <!-- Secondary -->
               <div class="action-secondary">
                 <button v-if="!isEnrolled" class="btn-outline" type="button" @click="enroll(selectedCourse.id)">Đăng ký học</button>
                 <button v-else-if="!isCompleted" class="btn-outline" style="border-color: #10b981; color: #10b981;" type="button" @click="tryMarkCompleted">Đánh dấu hoàn thành</button>
-                <button v-else class="btn-outline" style="border-color: #10b981; background: rgba(16, 185, 129, 0.1); color: #10b981; cursor: default;" type="button">🎉 Đã hoàn thành</button>
+                <button v-else class="btn-outline" style="border-color: #10b981; background: rgba(16, 185, 129, 0.1); color: #10b981; cursor: default;" type="button">Đã hoàn thành</button>
                 
                 <button class="btn-outline" type="button" @click="navigate('quiz')">Làm quiz</button>
               </div>
@@ -1164,45 +1169,33 @@ onMounted(async () => {
         </div>
       </section>
 
-      <style scoped>
-      @keyframes pulse-border {
-        0% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4); border-color: var(--primary); }
-        70% { box-shadow: 0 0 0 10px rgba(124, 58, 237, 0); border-color: var(--border-glass); }
-        100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0); }
-      }
-      .slide-up-enter-active { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-      .slide-up-leave-active { transition: all 0.3s ease; position: absolute; }
-      .slide-up-enter-from, .slide-up-leave-to { opacity: 0; transform: translateY(20px) scale(0.95); }
-      .slide-up-move { transition: transform 0.4s ease; }
-      </style>
-
       <section v-if="route === 'quiz'" class="content-section page-section quiz-layout">
         <!-- Header -->
         <div class="quiz-intro">
-          <button class="text-btn" style="display:block;margin-bottom:24px;padding-left:0;" type="button" @click="navigate('course-detail', selectedCourseId)">← Quay lại khóa học</button>
-          <p class="eyebrow">AI-Powered Quiz</p>
+          <button class="text-btn" style="display:block;margin-bottom:24px;padding-left:0;" type="button" @click="navigate('course-detail', selectedCourseId)">Quay lại khóa học</button>
+          <p class="eyebrow">Luyện tập nhanh</p>
           <h1>Kiểm tra kiến thức cá nhân hóa</h1>
-          <p>AI phân tích lịch sử học của bạn để tạo câu hỏi nhắm đúng điểm yếu cần cải thiện.</p>
+          <p>Làm bài ngắn theo chủ đề, xem kết quả ngay và ôn lại phần còn yếu.</p>
 
-          <!-- AI Reasoning Banner -->
+          <!-- Study suggestion banner -->
           <div v-if="quizAIReasoning" class="ai-reasoning-banner">
-            <span class="ai-reasoning-icon">🤖</span>
+            <span class="ai-reasoning-icon">Gợi ý</span>
             <p>{{ quizAIReasoning }}</p>
           </div>
 
           <div class="quiz-meta-bar">
             <span class="quiz-meta-pill">{{ quizQuestions.length }} câu hỏi</span>
             <span class="quiz-meta-pill">{{ quizHistory.length }} lượt đã làm</span>
-            <span v-if="quizWeakTopic || quizQuestions[0]?.topic_tag" class="quiz-meta-pill topic-pill">🎯 {{ quizWeakTopic || quizQuestions[0]?.topic_tag }}</span>
+            <span v-if="quizWeakTopic || quizQuestions[0]?.topic_tag" class="quiz-meta-pill topic-pill">{{ quizWeakTopic || quizQuestions[0]?.topic_tag }}</span>
             <span v-if="quizQuestions[0]?.difficulty" :class="['quiz-meta-pill', 'diff-pill', quizQuestions[0].difficulty]">
-              {{ quizQuestions[0].difficulty === 'easy' ? '⚪ Cơ bản' : quizQuestions[0].difficulty === 'hard' ? '🔴 Nâng cao' : '🟡 Trung bình' }}
+              {{ quizQuestions[0].difficulty === 'easy' ? 'Cơ bản' : quizQuestions[0].difficulty === 'hard' ? 'Nâng cao' : 'Trung bình' }}
             </span>
             <button class="ai-gen-btn" type="button" @click="generateAutoQuiz" :disabled="isGeneratingQuiz">
               <span v-if="isGeneratingQuiz" class="gen-spinner"></span>
-              <span>{{ isGeneratingQuiz ? 'Đang phân tích...' : '✨ Tạo bộ 5 câu AI' }}</span>
+              <span>{{ isGeneratingQuiz ? 'Đang tạo...' : 'Tạo bộ câu hỏi' }}</span>
             </button>
           </div>
-          <p class="quiz-keyboard-hint">💻 Tip: Bấm phím <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd> để chọn, <kbd>Enter</kbd> để xác nhận</p>
+          <p class="quiz-keyboard-hint">Phím tắt: <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd> để chọn, <kbd>Enter</kbd> để xác nhận</p>
         </div>
 
         <!-- Active Question -->
@@ -1225,7 +1218,7 @@ onMounted(async () => {
             </div>
             <!-- Streak -->
             <div v-if="quizStreak >= 2" class="quiz-streak">
-              <span>🔥 {{ quizStreak }}x</span>
+              <span>{{ quizStreak }}x liên tiếp</span>
             </div>
           </div>
           <div class="quiz-q-header">
@@ -1250,8 +1243,8 @@ onMounted(async () => {
             >
               <span class="option-letter">{{ ['A', 'B', 'C', 'D'][idx] }}</span>
               <span class="option-text">{{ option }}</span>
-              <span v-if="quizAnswered && option === quizQuestions[quizIndex].a" class="option-icon">✓</span>
-              <span v-else-if="quizAnswered && selectedAnswer === option && option !== quizQuestions[quizIndex].a" class="option-icon wrong-icon">✗</span>
+              <span v-if="quizAnswered && option === quizQuestions[quizIndex].a" class="option-icon">Đúng</span>
+              <span v-else-if="quizAnswered && selectedAnswer === option && option !== quizQuestions[quizIndex].a" class="option-icon wrong-icon">Sai</span>
             </button>
           </div>
 
@@ -1259,12 +1252,12 @@ onMounted(async () => {
           <Transition name="slide-up">
             <div v-if="quizAnswered" :class="['quiz-explanation', quizAnswers[quizAnswers.length-1]?.isRight ? 'correct-explanation' : 'wrong-explanation']">
               <div class="explanation-header">
-                <strong>{{ quizAnswers[quizAnswers.length-1]?.isRight ? '✓ Chính xác!' : '✗ Chưa đúng' }}</strong>
+                <strong>{{ quizAnswers[quizAnswers.length-1]?.isRight ? 'Chính xác' : 'Chưa đúng' }}</strong>
                 <span v-if="!quizAnswers[quizAnswers.length-1]?.isRight" class="explanation-correct-label">Đáp án đúng: {{ quizQuestions[quizIndex].a }}</span>
               </div>
               <p v-if="quizQuestions[quizIndex].explanation" class="explanation-body">{{ quizQuestions[quizIndex].explanation }}</p>
               <button class="next-question-btn" @click="nextQuestion">
-                {{ quizIndex === quizQuestions.length - 1 ? 'Xem kết quả' : 'Câu tiếp theo →' }}
+                {{ quizIndex === quizQuestions.length - 1 ? 'Xem kết quả' : 'Câu tiếp theo' }}
               </button>
             </div>
           </Transition>
@@ -1279,7 +1272,7 @@ onMounted(async () => {
         <div v-else class="quiz-result-v2">
           <div class="result-circle" :class="{ 'perfect': quizScore === quizQuestions.length, 'pass': quizScore >= quizQuestions.length * 0.6 }">
             <span class="result-score">{{ quizScore }}/{{ quizQuestions.length }}</span>
-            <span class="result-label">{{ quizScore === quizQuestions.length ? '🌟 Hoàn hảo!' : quizScore >= quizQuestions.length * 0.6 ? '🍊 Tốt lắm!' : '📚 Cần ôn thêm' }}</span>
+            <span class="result-label">{{ quizScore === quizQuestions.length ? 'Hoàn hảo' : quizScore >= quizQuestions.length * 0.6 ? 'Tốt lắm' : 'Cần ôn thêm' }}</span>
           </div>
 
           <!-- Stats row -->
@@ -1289,7 +1282,7 @@ onMounted(async () => {
               <span class="stat-label">Tỷ lệ đúng</span>
             </div>
             <div class="result-stat">
-              <span class="stat-num">🔥 {{ quizMaxStreak }}</span>
+              <span class="stat-num">{{ quizMaxStreak }}</span>
               <span class="stat-label">Streak cao nhất</span>
             </div>
             <div class="result-stat">
@@ -1306,7 +1299,7 @@ onMounted(async () => {
             <h3>Chi tiết từng câu</h3>
             <div class="breakdown-list">
               <div v-for="(ans, i) in quizAnswers" :key="i" :class="['breakdown-item', ans.isRight ? 'right' : 'wrong']">
-                <span class="breakdown-icon">{{ ans.isRight ? '✓' : '✗' }}</span>
+                <span class="breakdown-icon">{{ ans.isRight ? 'Đúng' : 'Sai' }}</span>
                 <div class="breakdown-body">
                   <p class="breakdown-q">{{ ans.question }}</p>
                   <p v-if="!ans.isRight" class="breakdown-correct">Đáp án đúng: <strong>{{ ans.correct }}</strong></p>
@@ -1320,17 +1313,17 @@ onMounted(async () => {
             <button class="primary-btn" type="button" @click="restartQuiz">Làm lại từ đầu</button>
             <button v-if="quizAnswers.filter(a => !a.isRight).length > 0" class="btn-outline" type="button" @click="retryWrongAnswers">Làm lại câu sai</button>
             <button class="ai-gen-btn" type="button" @click="generateAutoQuiz" :disabled="isGeneratingQuiz">
-              {{ isGeneratingQuiz ? 'Đang tạo...' : 'Tạo câu hỏi AI mới' }}
+              {{ isGeneratingQuiz ? 'Đang tạo...' : 'Tạo câu hỏi mới' }}
             </button>
           </div>
           
           <p v-if="isSyncing" style="color:var(--text-muted);font-size:0.85rem;text-align:center;">Đang đồng bộ điểm lên Cloud...</p>
-          <p v-if="syncSuccess" style="color:#10b981;font-size:0.85rem;text-align:center;">✓ Đã đồng bộ điểm lên PostgreSQL Cloud!</p>
+          <p v-if="syncSuccess" style="color:#10b981;font-size:0.85rem;text-align:center;">Đã đồng bộ điểm lên PostgreSQL Cloud.</p>
         </div>
       </section>
 
       <section v-if="route === 'blog'" class="content-section page-section">
-        <button class="text-btn" style="display: block; margin-bottom: 32px; padding-left: 0;" type="button" @click="navigate('home')">← Về trang chủ</button>
+        <button class="text-btn" style="display: block; margin-bottom: 32px; padding-left: 0;" type="button" @click="navigate('home')">Về trang chủ</button>
         <div class="blog-hero">
           <img :src="asset('blog-banner.jpg')" alt="EduPress blog" />
           <div><p class="eyebrow">EduPress Blog</p><h1>Tin tức giáo dục và công nghệ</h1><p>Nhiều hình ảnh hơn bản trước, giữ lại chất tin tức của EduPress cũ nhưng trình bày gọn và hiện đại hơn.</p></div>
@@ -1345,7 +1338,7 @@ onMounted(async () => {
 
       <section v-if="route === 'contact'" class="content-section page-section contact-layout">
         <div class="contact-copy">
-          <button class="text-btn" style="display: block; margin-bottom: 32px; padding-left: 0;" type="button" @click="navigate('home')">← Về trang chủ</button>
+          <button class="text-btn" style="display: block; margin-bottom: 32px; padding-left: 0;" type="button" @click="navigate('home')">Về trang chủ</button>
           <p class="eyebrow">Contact</p>
           <h1>Liên hệ với EduPress</h1>
           <p>Đội ngũ EduPress hỗ trợ tư vấn khóa học, hợp tác giảng dạy và triển khai lớp học online.</p>
@@ -1361,7 +1354,7 @@ onMounted(async () => {
 
       <section v-if="route === 'auth'" class="content-section page-section auth-layout">
         <div class="auth-art">
-          <button class="text-btn" style="display: block; margin-bottom: 32px; padding-left: 0;" type="button" @click="navigate('home')">← Về trang chủ</button>
+          <button class="text-btn" style="display: block; margin-bottom: 32px; padding-left: 0;" type="button" @click="navigate('home')">Về trang chủ</button>
           <p class="eyebrow">Account</p><h1>{{ authMode === 'login' ? 'Chào mừng quay lại' : 'Tạo tài khoản học tập' }}</h1><p>Đăng nhập bằng sinh trắc học để bảo mật tuyệt đối và loại bỏ hoàn toàn mật khẩu.</p>
         </div>
         <form v-if="authMode === 'login'" class="form-card" @submit.prevent="loginMagicLink">
@@ -1371,11 +1364,11 @@ onMounted(async () => {
             <button class="primary-btn relative overflow-hidden group w-full" type="button" @click="login">
               <span class="relative z-10 flex items-center justify-center gap-2">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
-                Tiếp tục bằng Passkey 🛡️
+                Tiếp tục bằng Passkey
               </span>
               <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
             </button>
-            <button class="secondary-btn w-full" type="submit">Gửi Magic Link 📧</button>
+            <button class="secondary-btn w-full" type="submit">Gửi Magic Link</button>
           </div>
           
           <button class="text-btn mt-4 w-full text-center" type="button" @click="authMode = 'register'">Chưa có tài khoản? Đăng ký ngay</button>
@@ -1388,7 +1381,7 @@ onMounted(async () => {
             <button class="primary-btn relative overflow-hidden group w-full" type="submit">
               <span class="relative z-10 flex items-center justify-center gap-2">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
-                Tạo Passkey (FaceID / Vân tay) 🛡️
+                Tạo Passkey (FaceID / Vân tay)
               </span>
               <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
             </button>
@@ -1399,7 +1392,7 @@ onMounted(async () => {
       </section>
 
       <section v-if="route === 'profile'" class="content-section page-section profile-page">
-        <button class="text-btn" style="display: block; margin-bottom: 32px; padding-left: 0; align-self: flex-start; text-align: left; margin-right: auto;" type="button" @click="navigate('home')">← Về trang chủ</button>
+        <button class="text-btn" style="display: block; margin-bottom: 32px; padding-left: 0; align-self: flex-start; text-align: left; margin-right: auto;" type="button" @click="navigate('home')">Về trang chủ</button>
 
         <div v-if="!currentUser" class="profile-summary">
           <p class="eyebrow">Learner profile</p>
@@ -1462,7 +1455,7 @@ onMounted(async () => {
           <!-- 4. Security (Span 2) -->
           <div class="bento-item bento-security rich-panel">
             <p class="eyebrow">Bảo mật đa tầng</p>
-            <h2>Passkey Auth 🛡️</h2>
+            <h2>Passkey Auth</h2>
             <div class="mt-4 p-4 rounded-xl border border-[var(--border-glass)] bg-[var(--bg-glass)]">
               <div class="flex items-center gap-3 mb-2">
                 <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></div>
@@ -1482,7 +1475,7 @@ onMounted(async () => {
                 <div class="mini-course-info">
                   <strong>{{ course.title }}</strong>
                   <span :class="['status-badge', completedIds.includes(course.id) ? 'done' : 'learning']">
-                    {{ completedIds.includes(course.id) ? '✓ Hoàn thành' : '▶ Đang học' }}
+                    {{ completedIds.includes(course.id) ? 'Hoàn thành' : 'Đang học' }}
                   </span>
                 </div>
               </article>
@@ -1549,18 +1542,16 @@ onMounted(async () => {
       @close="showPodcast = false"
     />
     
-    <ConfettiExplosion v-if="showConfetti" />
-    
     <!-- Completion Conditions Modal -->
     <div v-if="showCompletionModal" class="completion-modal-overlay">
       <div class="completion-modal-card">
-        <button class="close-btn" @click="showCompletionModal = false">✕</button>
-        <h2>Chưa đủ điều kiện hoàn thành 🎓</h2>
+        <button class="close-btn" @click="showCompletionModal = false">Đóng</button>
+        <h2>Chưa đủ điều kiện hoàn thành</h2>
         <p>Để nhận chứng chỉ khóa học <strong>{{ selectedCourse.title }}</strong>, bạn cần hoàn thành các tiêu chí sau:</p>
         
         <ul class="condition-list">
           <li v-for="cond in completionConditions" :key="cond.id" :class="{ 'is-met': cond.met }">
-            <span class="icon">{{ cond.met ? '✅' : '⏳' }}</span>
+            <span class="icon">{{ cond.met ? 'Xong' : 'Chưa' }}</span>
             <span class="text">{{ cond.name }}</span>
           </li>
         </ul>
@@ -1617,4 +1608,16 @@ onMounted(async () => {
   color: var(--primary);
   transform: translateX(5px);
 }
+
+@keyframes pulse-border {
+  0% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4); border-color: var(--primary); }
+  70% { box-shadow: 0 0 0 10px rgba(124, 58, 237, 0); border-color: var(--border-glass); }
+  100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0); }
+}
+
+.slide-up-enter-active { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.slide-up-leave-active { transition: all 0.3s ease; position: absolute; }
+.slide-up-enter-from,
+.slide-up-leave-to { opacity: 0; transform: translateY(20px) scale(0.95); }
+.slide-up-move { transition: transform 0.4s ease; }
 </style>

@@ -348,7 +348,7 @@ function stopDragShape() {
             class="delete-shape-btn"
             @click.stop="deleteShape(shape.id)"
           >
-            ✕
+            Xóa
           </button>
         </div>
 

@@ -1,4 +1,7 @@
 import { defineNuxtConfig } from 'nuxt/config'
+import tresTemplateCompilerOptions from '@tresjs/core/template-compiler-options'
+
+const tresCompilerOptions = tresTemplateCompilerOptions.template.compilerOptions
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -35,7 +38,7 @@ export default defineNuxtConfig({
   // Vue compiler options
   vue: {
     compilerOptions: {
-      // Define custom elements if any
+      ...tresCompilerOptions
     }
   },
 
@@ -94,6 +97,7 @@ export default defineNuxtConfig({
     },
     workbox: {
       navigateFallback: '/',
+      maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
       globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
     },
     client: {
@@ -106,11 +110,6 @@ export default defineNuxtConfig({
       navigateFallbackAllowlist: [/^\/$/],
       type: 'module',
     },
-  },
-  postcss: {
-    plugins: {
-      '@tailwindcss/postcss': {},
-    }
   },
   vite: {
     plugins: []

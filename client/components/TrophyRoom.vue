@@ -12,12 +12,12 @@ const props = defineProps({
 
 // ── Badge definitions ──────────────────────────────────────────────
 const badgeDefs = [
-  { id: 'first-step',  icon: '🚀', label: 'First Step',    desc: 'Đăng ký khóa học đầu tiên',         color: '#6366f1', req: (e, c) => e.length >= 1 },
-  { id: 'learner',     icon: '📚', label: 'Learner',       desc: 'Đăng ký 3 khóa học',                color: '#8b5cf6', req: (e, c) => e.length >= 3 },
-  { id: 'achiever',    icon: '🏆', label: 'Achiever',      desc: 'Hoàn thành khóa học đầu tiên',       color: '#f59e0b', req: (e, c) => c.length >= 1 },
-  { id: 'champion',    icon: '⭐', label: 'Champion',      desc: 'Hoàn thành 3 khóa học',             color: '#dc2626', req: (e, c) => c.length >= 3 },
-  { id: 'explorer',    icon: '🌍', label: 'Explorer',      desc: 'Học đủ 4 lĩnh vực khác nhau',       color: '#10b981', req: (e, c) => new Set(e.map(id => props.courses.find(x => x.id === id)?.category)).size >= 4 },
-  { id: 'master',      icon: '👑', label: 'Master',        desc: 'Hoàn thành tất cả khóa học',        color: '#ec4899', req: (e, c) => c.length >= props.courses.length && props.courses.length > 0 },
+  { id: 'first-step',  icon: '01', label: 'First Step',    desc: 'Đăng ký khóa học đầu tiên',         color: '#6366f1', req: (e, c) => e.length >= 1 },
+  { id: 'learner',     icon: '03', label: 'Learner',       desc: 'Đăng ký 3 khóa học',                color: '#8b5cf6', req: (e, c) => e.length >= 3 },
+  { id: 'achiever',    icon: 'A',  label: 'Achiever',      desc: 'Hoàn thành khóa học đầu tiên',       color: '#f59e0b', req: (e, c) => c.length >= 1 },
+  { id: 'champion',    icon: 'C',  label: 'Champion',      desc: 'Hoàn thành 3 khóa học',             color: '#dc2626', req: (e, c) => c.length >= 3 },
+  { id: 'explorer',    icon: 'E',  label: 'Explorer',      desc: 'Học đủ 4 lĩnh vực khác nhau',       color: '#10b981', req: (e, c) => new Set(e.map(id => props.courses.find(x => x.id === id)?.category)).size >= 4 },
+  { id: 'master',      icon: 'M',  label: 'Master',        desc: 'Hoàn thành tất cả khóa học',        color: '#ec4899', req: (e, c) => c.length >= props.courses.length && props.courses.length > 0 },
 ]
 
 const badges = computed(() =>
@@ -88,7 +88,7 @@ function closeCert()      { selectedCert.value = null; shareNotice.value = '' }
 function shareCert() {
   const url = `${window.location.origin}${window.location.pathname}#cert/${selectedCert.value.id}/${encodeURIComponent(props.userName)}`
   navigator.clipboard.writeText(url).then(() => {
-    shareNotice.value = '✓ Đã copy link chứng chỉ!'
+    shareNotice.value = 'Đã copy link chứng chỉ.'
     setTimeout(() => { shareNotice.value = '' }, 2500)
   })
 }
@@ -129,7 +129,7 @@ const showScene = computed(() => unlockedBadges.value.length > 0)
     <!-- ── HEADER ── -->
     <div class="trophy-header">
       <div>
-        <p class="eyebrow">🏆 Phòng trưng bày</p>
+        <p class="eyebrow">Phòng trưng bày</p>
         <h2>Thành tích của {{ userName }}</h2>
         <p class="trophy-sub">{{ unlockedBadges.length }}/{{ badges.length }} huy hiệu · {{ completedCourseObjects.length }} chứng chỉ</p>
       </div>
@@ -142,7 +142,7 @@ const showScene = computed(() => unlockedBadges.value.length > 0)
 
     <!-- ── 3D BADGE SHOWCASE ── -->
     <div class="badge-section">
-      <div class="section-label">🎖️ Huy hiệu 3D</div>
+      <div class="section-label">Huy hiệu 3D</div>
 
       <!-- 3D scene for unlocked badges -->
       <div v-if="showScene" class="badge-scene-wrap">
@@ -186,7 +186,7 @@ const showScene = computed(() => unlockedBadges.value.length > 0)
 
       <!-- Empty state -->
       <div v-else class="badge-empty">
-        <p>🔒 Đăng ký khóa học đầu tiên để mở khóa huy hiệu!</p>
+        <p>Đăng ký khóa học đầu tiên để mở khóa huy hiệu.</p>
       </div>
 
       <!-- Locked badges grid -->
@@ -198,11 +198,11 @@ const showScene = computed(() => unlockedBadges.value.length > 0)
         >
           <div class="badge-icon" :style="badge.unlocked ? { background: badge.color + '22', borderColor: badge.color + '66' } : {}">
             <span>{{ badge.icon }}</span>
-            <div v-if="!badge.unlocked" class="badge-lock">🔒</div>
+            <div v-if="!badge.unlocked" class="badge-lock">Locked</div>
           </div>
           <strong>{{ badge.label }}</strong>
           <p>{{ badge.desc }}</p>
-          <span v-if="badge.unlocked" class="badge-status unlocked-tag">✓ Đã mở khóa</span>
+          <span v-if="badge.unlocked" class="badge-status unlocked-tag">Đã mở khóa</span>
           <span v-else class="badge-status locked-tag">Chưa đạt</span>
         </div>
       </div>
@@ -210,10 +210,10 @@ const showScene = computed(() => unlockedBadges.value.length > 0)
 
     <!-- ── HOLOGRAPHIC CERTIFICATES ── -->
     <div class="cert-section">
-      <div class="section-label">📜 Chứng chỉ hoàn thành</div>
+      <div class="section-label">Chứng chỉ hoàn thành</div>
 
       <div v-if="completedCourseObjects.length === 0" class="badge-empty">
-        <p>📭 Hoàn thành khóa học để nhận chứng chỉ holographic!</p>
+        <p>Hoàn thành khóa học để nhận chứng chỉ.</p>
       </div>
 
       <div class="cert-grid">
@@ -233,7 +233,7 @@ const showScene = computed(() => unlockedBadges.value.length > 0)
 
           <!-- Content -->
           <div class="cert-body">
-            <div class="cert-logo">🎓</div>
+            <div class="cert-logo">ED</div>
             <div class="cert-issuer">EduPress · Certificate of Completion</div>
             <h3 class="cert-course">{{ course.title }}</h3>
             <p class="cert-recipient">Cấp cho: <strong>{{ userName }}</strong></p>
@@ -242,7 +242,7 @@ const showScene = computed(() => unlockedBadges.value.length > 0)
               <span>{{ course.level }}</span>
               <span>{{ course.duration }}</span>
             </div>
-            <div class="cert-seal">✦</div>
+            <div class="cert-seal">EduPress</div>
           </div>
 
           <div class="cert-hover-hint">Click để xem & chia sẻ</div>
@@ -254,7 +254,7 @@ const showScene = computed(() => unlockedBadges.value.length > 0)
     <Transition name="cert-modal">
       <div v-if="selectedCert" class="cert-modal-overlay" @click.self="closeCert">
         <div class="cert-modal">
-          <button class="cert-modal-close" @click="closeCert">✕</button>
+          <button class="cert-modal-close" @click="closeCert">Đóng</button>
 
           <div
             class="cert-full"
@@ -266,7 +266,7 @@ const showScene = computed(() => unlockedBadges.value.length > 0)
             <div class="cert-foil" :style="{ background: foilGradient, opacity: isHovering ? 1 : 0 }"></div>
             <div class="cert-shine" :style="{ opacity: isHovering ? 0.7 : 0.2 }"></div>
             <div class="cert-body cert-body--full">
-              <div class="cert-logo-lg">🎓</div>
+              <div class="cert-logo-lg">ED</div>
               <div class="cert-issuer">EduPress · Certificate of Completion</div>
               <h2 class="cert-course-lg">{{ selectedCert.title }}</h2>
               <p class="cert-recipient-lg">Cấp cho: <strong>{{ userName }}</strong></p>
@@ -275,16 +275,16 @@ const showScene = computed(() => unlockedBadges.value.length > 0)
                 <span>{{ selectedCert.category }}</span>
                 <span>{{ selectedCert.level }}</span>
                 <span>{{ selectedCert.duration }}</span>
-                <span>{{ selectedCert.rating }}/5 ⭐</span>
+                <span>{{ selectedCert.rating }}/5</span>
               </div>
               <div class="cert-author">Giảng viên: {{ selectedCert.author }}</div>
-              <div class="cert-seal-lg">✦ EDUPRESS ✦</div>
+              <div class="cert-seal-lg">EDUPRESS</div>
             </div>
           </div>
 
           <div class="cert-modal-actions">
             <button class="share-btn" @click="shareCert">
-              🔗 Sao chép link chia sẻ
+              Sao chép link chia sẻ
             </button>
             <p v-if="shareNotice" class="share-notice">{{ shareNotice }}</p>
           </div>

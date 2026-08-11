@@ -222,7 +222,7 @@ function restart() {
 
     <div class="flashcard-container">
       <div v-if="isFinished" class="finished-state">
-        <div class="trophy-icon">🌟</div>
+        <div class="trophy-icon">Hoàn thành</div>
         <h2 class="gradient-text">Mastered!</h2>
         <p>Bạn đã thuộc lòng bộ thẻ này. Chúc mừng!</p>
         <button class="premium-btn mt-4" @click="restart">Ôn tập lại</button>
@@ -276,7 +276,7 @@ function restart() {
           <button class="ctrl-btn btn-left" @click="swipeOut('left')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
-          <span class="kb-hint">←</span>
+          <span class="kb-hint">Trái</span>
         </div>
         
         <div class="ctrl-wrap ctrl-wrap-center">
@@ -290,7 +290,7 @@ function restart() {
           <button class="ctrl-btn btn-right" @click="swipeOut('right')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
           </button>
-          <span class="kb-hint">→</span>
+          <span class="kb-hint">Phải</span>
         </div>
       </div>
     </div>
