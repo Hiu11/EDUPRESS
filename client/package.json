@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "nuxt dev",
     "build": "nuxt build",
-    "preview": "nuxt preview"
+    "preview": "nuxt preview",
+    "test:e2e": "playwright test",
+    "test:smoke": "playwright test production-smoke.spec.ts"
   },
   "dependencies": {
     "@monaco-editor/loader": "^1.7.0",
