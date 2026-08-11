@@ -30,7 +30,7 @@ function onSelectionChange() {
   }
 }
 
-// ── Simulated AI stream (fallback when backend offline) ────────────
+// ── Simulated helper stream (fallback when backend offline) ────────
 const MOCK_RESPONSES = {
   explain: (t) => `**Giải thích: "${t.slice(0, 40)}..."**\n\nĐây là một khái niệm quan trọng trong lĩnh vực học thuật và công nghệ. Nội dung này đề cập đến các nguyên lý cốt lõi mà bạn cần nắm vững để tiến xa hơn trong lộ trình học tập.\n\n**Ứng dụng thực tế:**\n- Áp dụng trong các dự án thực tế\n- Nền tảng cho các khái niệm nâng cao hơn\n- Thường xuất hiện trong phỏng vấn kỹ thuật`,
   translate: (t) => `**Bản dịch:**\n\n"${t.slice(0, 60)}..."\n\n**Tiếng Việt:** Đây là bản dịch của đoạn văn bản được chọn. Ngôn ngữ gốc được phát hiện tự động và dịch sang tiếng Việt một cách tự nhiên, giữ nguyên ý nghĩa và ngữ cảnh của văn bản gốc.\n\n**Từ khóa chính:** học tập, công nghệ, thực hành`,
@@ -134,9 +134,9 @@ function onOverlayClick(e) {
     class="ai-fab"
     :class="{ open: isOpen }"
     @click="isOpen = !isOpen"
-    title="AI Study Companion"
+    title="Trợ lý học tập"
   >
-    <span class="ai-fab-icon">{{ isOpen ? '×' : 'AI' }}</span>
+    <span class="ai-fab-icon">{{ isOpen ? 'Đóng' : 'Hỗ trợ' }}</span>
     <span class="ai-fab-pulse"></span>
   </button>
 
@@ -156,9 +156,9 @@ function onOverlayClick(e) {
       <!-- Header -->
       <div class="ai-header">
         <div class="ai-header-left">
-          <div class="ai-avatar">AI</div>
+          <div class="ai-avatar">EP</div>
           <div>
-            <div class="ai-title">Study Companion</div>
+            <div class="ai-title">Trợ lý học tập</div>
             <div class="ai-subtitle">{{ isStreaming ? 'Đang suy nghĩ...' : 'Sẵn sàng hỗ trợ' }}</div>
           </div>
         </div>
@@ -166,7 +166,7 @@ function onOverlayClick(e) {
           <button class="ai-ctrl-btn" @click="isExpanded = !isExpanded" :title="isExpanded ? 'Thu nhỏ' : 'Mở rộng'">
             {{ isExpanded ? '⊡' : '⊞' }}
           </button>
-          <button class="ai-ctrl-btn" @click="isOpen = false" title="Đóng">×</button>
+          <button class="ai-ctrl-btn" @click="isOpen = false" title="Đóng">Đóng</button>
         </div>
       </div>
 
@@ -176,7 +176,7 @@ function onOverlayClick(e) {
         <span class="chip-text">"{{ selectedText.slice(0, 80) }}{{ selectedText.length > 80 ? '...' : '' }}"</span>
       </div>
       <div v-else class="ai-empty-hint">
-        Bôi đen bất kỳ đoạn văn nào trên trang để nhận hỗ trợ từ AI.
+        Bôi đen bất kỳ đoạn văn nào trên trang để nhận hỗ trợ học tập.
       </div>
 
       <!-- Mode selector -->
@@ -191,7 +191,7 @@ function onOverlayClick(e) {
         </button>
       </div>
 
-      <!-- AI Response -->
+      <!-- Helper Response -->
       <div class="ai-response-area" v-if="selectedText">
         <div v-if="!response && !isStreaming" class="ai-response-placeholder">
           Chọn chế độ phía trên để bắt đầu

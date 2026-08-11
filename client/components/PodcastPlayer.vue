@@ -9,9 +9,9 @@ const emit = defineEmits(['close'])
 const isGenerating = ref(true)
 const generationStep = ref(0)
 const generationLogs = ref([
-  'Đang gửi nội dung bài giảng cho AI (LLM)...',
+  'Đang chuẩn bị nội dung bài giảng...',
   'Viết kịch bản đàm thoại 2 nhân vật (Host & Expert)...',
-  'Đẩy kịch bản qua API ElevenLabs (Text-to-Speech)...',
+  'Chuẩn bị giọng đọc...',
   'Ghép luồng âm thanh & tối ưu cảm xúc giọng nói...',
   'Hoàn tất! Đang tải trình phát Podcast...'
 ])
@@ -32,9 +32,9 @@ const showSettings = ref(false)
 // Split transcript into words for karaoke
 const transcript = [
   { speaker: 'host', name: 'Alex', role: 'Host', text: 'Xin chào các bạn học viên! Chào mừng trở lại với EduPress Audio. Khóa học hôm nay có vẻ rất thú vị đây.' },
-  { speaker: 'expert', name: 'Sarah', role: 'AI Expert', text: 'Chào Alex! Đúng vậy, hôm nay chúng ta sẽ mổ xẻ về cách AI đang thay đổi hoàn toàn cách chúng ta học tập và làm việc.' },
-  { speaker: 'host', name: 'Alex', role: 'Host', text: '*cười* Wow. Nghe đồn là AI giờ có thể tự code, tự review lỗi luôn phải không?' },
-  { speaker: 'expert', name: 'Sarah', role: 'AI Expert', text: 'Chính xác! Giống như tính năng AI Mentor mà các bạn vừa trải nghiệm trong Sandbox của EduPress vậy. Nó dùng AST để soi từng dòng code.' },
+  { speaker: 'expert', name: 'Sarah', role: 'Chuyên gia', text: 'Chào Alex! Đúng vậy, hôm nay chúng ta sẽ nói về cách công nghệ đang thay đổi cách học tập và làm việc.' },
+  { speaker: 'host', name: 'Alex', role: 'Host', text: '*cười* Wow. Nghe nói các công cụ học tập hiện nay có thể hỗ trợ review lỗi rất nhanh phải không?' },
+  { speaker: 'expert', name: 'Sarah', role: 'Chuyên gia', text: 'Chính xác! Ví dụ như phần thực hành của EduPress có thể nhắc người học xem lại những lỗi JavaScript phổ biến.' },
   { speaker: 'host', name: 'Alex', role: 'Host', text: '*thở phào* Quá đỉnh! Hy vọng qua bài học này, mọi người sẽ nắm được cốt lõi của công nghệ này. Chúc các bạn học tốt nhé!' }
 ].map(line => ({
   ...line,
@@ -207,15 +207,15 @@ function scrollToActiveLine() {
 
     <div class="podcast-container">
       <div class="top-bar">
-        <button class="back-btn" @click="closePlayer">← Quay lại</button>
-        <button class="settings-btn" v-if="showPlayer" @click="showSettings = true">⚙️ Giọng đọc</button>
+        <button class="back-btn" @click="closePlayer">Quay lại</button>
+        <button class="settings-btn" v-if="showPlayer" @click="showSettings = true">Giọng đọc</button>
       </div>
       
       <!-- SETTINGS MODAL -->
       <div v-if="showSettings" class="settings-modal">
         <div class="settings-header">
           <h3>Cài đặt Giọng đọc</h3>
-          <button @click="showSettings = false">✕</button>
+          <button @click="showSettings = false">Đóng</button>
         </div>
         <div class="settings-body">
           <div class="form-group">
@@ -240,12 +240,12 @@ function scrollToActiveLine() {
       <!-- GENERATING STATE -->
       <div v-if="isGenerating" class="gen-state">
         <div class="spinner-ring"></div>
-        <h2 class="gen-title">Khởi tạo Podcast AI...</h2>
+        <h2 class="gen-title">Chuẩn bị Podcast...</h2>
         <div class="gen-steps">
           <div v-for="(log, idx) in generationLogs" :key="idx" 
                class="gen-step" 
                :class="{ active: generationStep === idx, done: generationStep > idx }">
-            <span class="icon">{{ generationStep > idx ? '✓' : (generationStep === idx ? '⚡' : '○') }}</span>
+            <span class="icon">{{ generationStep > idx ? 'Xong' : (generationStep === idx ? 'Đang làm' : 'Chờ') }}</span>
             <span class="text">{{ log }}</span>
           </div>
         </div>

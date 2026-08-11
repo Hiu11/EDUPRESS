@@ -111,7 +111,84 @@
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  padding: 6px;
+  border: 1px solid var(--border-glass);
+  border-radius: 999px;
+  background: rgba(var(--color-bg-glass), 0.72);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+
+.theme-toggle,
+.practice-btn,
+.user-chip,
+.logout-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-main);
+  font: inherit;
+  font-weight: 650;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.theme-toggle {
+  gap: 8px;
+  padding: 0 11px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.theme-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.08);
+}
+
+.practice-btn {
+  padding: 0 18px;
+  background: var(--text-main);
+  color: var(--bg-base);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+}
+
+.user-chip {
+  padding: 0 13px;
+  background: transparent;
+  color: var(--text-main);
+}
+
+.logout-link {
+  padding: 0 12px;
+  color: var(--text-muted);
+}
+
+.theme-toggle:hover,
+.user-chip:hover,
+.logout-link:hover {
+  transform: translateY(-1px);
+  background: rgba(15, 23, 42, 0.06);
+  color: var(--primary);
+}
+
+.practice-btn:hover {
+  transform: translateY(-1px);
+  background: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(220, 38, 38, 0.18);
 }
 
 // ── Containers ───────────────────────────────────────────────────

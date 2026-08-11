@@ -35,7 +35,7 @@ const fallbackTranscripts = {
     { time: 50,  text: 'Abstraction — ẩn chi tiết, chỉ lộ ra interface cần thiết.' },
     { time: 90,  text: 'Inheritance — class con kế thừa tính năng của class cha.' },
     { time: 130, text: 'Polymorphism — cùng phương thức, hành vi khác nhau theo object.' },
-    { time: 170, text: 'Demo: xây class Animal → Dog, Cat với override method speak().' },
+    { time: 170, text: 'Demo: xây class Animal, Dog, Cat với override method speak().' },
   ],
   web: [
     { time: 0,   text: 'HTML5 — cấu trúc trang với semantic elements.' },
@@ -201,7 +201,7 @@ onUnmounted(() => {
 <template>
   <div class="cinema-overlay" @click.self="emit('close')">
     <div class="cinema-shell">
-      <button class="cinema-close" type="button" @click="emit('close')" title="Đóng">✕</button>
+      <button class="cinema-close" type="button" @click="emit('close')" title="Đóng">Đóng</button>
 
       <!-- ── VIDEO STAGE ── -->
       <div class="cinema-stage" :style="{ '--ambient': ambientColor }">
@@ -264,7 +264,7 @@ onUnmounted(() => {
         <div class="transcript-header">
           <span class="eyebrow" style="margin-bottom:0">Phụ đề trực tiếp</span>
           <span class="transcript-status" :class="{ active: isPlaying }">
-            {{ isPlaying ? '● Đang phát' : (captionSrc === 'youtube' ? '✓ YT Caption' : '○ Ghi chú') }}
+            {{ isPlaying ? 'Đang phát' : (captionSrc === 'youtube' ? 'YT Caption' : 'Ghi chú') }}
           </span>
         </div>
         <div class="transcript-body">

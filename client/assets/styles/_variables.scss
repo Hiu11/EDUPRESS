@@ -19,7 +19,15 @@ $font-body:      'Inter', sans-serif;
 
 // ─── CSS Custom Properties (Theme defaults in tailwind.css) ──────────
 :root {
-  /* Some gradients and structural vars still here */
+  --bg-base:        #{$bg-base};
+  --bg-surface:     #{$bg-surface};
+  --color-bg-glass: 255, 255, 255;
+  --text-main:      #{$text-main};
+  --text-muted:     #{$text-muted};
+  --primary:        #{$primary};
+  --border-glass:   rgba(15, 23, 42, 0.1);
+  --shadow-glass:   0 18px 50px rgba(15, 23, 42, 0.08);
+
   --bg-glass:       rgba(var(--color-bg-glass, 255, 255, 255), 0.85);
   --border-glow:    rgba(220, 38, 38, 0.15);
   --text-accent:    var(--primary);
@@ -32,7 +40,7 @@ $font-body:      'Inter', sans-serif;
   --gradient-2:     linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
   --gradient-text:  linear-gradient(to right, var(--primary), var(--secondary));
 
-  --shadow-glow:    0 0 20px rgba(var(--primary), 0.2);
+  --shadow-glow:    0 20px 50px rgba(220, 38, 38, 0.12);
 
   --font-heading:   #{$font-heading};
   --font-body:      #{$font-body};
@@ -40,4 +48,34 @@ $font-body:      'Inter', sans-serif;
   --radius-lg:      #{$radius-lg};
   --radius-md:      #{$radius-md};
   --radius-sm:      #{$radius-sm};
+}
+
+:root[data-theme="dark"] {
+  --bg-base: #0f172a;
+  --bg-surface: #1e293b;
+  --color-bg-glass: 30, 41, 59;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --primary: #f97316;
+  --border-glass: rgba(255, 255, 255, 0.12);
+  --shadow-glass: 0 18px 50px rgba(0, 0, 0, 0.32);
+  --shadow-glow: 0 20px 50px rgba(249, 115, 22, 0.18);
+}
+
+:root[data-theme="oled"] {
+  --bg-base: #000000;
+  --bg-surface: #050505;
+  --color-bg-glass: 5, 5, 5;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --primary: #fb923c;
+  --border-glass: rgba(251, 146, 60, 0.2);
+  --shadow-glass: 0 18px 50px rgba(0, 0, 0, 0.42);
+  --shadow-glow: 0 20px 50px rgba(251, 146, 60, 0.18);
+}
+
+html.theme-transition body,
+html.theme-transition .bento-item,
+html.theme-transition .floating-card {
+  transition: background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease, color 0.4s ease;
 }

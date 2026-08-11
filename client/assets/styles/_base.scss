@@ -33,6 +33,30 @@ button { cursor: pointer; }
 
 .text-muted { color: var(--text-muted); }
 
+.w-full { width: 100%; }
+.mt-4 { margin-top: 16px; }
+.mb-2 { margin-bottom: 8px; }
+.p-4 { padding: 16px; }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.text-center { text-align: center; }
+.text-sm { font-size: 0.875rem; }
+.text-xs { font-size: 0.75rem; }
+.relative { position: relative; }
+.overflow-hidden { overflow: hidden; }
+
+.passkey-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin-top: 16px;
+}
+
 // ── Sync Toast Premium UI ────────────────────────────────────────────────
 .sync-toast-container {
   position: fixed;

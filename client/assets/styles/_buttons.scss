@@ -74,6 +74,35 @@
 }
 
 // ── Layout Wrappers ───────────────────────────────────────────────
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  border-radius: 999px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 650;
+  line-height: 1;
+  white-space: nowrap;
+
+  &.offline {
+    color: var(--text-muted);
+    background: rgba(15, 23, 42, 0.04);
+  }
+
+  &.checking {
+    color: var(--text-muted);
+  }
+
+  &.online {
+    color: #047857;
+    background: rgba(16, 185, 129, 0.08);
+  }
+}
+
 .card-actions, .hero-actions, .detail-meta {
   display: flex;
   align-items: center;

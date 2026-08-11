@@ -116,10 +116,10 @@ function handleKeyDown(e, index) {
 const blockTypes = [
   { type: 'h1', label: 'Tiêu đề lớn (H1)', icon: 'T1' },
   { type: 'h2', label: 'Tiêu đề vừa (H2)', icon: 'T2' },
-  { type: 'p', label: 'Văn bản (Text)', icon: '¶' },
-  { type: 'image', label: 'Hình ảnh / Video', icon: '🖼️' },
+  { type: 'p', label: 'Văn bản (Text)', icon: 'TXT' },
+  { type: 'image', label: 'Hình ảnh / Video', icon: 'IMG' },
   { type: 'code', label: 'Khối Code', icon: '{ }' },
-  { type: 'quiz', label: 'Câu hỏi Quiz', icon: '?' }
+  { type: 'quiz', label: 'Câu hỏi Quiz', icon: 'Q' }
 ]
 
 import { computed } from 'vue'
@@ -199,12 +199,12 @@ function handleGlobalDragOver(e) { e.preventDefault() }
     <!-- Navbar -->
     <header class="studio-header">
       <div class="header-left">
-        <button class="icon-btn" @click="emit('close')">←</button>
+        <button class="icon-btn" @click="emit('close')">Đóng</button>
         <span class="breadcrumbs">EduPress / <span class="highlight">Course Creator Studio</span></span>
       </div>
       <div class="header-right">
         <span class="save-status">
-          <span v-if="isSaved" class="status-saved">✓ Đã lưu nháp</span>
+          <span v-if="isSaved" class="status-saved">Đã lưu nháp</span>
           <span v-else class="status-saving">Đang lưu...</span>
         </span>
         <button class="publish-btn">Xuất bản</button>

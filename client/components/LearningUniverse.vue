@@ -123,8 +123,8 @@ function setCourseRef(el, index) {
               <h3>{{ course.title }}</h3>
               <p>{{ course.author }}</p>
               <div class="stats">
-                <span>⭐ {{ course.rating }}</span>
-                <span>👤 {{ course.students }}</span>
+                <span>{{ course.rating }}/5</span>
+                <span>{{ course.students }} học viên</span>
               </div>
             </div>
           </div>
