@@ -24,6 +24,8 @@ services:
           property: connectionString
       - key: MONGO_URL
         sync: false # Requires manual entry in the Render Dashboard (MongoDB Atlas URL)
+      - key: MODAL_WHISPER_URL
+        sync: false # Optional Modal Whisper endpoint
 
   # Managed Redis for Pub/Sub
   - type: redis

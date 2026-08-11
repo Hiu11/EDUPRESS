@@ -61,6 +61,7 @@ cd server
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
+Copy-Item .env.example .env
 uvicorn app.main:app --reload
 ```
 *Backend runs on `http://localhost:8000`*
@@ -70,9 +71,34 @@ uvicorn app.main:app --reload
 ```bash
 cd client
 npm install
+Copy-Item .env.example .env
 npm run dev
 ```
 *Frontend runs on `http://localhost:3000`*
+
+### Local Environment Defaults
+
+| File | Key | Local value |
+| --- | --- | --- |
+| `client/.env.example` | `NUXT_PUBLIC_API_BASE` | `http://localhost:8000` |
+| `server/.env.example` | `CLIENT_ORIGIN` | `http://localhost:3000` |
+| `server/.env.example` | `DATABASE_URL` | `postgresql+psycopg://postgres:postgrespassword@localhost:5432/edupress_write` |
+| `server/.env.example` | `REDIS_URL` | `redis://localhost:6379` |
+| `server/.env.example` | `MONGO_URL` | `mongodb://admin:adminpassword@localhost:27017/?authSource=admin` |
+
+### Production Environment Variables
+
+Set these in the deployment provider:
+
+| Platform | Key | Purpose |
+| --- | --- | --- |
+| Vercel | `NUXT_PUBLIC_API_BASE` | Public URL of the deployed FastAPI service |
+| Render | `CLIENT_ORIGIN` | Public URL of the deployed Nuxt frontend |
+| Render | `DATABASE_URL` | Managed PostgreSQL connection string |
+| Render | `REDIS_URL` | Managed Redis connection string |
+| Render | `MONGO_URL` | MongoDB Atlas connection string |
+| Render | `JWT_SECRET` | JWT signing secret |
+| Render | `MODAL_WHISPER_URL` | Optional Modal Whisper endpoint |
 
 ### 4. Deploy AI Serverless (Optional)
 
