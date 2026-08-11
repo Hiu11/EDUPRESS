@@ -8,6 +8,7 @@ from app.api.captions import router as captions_router
 from app.api.quiz import router as quiz_router
 from app.api.comments import router as comments_router
 from app.api.stream import router as stream_router
+from app.api.auth import router as auth_router
 from app.core.config import settings
 
 from app.db.mongo import connect_to_mongo, close_mongo_connection
@@ -37,6 +38,7 @@ app.add_middleware(
 )
 
 app.include_router(health_router)
+app.include_router(auth_router, prefix="/api")
 app.include_router(courses_router, prefix="/api")
 app.include_router(captions_router, prefix="/api")
 app.include_router(quiz_router, prefix="/api")

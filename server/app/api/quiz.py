@@ -3,8 +3,10 @@ from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from app.agents.quiz_generator import generate_adaptive_quiz_batch
+from app.core.auth import get_current_user
 from app.db.session import get_db
 from app.models.quiz_history import QuizHistory as QuizHistoryModel
+from app.models.user import User
 import time
 from datetime import datetime
 
@@ -18,7 +20,6 @@ class QuizRequest(BaseModel):
     batch_size: Optional[int] = 5
 
 class QuizSyncRequest(BaseModel):
-    user_id: str
     course_id: str
     score: int
     total: int
@@ -53,10 +54,14 @@ async def generate_quiz(req: QuizRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/quiz/sync")
-async def sync_quiz_history(req: QuizSyncRequest, db: Session = Depends(get_db)):
+async def sync_quiz_history(
+    req: QuizSyncRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     try:
         new_history = QuizHistoryModel(
-            user_id=req.user_id,
+            user_id=str(current_user.id),
             course_id=req.course_id,
             score=req.score,
             total=req.total,

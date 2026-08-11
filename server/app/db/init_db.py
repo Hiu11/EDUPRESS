@@ -1,6 +1,7 @@
 from app.db.base import Base
 from app.db.session import engine
 from app.models.course import Course  # noqa: F401
+from app.models.user import User  # noqa: F401
 from app.db.session import SessionLocal
 
 
