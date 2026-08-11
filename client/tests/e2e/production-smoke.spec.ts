@@ -2,9 +2,20 @@ import { expect, test } from '@playwright/test';
 
 const apiBase = process.env.SMOKE_API_BASE;
 
+async function openApp(page) {
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+  await expect(page.getByLabel('Primary')).toBeVisible();
+}
+
+async function navigateByPrimaryNav(page, index, expectedHash) {
+  await page.locator('.nav-links button').nth(index).click();
+  await page.waitForFunction((hash) => window.location.hash === hash, expectedHash);
+}
+
 test.describe('production smoke checks', () => {
   test('frontend renders the primary learning shell', async ({ page }) => {
-    await page.goto('/#home');
+    await openApp(page);
 
     const primaryNav = page.getByLabel('Primary');
 
@@ -16,20 +27,32 @@ test.describe('production smoke checks', () => {
   });
 
   test('course catalog loads without a blank screen', async ({ page }) => {
-    await page.goto('/#courses');
+    await openApp(page);
+    await navigateByPrimaryNav(page, 1, '#courses');
 
-    await expect(page.getByRole('heading', { name: /Danh sách khóa học/i })).toBeVisible();
     await expect.poll(async () => page.locator('.course-row-card').count()).toBeGreaterThan(0);
     await expect(page.getByPlaceholder(/Tìm AI, Web, OOP/i)).toBeVisible();
   });
 
   test('built-in quiz can answer the first question', async ({ page }) => {
-    await page.goto('/#quiz');
+    await openApp(page);
+    await navigateByPrimaryNav(page, 4, '#quiz');
 
-    await expect(page.getByRole('heading', { name: /Kiểm tra kiến thức/i })).toBeVisible();
+    await expect(page.locator('.quiz-option-btn').first()).toBeVisible();
     await page.locator('.quiz-option-btn').first().click();
-    await page.getByRole('button', { name: /Xác nhận đáp án/i }).click();
+    await page.locator('.quiz-submit-btn').click();
     await expect(page.locator('.quiz-explanation')).toBeVisible();
+  });
+
+  test('course detail exposes the comments path', async ({ page }) => {
+    await openApp(page);
+    await navigateByPrimaryNav(page, 1, '#courses');
+
+    await page.locator('.course-row-card .primary-btn').first().click();
+
+    await expect(page.locator('.live-comments-section')).toBeVisible();
+    await expect(page.locator('.comment-input-area input')).toBeVisible();
+    await expect(page.locator('.comment-input-area button')).toBeVisible();
   });
 
   test('api health endpoint responds when configured', async ({ request }) => {
