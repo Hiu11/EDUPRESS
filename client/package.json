@@ -9,7 +9,7 @@
     "preview": "nuxt preview",
     "test:e2e": "playwright test",
     "test:ai": "playwright test ai-test.spec.ts",
-    "test:smoke": "playwright test production-smoke.spec.ts",
+    "test:smoke": "playwright test production-smoke.spec.ts --workers=1",
     "test:safe-markdown": "node --test tests/unit/safeMarkdown.test.js"
   },
   "dependencies": {
