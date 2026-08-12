@@ -3,9 +3,9 @@ import { expect, test } from '@playwright/test';
 const apiBase = process.env.SMOKE_API_BASE;
 
 async function openApp(page) {
-  await page.goto('/');
-  await page.waitForLoadState('networkidle');
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.getByLabel('Primary')).toBeVisible();
+  await expect(page.locator('.app-frame')).toHaveAttribute('data-mounted', 'true', { timeout: 30000 });
 }
 
 async function navigateByPrimaryNav(page, index, expectedHash) {
@@ -53,6 +53,22 @@ test.describe('production smoke checks', () => {
     await expect(page.locator('.live-comments-section')).toBeVisible();
     await expect(page.locator('.comment-input-area input')).toBeVisible();
     await expect(page.locator('.comment-input-area button')).toBeVisible();
+  });
+
+  test('blog and contact extracted pages render', async ({ page }) => {
+    await openApp(page);
+    await navigateByPrimaryNav(page, 2, '#blog');
+
+    await expect(page.locator('.blog-hero')).toBeVisible();
+    await expect.poll(async () => page.locator('.post-card').count()).toBeGreaterThan(0);
+
+    await navigateByPrimaryNav(page, 3, '#contact');
+    await expect(page.locator('.contact-copy')).toBeVisible();
+    await page.locator('.form-card input').first().fill('QA User');
+    await page.locator('.form-card input[type="email"]').fill('qa@example.com');
+    await page.locator('.form-card textarea').fill('Smoke test message');
+    await page.locator('.form-card button[type="submit"]').click();
+    await expect(page.locator('.toast')).toBeVisible();
   });
 
   test('api health endpoint responds when configured', async ({ request }) => {
