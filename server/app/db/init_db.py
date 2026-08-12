@@ -1,7 +1,3 @@
-from sqlalchemy import inspect, text
-
-from app.db.base import Base
-from app.db.session import engine
 from app.models.content_item import ContentItem  # noqa: F401
 from app.models.course import Course  # noqa: F401
 from app.models.user import User  # noqa: F401
@@ -157,11 +153,8 @@ SEED_QUIZ_QUESTIONS = [
 
 
 def init_db():
-    Base.metadata.create_all(bind=engine)
-
     db = SessionLocal()
     try:
-        _ensure_course_columns(db)
         if db.query(Course).count() == 0:
             print("Seeding starter courses...")
             db.add_all(Course(**course_data) for course_data in SEED_COURSES)
@@ -173,20 +166,6 @@ def init_db():
             db.commit()
     finally:
         db.close()
-
-
-def _ensure_course_columns(db):
-    inspector = inspect(engine)
-    if not inspector.has_table(Course.__tablename__):
-        return
-
-    existing_columns = {column["name"] for column in inspector.get_columns(Course.__tablename__)}
-    for column in Course.__table__.columns:
-        if column.name in existing_columns:
-            continue
-        column_type = column.type.compile(dialect=engine.dialect)
-        db.execute(text(f"ALTER TABLE {Course.__tablename__} ADD COLUMN {column.name} {column_type}"))
-    db.commit()
 
 
 if __name__ == "__main__":

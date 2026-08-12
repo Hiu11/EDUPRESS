@@ -11,7 +11,6 @@ from app.api.comments import router as comments_router
 from app.api.stream import router as stream_router
 from app.api.auth import router as auth_router
 from app.core.config import settings
-from app.db.init_db import init_db
 
 from app.db.mongo import connect_to_mongo, close_mongo_connection
 from app.eventbus.producer import event_producer
@@ -20,7 +19,6 @@ from app.eventbus.consumer import event_consumer
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    init_db()
     await connect_to_mongo()
     await event_producer.start()
     await event_consumer.start()

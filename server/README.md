@@ -9,6 +9,8 @@ py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 Copy-Item .env.example .env
+alembic upgrade head
+python -m app.db.init_db
 uvicorn app.main:app --reload
 ```
 
@@ -24,6 +26,27 @@ DATABASE_URL=postgresql+psycopg://postgres:postgrespassword@localhost:5432/edupr
 ```
 
 If you run PostgreSQL outside Docker, update `DATABASE_URL` in `.env` to match your local credentials.
+
+## Database Migrations
+
+Schema changes are managed with Alembic. Do not rely on FastAPI startup to create or mutate tables.
+
+Local development:
+
+```powershell
+alembic upgrade head
+python -m app.db.init_db
+```
+
+Production deployment:
+
+```bash
+alembic upgrade head
+python -m app.db.init_db
+uvicorn app.main:app --host 0.0.0.0 --port "$PORT"
+```
+
+`python -m app.db.init_db` only seeds starter content when the target tables are empty. It must run after migrations.
 
 ## Required Environment Variables
 
