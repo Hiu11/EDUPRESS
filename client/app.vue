@@ -16,6 +16,9 @@ import { categories, courseRoadmaps, courses, defaultQuizQuestions, learningStep
 const config = useRuntimeConfig()
 const { asset, generatedAsset, courseImage } = useAssetPaths()
 
+const contentCourses = ref([...courses])
+const contentPosts = ref([...posts])
+const backendQuizQuestions = ref([])
 const quizQuestions = ref([...defaultQuizQuestions])
 
 const search = ref('')
@@ -54,7 +57,7 @@ const activeRoadmap = computed(() => courseRoadmaps[selectedCourseId.value] || c
 
 const { isOnline, networkState } = useNetworkStatus()
 const currentUser = computed(() => users.value.find((user) => user.email === currentUserEmail.value))
-const selectedCourse = computed(() => courses.find((course) => course.id === selectedCourseId.value) || courses[0])
+const selectedCourse = computed(() => contentCourses.value.find((course) => course.id === selectedCourseId.value) || contentCourses.value[0])
 const enrolledIds = computed(() => currentUser.value?.registeredCourses || [])
 const completedIds = computed(() => currentUser.value?.completedCourses || [])
 
@@ -63,12 +66,73 @@ const quizScore = ref(0)
 const selectedAnswer = ref('')
 const quizFinished = ref(false)
 const showPodcast = ref(false)
-const featuredCourse = computed(() => courses[2])
+const featuredCourse = computed(() => contentCourses.value[2] || contentCourses.value[0])
 const filteredCourses = computed(() => {
   const keyword = search.value.trim().toLowerCase()
-  if (!keyword) return courses
-  return courses.filter((course) => [course.title, course.author, course.category, course.level, course.description].join(' ').toLowerCase().includes(keyword))
+  if (!keyword) return contentCourses.value
+  return contentCourses.value.filter((course) => [course.title, course.author, course.category, course.level, course.description].join(' ').toLowerCase().includes(keyword))
 })
+
+function normalizeCourse(course, index) {
+  const fallback = courses[index] || courses[0]
+  return {
+    id: course.slug || String(course.id),
+    title: course.title || fallback.title,
+    author: course.author || fallback.author,
+    category: course.category || fallback.category,
+    image: course.image || course.image_url || fallback.image,
+    level: course.level || fallback.level,
+    lessons: Number(course.lessons ?? fallback.lessons ?? 0),
+    duration: course.duration || fallback.duration,
+    rating: Number(course.rating ?? fallback.rating ?? 0),
+    students: Number(course.students ?? fallback.students ?? 0),
+    progress: Number(course.progress ?? fallback.progress ?? 0),
+    tag: course.tag || fallback.tag,
+    description: course.description || fallback.description,
+    outcomes: Array.isArray(course.outcomes) && course.outcomes.length ? course.outcomes : fallback.outcomes,
+    syllabus: Array.isArray(course.syllabus) && course.syllabus.length ? course.syllabus : fallback.syllabus,
+    resources: Array.isArray(course.resources) && course.resources.length ? course.resources : fallback.resources,
+  }
+}
+
+function normalizeQuizQuestion(question) {
+  return {
+    q: question.q || question.question || question.title,
+    a: question.a || question.correct_answer,
+    options: Array.isArray(question.options) ? question.options : [],
+    explanation: question.explanation || '',
+    difficulty: question.difficulty || 'medium',
+    topic_tag: question.topic_tag || question.topic || '',
+  }
+}
+
+async function fetchJson(path) {
+  const response = await fetch(`${config.public.apiBase}${path}`)
+  if (!response.ok) throw new Error(`Request failed: ${path}`)
+  return response.json()
+}
+
+async function loadBackendContent() {
+  const [courseData, postData, quizData] = await Promise.all([
+    fetchJson('/api/courses'),
+    fetchJson('/api/content/blog-posts'),
+    fetchJson('/api/content/quiz-questions'),
+  ])
+
+  if (Array.isArray(courseData) && courseData.length) {
+    contentCourses.value = courseData.map(normalizeCourse)
+    if (!contentCourses.value.some((course) => course.id === selectedCourseId.value)) {
+      selectedCourseId.value = contentCourses.value[0].id
+    }
+  }
+  if (Array.isArray(postData) && postData.length) {
+    contentPosts.value = postData
+  }
+  if (Array.isArray(quizData) && quizData.length) {
+    backendQuizQuestions.value = quizData.map(normalizeQuizQuestion).filter((question) => question.q && question.a && question.options.length)
+    if (backendQuizQuestions.value.length) quizQuestions.value = [...backendQuizQuestions.value]
+  }
+}
 
 function saveUsers(nextUsers) {
   saveUsersDB(nextUsers)
@@ -479,7 +543,7 @@ function retryWrongAnswers() {
 }
 
 function restartQuiz() {
-  quizQuestions.value = [...defaultQuizQuestions]
+  quizQuestions.value = backendQuizQuestions.value.length ? [...backendQuizQuestions.value] : [...defaultQuizQuestions]
   quizIndex.value = 0
   quizScore.value = 0
   quizStreak.value = 0
@@ -604,7 +668,9 @@ onMounted(async () => {
   syncProfileForm()
   try {
     const response = await fetch(`${config.public.apiBase}/health`)
-    apiStatus.value = response.ok ? 'online' : 'offline'
+    if (!response.ok) throw new Error('Health check failed')
+    await loadBackendContent()
+    apiStatus.value = 'online'
   } catch {
     apiStatus.value = 'offline'
   }
@@ -742,7 +808,7 @@ onMounted(async () => {
             <h2>Nội dung có hình ảnh, tiến trình và thông tin chi tiết</h2>
           </div>
           <div class="course-grid">
-            <article v-for="course in courses.slice(0, 3)" :key="course.id" class="course-card featured-card">
+            <article v-for="course in contentCourses.slice(0, 3)" :key="course.id" class="course-card featured-card">
               <img :src="courseImage(course)" :alt="course.title" :style="`view-transition-name: course-img-${course.id}`" />
               <div class="course-body">
                 <div class="card-topline"><span>{{ course.tag }}</span><small>{{ course.rating }}/5</small></div>
@@ -1055,7 +1121,7 @@ onMounted(async () => {
         </div>
       </section>
 
-      <BlogPage v-if="route === 'blog'" :posts="posts" :asset="asset" @home="navigate('home')" />
+      <BlogPage v-if="route === 'blog'" :posts="contentPosts" :asset="asset" @home="navigate('home')" />
 
       <ContactPage v-if="route === 'contact'" :contact-form="contactForm" @home="navigate('home')" @submit="sendContact" />
 
@@ -1136,7 +1202,7 @@ onMounted(async () => {
             <h2>Đang học gần đây</h2>
             <div v-if="enrolledIds.length > 0" class="current-course-widget">
               <div class="widget-info">
-                <strong>{{ courses.find(c => c.id === enrolledIds[enrolledIds.length - 1])?.title || 'Khóa học' }}</strong>
+                <strong>{{ contentCourses.find(c => c.id === enrolledIds[enrolledIds.length - 1])?.title || 'Khóa học' }}</strong>
                 <span>Tiến độ: {{ completedIds.includes(enrolledIds[enrolledIds.length - 1]) ? '100%' : '15%' }}</span>
               </div>
               <div class="progress-bar"><div class="progress-fill" :style="`width: ${completedIds.includes(enrolledIds[enrolledIds.length - 1]) ? 100 : 15}%;`"></div></div>
@@ -1177,7 +1243,7 @@ onMounted(async () => {
             <p class="eyebrow">Thư viện của bạn</p>
             <h2>Khóa học đã đăng ký</h2>
             <div class="bento-course-grid" v-if="enrolledIds.length > 0">
-              <article v-for="course in courses.filter(c => enrolledIds.includes(c.id))" :key="course.id" class="mini-course-card">
+              <article v-for="course in contentCourses.filter(c => enrolledIds.includes(c.id))" :key="course.id" class="mini-course-card">
                 <img :src="courseImage(course)" :alt="course.title" />
                 <div class="mini-course-info">
                   <strong>{{ course.title }}</strong>
@@ -1196,7 +1262,7 @@ onMounted(async () => {
               :completed-courses="completedIds"
               :enrolled-courses="enrolledIds"
               :user-name="currentUser.name || currentUser.email"
-              :courses="courses"
+              :courses="contentCourses"
             />
           </div>
         </div>
