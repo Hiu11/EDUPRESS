@@ -7,10 +7,12 @@ from app.core.auth import get_current_user
 from app.db.session import get_db
 from app.models.quiz_history import QuizHistory as QuizHistoryModel
 from app.models.user import User
+import logging
 import time
 from datetime import datetime
 
 router = APIRouter(tags=["Quiz"])
+logger = logging.getLogger(__name__)
 
 
 class QuizRequest(BaseModel):
@@ -73,6 +75,14 @@ async def sync_quiz_history(
         db.commit()
         db.refresh(new_history)
         return {"success": True, "message": "Synced to PostgreSQL", "id": new_history.id}
-    except Exception as e:
-        # Fallback for when Postgres is not running locally during development
-        return {"success": True, "message": "Synced locally (DB unavailable)", "error": str(e)}
+    except Exception as exc:
+        db.rollback()
+        logger.exception("Quiz history sync failed for user_id=%s course_id=%s", current_user.id, req.course_id)
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "success": False,
+                "message": "Quiz history sync failed. Please retry later.",
+                "code": "quiz_sync_failed",
+            },
+        ) from exc
