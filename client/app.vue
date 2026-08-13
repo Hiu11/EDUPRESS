@@ -436,9 +436,14 @@ function playSound(type) {
 
 const isSyncing = ref(false)
 const syncSuccess = ref(false)
+const syncError = ref('')
+const pendingQuizSync = ref(null)
 
 async function syncQuizHistoryToDB(score, total, topic, maxStreak) {
+  pendingQuizSync.value = { score, total, topic, maxStreak }
   isSyncing.value = true
+  syncError.value = ''
+  syncSuccess.value = false
   try {
     const res = await fetch(`${config.public.apiBase}/api/quiz/sync`, {
       method: 'POST',
@@ -453,15 +458,26 @@ async function syncQuizHistoryToDB(score, total, topic, maxStreak) {
       })
     })
     const data = await res.json()
+    if (!res.ok || !data.success) {
+      const message = data?.detail?.message || data?.message || 'Không thể đồng bộ điểm. Vui lòng thử lại.'
+      throw new Error(message)
+    }
     if (data.success) {
+      pendingQuizSync.value = null
       syncSuccess.value = true
       setTimeout(() => syncSuccess.value = false, 3000)
     }
-  } catch(e) {
-    console.error("Sync failed", e)
+  } catch (e) {
+    syncError.value = e?.message || 'Không thể đồng bộ điểm. Vui lòng thử lại.'
   } finally {
     isSyncing.value = false
   }
+}
+
+function retryQuizSync() {
+  if (!pendingQuizSync.value || isSyncing.value) return
+  const { score, total, topic, maxStreak } = pendingQuizSync.value
+  syncQuizHistoryToDB(score, total, topic, maxStreak)
 }
 
 function answerQuiz() {
@@ -1118,6 +1134,10 @@ onMounted(async () => {
           
           <p v-if="isSyncing" style="color:var(--text-muted);font-size:0.85rem;text-align:center;">Đang đồng bộ điểm lên Cloud...</p>
           <p v-if="syncSuccess" style="color:#10b981;font-size:0.85rem;text-align:center;">Đã đồng bộ điểm lên PostgreSQL Cloud.</p>
+          <div v-if="syncError" class="sync-error-panel">
+            <p>{{ syncError }}</p>
+            <button class="btn-outline" type="button" @click="retryQuizSync" :disabled="isSyncing">Thử đồng bộ lại</button>
+          </div>
         </div>
       </section>
 
