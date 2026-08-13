@@ -1,9 +1,13 @@
 import json
 import asyncio
+import logging
 import redis.asyncio as redis
 from app.core.config import settings
 from app.db.mongo import get_database
 from app.core.sse import sse_manager
+
+logger = logging.getLogger(__name__)
+
 
 class EventBusConsumer:
     redis_client = None
@@ -17,9 +21,9 @@ class EventBusConsumer:
             self.pubsub = self.redis_client.pubsub()
             await self.pubsub.subscribe("edupress_events")
             self.task = asyncio.create_task(self.consume_loop())
-            print("[EventBus Consumer] Started successfully (Redis)")
-        except Exception as e:
-            print(f"[EventBus Consumer] Could not start: {e}")
+            logger.info("Event bus consumer started", extra={"event": "eventbus_consumer_started"})
+        except Exception:
+            logger.exception("Event bus consumer could not start", extra={"event": "eventbus_consumer_start_failed"})
 
     async def stop(self):
         if self.task:
@@ -51,7 +55,7 @@ class EventBusConsumer:
                     })
         except asyncio.CancelledError:
             pass
-        except Exception as e:
-            print(f"[EventBus Consumer] Error in loop: {e}")
+        except Exception:
+            logger.exception("Event bus consumer loop failed", extra={"event": "eventbus_consumer_loop_failed"})
 
 event_consumer = EventBusConsumer()

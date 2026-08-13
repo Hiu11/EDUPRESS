@@ -55,4 +55,32 @@ uvicorn app.main:app --host 0.0.0.0 --port "$PORT"
 - `REDIS_URL`: Redis connection string.
 - `MONGO_URL`: MongoDB connection string.
 - `JWT_SECRET`: production secret for JWT signing.
+- `LOG_LEVEL`: backend log level, `INFO` locally.
+- `LOG_FORMAT`: use `json` in production so deployment logs can be parsed.
 - `MODAL_WHISPER_URL`: optional Modal Whisper endpoint.
+
+## Observability
+
+The API emits structured request logs with `request_id`, method, path, status code, duration, and client IP. Incoming `X-Request-ID` values are preserved and returned on every response.
+
+Health endpoints:
+
+```text
+GET /health
+GET /health/deployment
+```
+
+`/health/deployment` checks PostgreSQL, MongoDB, Redis, and AI configuration. Use it for uptime monitors and deployment checks. Alert when it returns `503` or when any required subsystem reports `ok: false`.
+
+Frontend runtime errors can be reported to:
+
+```text
+POST /api/monitoring/frontend-error
+```
+
+For production, configure the deployment dashboard to watch:
+
+- API error rate and p95 request duration from structured logs.
+- `/health/deployment` readiness status.
+- Render service restarts and memory usage.
+- Vercel frontend build or runtime errors.

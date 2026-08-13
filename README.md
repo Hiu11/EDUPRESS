@@ -100,7 +100,29 @@ Set these in the deployment provider:
 | Render | `REDIS_URL` | Managed Redis connection string |
 | Render | `MONGO_URL` | MongoDB Atlas connection string |
 | Render | `JWT_SECRET` | JWT signing secret |
+| Render | `LOG_LEVEL` | Backend log level, usually `INFO` |
+| Render | `LOG_FORMAT` | Use `json` so deployment logs are machine readable |
 | Render | `MODAL_WHISPER_URL` | Optional Modal Whisper endpoint |
+
+### Observability
+
+The backend returns `X-Request-ID` on every request and writes structured logs with request method, path, status, duration, and errors.
+
+Production checks:
+
+```bash
+curl "$API_BASE/health"
+curl "$API_BASE/health/deployment"
+```
+
+Use `/health/deployment` for uptime checks and alerts. It verifies PostgreSQL, MongoDB, Redis, and AI configuration. Frontend runtime errors are reported to `/api/monitoring/frontend-error`.
+
+Recommended deployment dashboard checks:
+
+- API 5xx rate and p95 latency from Render logs.
+- `/health/deployment` status and failed subsystem name.
+- Render service restarts and memory usage.
+- Vercel frontend runtime and build failures.
 
 ### Database Migrations
 
