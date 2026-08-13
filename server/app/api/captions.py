@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from typing import List
 import httpx
 import base64
 from app.core.config import settings
+from app.core.rate_limit import rate_limit
 
 router = APIRouter()
 
@@ -29,7 +30,7 @@ async def get_captions(video_id: str):
     captions = curated_transcripts.get(video_id, curated_transcripts["default"])
     return captions
 
-@router.post("/captions/transcribe")
+@router.post("/captions/transcribe", dependencies=[Depends(rate_limit(settings.rate_limit_ai_per_minute, 60, "captions-transcribe"))])
 async def transcribe_audio(file: UploadFile = File(...)):
     """
     Nhận audio từ client, gọi lên Serverless GPU (Modal) để xử lý.
@@ -40,6 +41,14 @@ async def transcribe_audio(file: UploadFile = File(...)):
         
     try:
         audio_bytes = await file.read()
+        if len(audio_bytes) > settings.max_upload_bytes:
+            raise HTTPException(
+                status_code=413,
+                detail={
+                    "code": "upload_too_large",
+                    "message": f"Audio uploads are limited to {settings.max_upload_bytes} bytes.",
+                },
+            )
         audio_b64 = base64.b64encode(audio_bytes).decode('utf-8')
         
         async with httpx.AsyncClient() as client:
@@ -51,5 +60,7 @@ async def transcribe_audio(file: UploadFile = File(...)):
             response.raise_for_status()
             result = response.json()
             return result
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Inference Error: {str(e)}")

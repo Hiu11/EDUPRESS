@@ -57,7 +57,31 @@ uvicorn app.main:app --host 0.0.0.0 --port "$PORT"
 - `JWT_SECRET`: production secret for JWT signing.
 - `LOG_LEVEL`: backend log level, `INFO` locally.
 - `LOG_FORMAT`: use `json` in production so deployment logs can be parsed.
+- `RATE_LIMIT_ENABLED`: enables API throttling, `true` by default.
+- `RATE_LIMIT_AUTH_PER_MINUTE`: register and login attempts per client per minute.
+- `RATE_LIMIT_AI_PER_MINUTE`: expensive AI generation or transcription requests per client per minute.
+- `RATE_LIMIT_WRITE_PER_MINUTE`: write requests such as comments, quiz sync, and frontend error reports per client per minute.
+- `RATE_LIMIT_STREAM_PER_MINUTE`: SSE stream connection attempts per client per minute.
+- `MAX_PROMPT_HISTORY_ITEMS`: maximum quiz history items accepted for AI quiz generation.
+- `MAX_UPLOAD_BYTES`: maximum uploaded audio size for transcription.
 - `MODAL_WHISPER_URL`: optional Modal Whisper endpoint.
+
+## Abuse Protection
+
+Public and expensive endpoints return `429 Too Many Requests` with `Retry-After`, `X-RateLimit-Limit`, and `X-RateLimit-Remaining` headers when a client exceeds its configured window.
+
+Protected endpoints:
+
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `POST /api/quiz/generate`
+- `POST /api/quiz/sync`
+- `POST /api/captions/transcribe`
+- `POST /api/comments`
+- `GET /api/stream`
+- `POST /api/monitoring/frontend-error`
+
+Oversized quiz prompts or uploads return `413` with a stable error code so the frontend can show a retry or reduction message.
 
 ## Observability
 

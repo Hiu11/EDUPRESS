@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.core.auth import get_current_user
 from app.core.config import settings
+from app.core.rate_limit import rate_limit
 from app.core.security import create_access_token, hash_password, verify_password
 from app.db.session import get_db
 from app.models.user import User, UserRole
@@ -11,7 +12,12 @@ from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserR
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register",
+    response_model=UserRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(rate_limit(settings.rate_limit_auth_per_minute, 60, "auth-register"))],
+)
 def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     email = payload.email.strip().lower()
     existing_user = db.query(User).filter(User.email == email).first()
@@ -30,7 +36,11 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     return user
 
 
-@router.post("/login", response_model=TokenResponse)
+@router.post(
+    "/login",
+    response_model=TokenResponse,
+    dependencies=[Depends(rate_limit(settings.rate_limit_auth_per_minute, 60, "auth-login"))],
+)
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
     email = payload.email.strip().lower()
     user = db.query(User).filter(User.email == email).first()
