@@ -112,6 +112,22 @@ async function fetchJson(path) {
   return response.json()
 }
 
+function captureFrontendError(error, context = {}) {
+  if (!import.meta.client) return
+  const payload = {
+    message: error?.message || String(error),
+    stack: error?.stack || '',
+    route: window.location.hash || window.location.pathname,
+    source: 'edupress-client',
+    context,
+  }
+  fetch(`${config.public.apiBase}/api/monitoring/frontend-error`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }).catch(() => {})
+}
+
 async function loadBackendContent() {
   const [courseData, postData, quizData] = await Promise.all([
     fetchJson('/api/courses'),
@@ -678,6 +694,13 @@ function sendContact() {
 }
 
 onMounted(async () => {
+  window.addEventListener('error', (event) => {
+    captureFrontendError(event.error || event.message, { type: 'window_error', filename: event.filename, line: event.lineno })
+  })
+  window.addEventListener('unhandledrejection', (event) => {
+    captureFrontendError(event.reason || 'Unhandled promise rejection', { type: 'unhandled_rejection' })
+  })
+
   isMounted.value = true
   syncHashRoute()
   

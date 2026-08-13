@@ -4,6 +4,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     app_name: str = "EduPress API"
     app_env: str = "development"
+    log_level: str = "INFO"
+    log_format: str = "json"
     client_origin: str = "http://localhost:3000"
     database_url: str = "postgresql+psycopg://postgres:postgrespassword@localhost:5432/edupress_write"
     jwt_secret: str = "change-me-in-production"
