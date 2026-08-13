@@ -62,6 +62,8 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 Copy-Item .env.example .env
+alembic upgrade head
+python -m app.db.init_db
 uvicorn app.main:app --reload
 ```
 *Backend runs on `http://localhost:8000`*
@@ -99,6 +101,27 @@ Set these in the deployment provider:
 | Render | `MONGO_URL` | MongoDB Atlas connection string |
 | Render | `JWT_SECRET` | JWT signing secret |
 | Render | `MODAL_WHISPER_URL` | Optional Modal Whisper endpoint |
+
+### Database Migrations
+
+Backend schema changes are reviewed and applied through Alembic migrations. The FastAPI process does not create or alter tables during startup.
+
+Local development:
+
+```bash
+cd server
+alembic upgrade head
+python -m app.db.init_db
+```
+
+Production deploy command:
+
+```bash
+cd server
+alembic upgrade head && python -m app.db.init_db && uvicorn app.main:app --host 0.0.0.0 --port "$PORT"
+```
+
+Use `alembic revision --autogenerate -m "describe change"` for new schema changes, review the generated file, then commit it with the model change.
 
 ### 4. Deploy AI Serverless (Optional)
 

@@ -18,5 +18,5 @@ COPY . .
 # Expose the port (Render uses $PORT dynamically, but default to 8000)
 EXPOSE 8000
 
-# Start the application
-CMD sh -c "python -m app.db.init_db && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"
+# Apply reviewed migrations, seed local starter content if empty, then start the application.
+CMD sh -c "alembic upgrade head && python -m app.db.init_db && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"
