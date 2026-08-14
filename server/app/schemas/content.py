@@ -9,6 +9,12 @@ class ContentItemCreate(BaseModel):
     payload: dict[str, Any]
 
 
+class ContentItemUpdate(BaseModel):
+    slug: str | None = None
+    title: str | None = None
+    payload: dict[str, Any] | None = None
+
+
 class ContentItemRead(ContentItemCreate):
     id: int
     kind: str

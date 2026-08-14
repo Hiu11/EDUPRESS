@@ -7,7 +7,7 @@ import InBrowserIDE from './components/InBrowserIDE.vue'
 import TrophyRoom from './components/TrophyRoom.vue'
 import AICompanion from './components/AICompanion.vue'
 import SwipeableFlashcards from './components/SwipeableFlashcards.vue'
-import CourseCreatorStudio from './components/CourseCreatorStudio.vue'
+import ContentOperationsDashboard from './components/ContentOperationsDashboard.vue'
 import WhiteboardPro from './components/WhiteboardPro.vue'
 import BlogPage from './components/BlogPage.vue'
 import ContactPage from './components/ContactPage.vue'
@@ -33,7 +33,7 @@ const isMounted = ref(false)
 const showPlayer = ref(false)
 const showIDE = ref(false)
 const showFlashcards = ref(false)
-const showStudio = ref(false)
+const showOperationsDashboard = ref(false)
 const showWhiteboard = ref(false)
 
 const { data: users, saveData: saveUsersDB } = useLocalSync('users', [])
@@ -457,6 +457,29 @@ const isCompleted = computed(() => {
   return (currentUser.value.completedCourses || []).includes(selectedCourse.value.id)
 })
 
+const canManageContent = computed(() => ['instructor', 'admin'].includes(currentUser.value?.role))
+
+function updateManagedCourses(nextCourses) {
+  contentCourses.value = [...nextCourses]
+}
+
+function updateManagedPosts(nextPosts) {
+  contentPosts.value = [...nextPosts]
+}
+
+function updateManagedQuizQuestions(nextQuestions) {
+  backendQuizQuestions.value = [...nextQuestions]
+  quizQuestions.value = [...nextQuestions]
+}
+
+function updateManagedComments(nextComments) {
+  courseComments.value = [...nextComments]
+}
+
+function updateManagedUsers(nextUsers) {
+  saveUsers([...nextUsers])
+}
+
 // ── Quiz State (V3) ─────────────────────────────────────────────
 const quizAnswered = ref(false)
 const quizAnswers = ref([])
@@ -833,7 +856,7 @@ onMounted(async () => {
           <span>{{ themeLabel }}</span>
         </button>
         <span :class="['status-pill', apiStatus]">{{ apiStatusLabel }}</span>
-        <button v-if="currentUser && currentUser.role === 'instructor'" class="primary-btn" type="button" @click="showStudio = true" style="background: linear-gradient(135deg, #8b5cf6, #6366f1); border: none;">Soạn bài</button>
+        <button v-if="canManageContent" class="primary-btn" type="button" @click="showOperationsDashboard = true">Quản trị nội dung</button>
         <button class="practice-btn" type="button" @click="showIDE = true">Thực hành</button>
         <button v-if="currentUser" class="user-chip" type="button" @click="navigate('profile')">{{ currentUser.name || currentUser.email }}</button>
         <button v-if="currentUser" class="logout-link" type="button" @click="logout">Đăng xuất</button>
@@ -853,7 +876,22 @@ onMounted(async () => {
     <SwipeableFlashcards v-if="showFlashcards" :course="selectedCourse" @close="showFlashcards = false" />
 
     <!-- Course Creator Studio Overlay -->
-    <CourseCreatorStudio v-if="showStudio" @close="showStudio = false" />
+    <ContentOperationsDashboard
+      v-if="showOperationsDashboard"
+      :courses="contentCourses"
+      :posts="contentPosts"
+      :quiz-questions="quizQuestions"
+      :comments="courseComments"
+      :users="users"
+      :current-user="currentUser"
+      @close="showOperationsDashboard = false"
+      @update-courses="updateManagedCourses"
+      @update-posts="updateManagedPosts"
+      @update-quiz-questions="updateManagedQuizQuestions"
+      @update-comments="updateManagedComments"
+      @update-users="updateManagedUsers"
+      @notice="setNotice"
+    />
 
     <main>
       <template v-if="route === 'home'">
