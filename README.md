@@ -102,7 +102,20 @@ Set these in the deployment provider:
 | Render | `JWT_SECRET` | JWT signing secret |
 | Render | `LOG_LEVEL` | Backend log level, usually `INFO` |
 | Render | `LOG_FORMAT` | Use `json` so deployment logs are machine readable |
+| Render | `RATE_LIMIT_ENABLED` | Enables backend request throttling |
+| Render | `RATE_LIMIT_AUTH_PER_MINUTE` | Register and login attempts allowed per client per minute |
+| Render | `RATE_LIMIT_AI_PER_MINUTE` | Quiz generation and transcription requests allowed per client per minute |
+| Render | `RATE_LIMIT_WRITE_PER_MINUTE` | Comment, quiz sync, and frontend error report writes allowed per client per minute |
+| Render | `RATE_LIMIT_STREAM_PER_MINUTE` | SSE stream connection attempts allowed per client per minute |
+| Render | `MAX_PROMPT_HISTORY_ITEMS` | Maximum quiz history items accepted by AI quiz generation |
+| Render | `MAX_UPLOAD_BYTES` | Maximum audio upload size for transcription |
 | Render | `MODAL_WHISPER_URL` | Optional Modal Whisper endpoint |
+
+### Abuse Protection
+
+The backend applies per-client throttles to public and expensive endpoints. Throttled requests return `429 Too Many Requests` with `Retry-After`, `X-RateLimit-Limit`, and `X-RateLimit-Remaining` headers. Oversized quiz prompts and audio uploads return `413` with stable error codes for frontend handling.
+
+Protected endpoints include auth register/login, quiz generation and sync, caption transcription, comment writes, SSE stream connections, and frontend error reporting.
 
 ### Observability
 

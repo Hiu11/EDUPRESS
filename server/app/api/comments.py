@@ -5,6 +5,8 @@ from datetime import datetime
 import uuid
 
 from app.core.auth import get_current_user
+from app.core.config import settings
+from app.core.rate_limit import rate_limit
 from app.eventbus.producer import event_producer
 from app.db.mongo import get_database
 from app.models.user import User
@@ -23,7 +25,7 @@ class CommentResponse(BaseModel):
     created_at: str
 
 # COMMAND: Write model (Push to Event Bus)
-@router.post("/comments", response_model=dict)
+@router.post("/comments", response_model=dict, dependencies=[Depends(rate_limit(settings.rate_limit_write_per_minute, 60, "comments-write"))])
 async def create_comment(cmd: CommentCreateCommand, current_user: User = Depends(get_current_user)):
     comment_id = str(uuid.uuid4())
     event_data = {

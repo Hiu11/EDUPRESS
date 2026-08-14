@@ -4,6 +4,8 @@ from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from app.agents.quiz_generator import generate_adaptive_quiz_batch
 from app.core.auth import get_current_user
+from app.core.config import settings
+from app.core.rate_limit import rate_limit
 from app.db.session import get_db
 from app.models.quiz_history import QuizHistory as QuizHistoryModel
 from app.models.user import User
@@ -28,9 +30,22 @@ class QuizSyncRequest(BaseModel):
     topic: str
     max_streak: int
 
-@router.post("/quiz/generate")
+@router.post("/quiz/generate", dependencies=[Depends(rate_limit(settings.rate_limit_ai_per_minute, 60, "quiz-generate"))])
 async def generate_quiz(req: QuizRequest):
     try:
+        if len(req.history) > settings.max_prompt_history_items:
+            raise HTTPException(
+                status_code=413,
+                detail={
+                    "code": "prompt_too_large",
+                    "message": f"Quiz history is limited to {settings.max_prompt_history_items} items.",
+                },
+            )
+        if req.batch_size and req.batch_size > 10:
+            raise HTTPException(
+                status_code=413,
+                detail={"code": "batch_too_large", "message": "Quiz generation is limited to 10 questions per request."},
+            )
         start_time = time.time()
         result = generate_adaptive_quiz_batch(
             history=req.history,
@@ -52,10 +67,12 @@ async def generate_quiz(req: QuizRequest):
             "analyzer_reasoning": result.get("analyzer_reasoning", ""),
             "data": result["questions"]
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/quiz/sync")
+@router.post("/quiz/sync", dependencies=[Depends(rate_limit(settings.rate_limit_write_per_minute, 60, "quiz-sync"))])
 async def sync_quiz_history(
     req: QuizSyncRequest,
     db: Session = Depends(get_db),

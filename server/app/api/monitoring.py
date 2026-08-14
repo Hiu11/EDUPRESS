@@ -1,8 +1,11 @@
 import logging
 from typing import Any
 
-from fastapi import APIRouter, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from pydantic import BaseModel, Field
+
+from app.core.config import settings
+from app.core.rate_limit import rate_limit
 
 router = APIRouter(prefix="/monitoring", tags=["monitoring"])
 logger = logging.getLogger(__name__)
@@ -16,7 +19,11 @@ class FrontendErrorPayload(BaseModel):
     context: dict[str, Any] = Field(default_factory=dict)
 
 
-@router.post("/frontend-error", status_code=status.HTTP_202_ACCEPTED)
+@router.post(
+    "/frontend-error",
+    status_code=status.HTTP_202_ACCEPTED,
+    dependencies=[Depends(rate_limit(settings.rate_limit_write_per_minute, 60, "frontend-error"))],
+)
 async def capture_frontend_error(payload: FrontendErrorPayload, request: Request):
     logger.error(
         "Frontend error captured",

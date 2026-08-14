@@ -7,6 +7,13 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     log_format: str = "json"
     client_origin: str = "http://localhost:3000"
+    rate_limit_enabled: bool = True
+    rate_limit_auth_per_minute: int = 10
+    rate_limit_ai_per_minute: int = 3
+    rate_limit_write_per_minute: int = 30
+    rate_limit_stream_per_minute: int = 20
+    max_prompt_history_items: int = 40
+    max_upload_bytes: int = 10 * 1024 * 1024
     database_url: str = "postgresql+psycopg://postgres:postgrespassword@localhost:5432/edupress_write"
     jwt_secret: str = "change-me-in-production"
     jwt_expires_minutes: int = 1440
