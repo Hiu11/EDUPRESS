@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 
 from app.api.courses import router as courses_router
+from app.api.enrollments import router as enrollments_router
 from app.api.health import router as health_router
 from app.api.captions import router as captions_router
 from app.api.content import router as content_router
@@ -97,6 +98,7 @@ async def request_observability_middleware(request: Request, call_next):
 app.include_router(health_router)
 app.include_router(auth_router, prefix="/api")
 app.include_router(courses_router, prefix="/api")
+app.include_router(enrollments_router, prefix="/api")
 app.include_router(captions_router, prefix="/api")
 app.include_router(content_router, prefix="/api")
 app.include_router(quiz_router, prefix="/api")

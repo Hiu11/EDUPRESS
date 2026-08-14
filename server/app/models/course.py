@@ -1,7 +1,14 @@
-from sqlalchemy import Float, Integer, JSON, String, Text
+from enum import Enum
+
+from sqlalchemy import Boolean, Float, Integer, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
+
+
+class CourseAccessType(str, Enum):
+    free = "free"
+    paid = "paid"
 
 
 class Course(Base):
@@ -21,6 +28,10 @@ class Course(Base):
     students: Mapped[int | None] = mapped_column(Integer, default=0, nullable=True)
     progress: Mapped[int | None] = mapped_column(Integer, default=0, nullable=True)
     tag: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    access_type: Mapped[str] = mapped_column(String(20), default=CourseAccessType.free.value)
+    price_cents: Mapped[int] = mapped_column(Integer, default=0)
+    currency: Mapped[str] = mapped_column(String(3), default="VND")
+    manual_enrollment_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     outcomes: Mapped[list[str] | None] = mapped_column(JSON, default=list, nullable=True)
     syllabus: Mapped[list[str] | None] = mapped_column(JSON, default=list, nullable=True)
     resources: Mapped[list[str] | None] = mapped_column(JSON, default=list, nullable=True)

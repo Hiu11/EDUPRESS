@@ -1,5 +1,6 @@
 from app.models.content_item import ContentItem  # noqa: F401
 from app.models.course import Course  # noqa: F401
+from app.models.enrollment import Enrollment  # noqa: F401
 from app.models.user import User  # noqa: F401
 from app.db.session import SessionLocal
 
@@ -18,6 +19,10 @@ SEED_COURSES = [
         "rating": 4.8,
         "students": 482,
         "progress": 72,
+        "access_type": "paid",
+        "price_cents": 320000000,
+        "currency": "VND",
+        "manual_enrollment_enabled": True,
         "tag": "Bán chạy",
         "outcomes": ["Hiểu quy trình xây mô hình AI", "Biết chuẩn bị dữ liệu và đánh giá kết quả", "Tạo prototype AI assistant cho lớp học"],
         "syllabus": ["Tổng quan AI và ứng dụng giáo dục", "Machine learning căn bản", "Xử lý dữ liệu học viên", "Prompt workflow và đánh giá mô hình", "Triển khai demo AI assistant"],
@@ -36,6 +41,10 @@ SEED_COURSES = [
         "rating": 4.7,
         "students": 356,
         "progress": 46,
+        "access_type": "free",
+        "price_cents": 0,
+        "currency": "VND",
+        "manual_enrollment_enabled": True,
         "tag": "Căn bản",
         "outcomes": ["Thiết kế class đúng trách nhiệm", "Refactor code procedural sang OOP", "Xây mini project quản lý khóa học"],
         "syllabus": ["Class, object và constructor", "Encapsulation và validation", "Inheritance và composition", "Polymorphism", "Project cuối khóa"],
@@ -54,6 +63,10 @@ SEED_COURSES = [
         "rating": 4.9,
         "students": 628,
         "progress": 88,
+        "access_type": "paid",
+        "price_cents": 250000000,
+        "currency": "VND",
+        "manual_enrollment_enabled": True,
         "tag": "Project-based",
         "outcomes": ["Xây SPA bằng component", "Thiết kế REST API", "Kết nối database và deploy sản phẩm"],
         "syllabus": ["HTML/CSS nâng cao", "Vue component architecture", "FastAPI REST endpoint", "PostgreSQL data modeling", "Deploy và review sản phẩm"],
@@ -72,6 +85,10 @@ SEED_COURSES = [
         "rating": 4.6,
         "students": 241,
         "progress": 34,
+        "access_type": "free",
+        "price_cents": 0,
+        "currency": "VND",
+        "manual_enrollment_enabled": True,
         "tag": "Workshop",
         "outcomes": ["Thiết kế wireframe LMS", "Xây visual system", "Review accessibility cơ bản"],
         "syllabus": ["Design principles", "Wireframe và user flow", "Responsive UI", "Design system", "Prototype review"],

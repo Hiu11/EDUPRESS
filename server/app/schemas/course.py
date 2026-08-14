@@ -15,6 +15,10 @@ class CourseBase(BaseModel):
     students: int = 0
     progress: int = 0
     tag: str | None = None
+    access_type: str = "free"
+    price_cents: int = 0
+    currency: str = "VND"
+    manual_enrollment_enabled: bool = True
     outcomes: list[str] = Field(default_factory=list)
     syllabus: list[str] = Field(default_factory=list)
     resources: list[str] = Field(default_factory=list)
@@ -26,5 +30,18 @@ class CourseCreate(CourseBase):
 
 class CourseRead(CourseBase):
     id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CourseContentRead(BaseModel):
+    id: int
+    slug: str | None = None
+    title: str
+    access_type: str
+    outcomes: list[str] = Field(default_factory=list)
+    syllabus: list[str] = Field(default_factory=list)
+    resources: list[str] = Field(default_factory=list)
+    access_state: str
 
     model_config = ConfigDict(from_attributes=True)
