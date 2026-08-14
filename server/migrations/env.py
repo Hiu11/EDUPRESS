@@ -7,6 +7,7 @@ from app.core.config import settings
 from app.db.base import Base
 from app.models.content_item import ContentItem  # noqa: F401
 from app.models.course import Course  # noqa: F401
+from app.models.enrollment import Enrollment  # noqa: F401
 from app.models.quiz_history import QuizHistory  # noqa: F401
 from app.models.user import User  # noqa: F401
 

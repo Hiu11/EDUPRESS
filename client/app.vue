@@ -59,6 +59,7 @@ const { isOnline, networkState } = useNetworkStatus()
 const currentUser = computed(() => users.value.find((user) => user.email === currentUserEmail.value))
 const selectedCourse = computed(() => contentCourses.value.find((course) => course.id === selectedCourseId.value) || contentCourses.value[0])
 const enrolledIds = computed(() => currentUser.value?.registeredCourses || [])
+const pendingEnrollmentIds = computed(() => currentUser.value?.pendingEnrollments || [])
 const completedIds = computed(() => currentUser.value?.completedCourses || [])
 
 const quizIndex = ref(0)
@@ -88,6 +89,10 @@ function normalizeCourse(course, index) {
     students: Number(course.students ?? fallback.students ?? 0),
     progress: Number(course.progress ?? fallback.progress ?? 0),
     tag: course.tag || fallback.tag,
+    access_type: course.access_type || fallback.access_type || (Number(course.price_cents || 0) > 0 ? 'paid' : 'free'),
+    price_cents: Number(course.price_cents ?? fallback.price_cents ?? 0),
+    currency: course.currency || fallback.currency || 'VND',
+    manual_enrollment_enabled: course.manual_enrollment_enabled ?? fallback.manual_enrollment_enabled ?? true,
     description: course.description || fallback.description,
     outcomes: Array.isArray(course.outcomes) && course.outcomes.length ? course.outcomes : fallback.outcomes,
     syllabus: Array.isArray(course.syllabus) && course.syllabus.length ? course.syllabus : fallback.syllabus,
@@ -283,7 +288,7 @@ async function register() {
     const credential = await navigator.credentials.create({ publicKey: publicKeyCredentialCreationOptions });
     const passkeyId = credential.id;
     
-    saveUsers([...users.value, { ...payload, passkeyId: passkeyId, role: 'student', registeredCourses: [], completedCourses: [] }])
+    saveUsers([...users.value, { ...payload, passkeyId: passkeyId, role: 'student', registeredCourses: [], pendingEnrollments: [], completedCourses: [] }])
     saveEmailDB(payload.email)
     registerForm.value = { name: '', email: '' }
     loginForm.value = { email: '' }
@@ -355,16 +360,73 @@ function updateProfile() {
 }
 
 
+function isPaidCourse(course) {
+  return course?.access_type === 'paid' || Number(course?.price_cents || 0) > 0
+}
+
+function formatCoursePrice(course) {
+  if (!isPaidCourse(course)) return 'Miễn phí'
+  const amount = Number(course.price_cents || 0) / 100
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: course.currency || 'VND',
+    maximumFractionDigits: 0,
+  }).format(amount)
+}
+
+function courseEnrollmentState(course) {
+  if (!course) return 'unknown'
+  if ((currentUser.value?.registeredCourses || []).includes(course.id)) return 'enrolled'
+  if ((currentUser.value?.pendingEnrollments || []).includes(course.id)) return 'pending'
+  return isPaidCourse(course) ? 'paid_required' : 'free'
+}
+
+function enrollmentButtonLabel(course) {
+  const state = courseEnrollmentState(course)
+  if (state === 'enrolled') return 'Đang học'
+  if (state === 'pending') return 'Chờ duyệt'
+  if (state === 'paid_required') return 'Yêu cầu ghi danh'
+  return 'Đăng ký miễn phí'
+}
+
+function canAccessCourse(course) {
+  const state = courseEnrollmentState(course)
+  return state === 'free' || state === 'enrolled'
+}
+
+function blockPaidCourseAccess(course) {
+  if (canAccessCourse(course)) return false
+  if (!currentUser.value) {
+    setNotice('Đăng nhập để yêu cầu ghi danh khóa học trả phí.')
+    navigate('auth')
+    return true
+  }
+  if (courseEnrollmentState(course) === 'pending') {
+    setNotice('Yêu cầu ghi danh đang chờ duyệt thủ công.')
+    return true
+  }
+  setNotice('Khóa trả phí cần được duyệt ghi danh trước khi học.')
+  return true
+}
+
+
 function enroll(courseId) {
   if (!currentUser.value) {
     setNotice('Bạn cần đăng nhập để đăng ký khóa học.')
     return navigate('auth')
   }
+  const course = contentCourses.value.find((item) => item.id === courseId)
+  const state = courseEnrollmentState(course)
+  if (state === 'enrolled') return setNotice('Bạn đang học khóa này.')
+  if (state === 'pending') return setNotice('Yêu cầu ghi danh đang chờ duyệt.')
   saveUsers(users.value.map((user) => {
     if (user.email !== currentUserEmail.value) return user
+    if (isPaidCourse(course)) {
+      return { ...user, pendingEnrollments: [...new Set([...(user.pendingEnrollments || []), courseId])] }
+    }
     return { ...user, registeredCourses: [...new Set([...(user.registeredCourses || []), courseId])] }
   }))
-  setNotice('Đã đăng ký khóa học.')
+  setNotice(isPaidCourse(course) ? 'Đã gửi yêu cầu ghi danh. EduPress sẽ duyệt thủ công.' : 'Đã đăng ký khóa học.')
 }
 
 function markCompleted(courseId) {
@@ -383,6 +445,11 @@ function markCompleted(courseId) {
 const isEnrolled = computed(() => {
   if (!currentUser.value || !selectedCourse.value) return false
   return (currentUser.value.registeredCourses || []).includes(selectedCourse.value.id)
+})
+
+const isEnrollmentPending = computed(() => {
+  if (!currentUser.value || !selectedCourse.value) return false
+  return (currentUser.value.pendingEnrollments || []).includes(selectedCourse.value.id)
 })
 
 const isCompleted = computed(() => {
@@ -657,6 +724,7 @@ function trackInteraction(courseId, action) {
 }
 
 function openTool(tool) {
+  if (blockPaidCourseAccess(selectedCourse.value)) return
   if (tool === 'video') showPlayer.value = true
   if (tool === 'ide') showIDE.value = true
   if (tool === 'flashcards') showFlashcards.value = true
@@ -680,6 +748,7 @@ const completionConditions = computed(() => {
 })
 
 function tryMarkCompleted() {
+  if (blockPaidCourseAccess(selectedCourse.value)) return
   if (completionConditions.value.every(c => c.met)) {
     markCompleted(selectedCourseId.value)
   } else {
@@ -900,9 +969,13 @@ onMounted(async () => {
               <h2>{{ course.title }}</h2>
               <p>{{ course.description }}</p>
               <div class="course-meta-row"><span>{{ course.author }}</span><span>{{ course.lessons }} bài học</span><span>{{ course.students }} học viên</span></div>
+              <div class="course-access-row">
+                <span :class="['access-badge', courseEnrollmentState(course)]">{{ enrollmentButtonLabel(course) }}</span>
+                <strong>{{ formatCoursePrice(course) }}</strong>
+              </div>
               <div class="card-actions">
                 <button class="primary-btn" type="button" :data-testid="`course-detail-${course.id}`" @click="navigate('course-detail', course.id)">Xem chi tiết</button>
-                <button class="secondary-btn" type="button" :data-testid="`course-enroll-${course.id}`" @click="enroll(course.id)">Đăng ký</button>
+                <button class="secondary-btn" type="button" :data-testid="`course-enroll-${course.id}`" @click="enroll(course.id)">{{ enrollmentButtonLabel(course) }}</button>
               </div>
             </div>
           </article>
@@ -917,7 +990,12 @@ onMounted(async () => {
             <p class="eyebrow">{{ selectedCourse.category }} · {{ selectedCourse.level }}</p>
             <h1>{{ selectedCourse.title }}</h1>
             <p>{{ selectedCourse.description }}</p>
-            <div class="detail-meta"><span>{{ selectedCourse.author }}</span><span>{{ selectedCourse.duration }}</span><span>{{ selectedCourse.rating }}/5</span><span>{{ selectedCourse.students }} học viên</span></div>
+            <div class="detail-meta"><span>{{ selectedCourse.author }}</span><span>{{ selectedCourse.duration }}</span><span>{{ selectedCourse.rating }}/5</span><span>{{ selectedCourse.students }} học viên</span><span>{{ formatCoursePrice(selectedCourse) }}</span></div>
+            <div class="course-access-row detail-access">
+              <span :class="['access-badge', courseEnrollmentState(selectedCourse)]">{{ enrollmentButtonLabel(selectedCourse) }}</span>
+              <small v-if="isEnrollmentPending">Đội ngũ EduPress sẽ duyệt thủ công trước khi mở nội dung trả phí.</small>
+              <small v-else-if="isPaidCourse(selectedCourse) && !isEnrolled">Khóa trả phí cần được ghi danh trước khi mở bài học, tài nguyên và công cụ học.</small>
+            </div>
             <div class="card-actions action-grid">
               <!-- Primary action -->
               <button class="btn-hero" type="button" @click="openTool('video')">Xem bài học</button>
@@ -932,7 +1010,7 @@ onMounted(async () => {
 
               <!-- Secondary -->
               <div class="action-secondary">
-                <button v-if="!isEnrolled" class="btn-outline" type="button" @click="enroll(selectedCourse.id)">Đăng ký học</button>
+                <button v-if="!isEnrolled" class="btn-outline" type="button" @click="enroll(selectedCourse.id)">{{ enrollmentButtonLabel(selectedCourse) }}</button>
                 <button v-else-if="!isCompleted" class="btn-outline" style="border-color: #10b981; color: #10b981;" type="button" @click="tryMarkCompleted">Đánh dấu hoàn thành</button>
                 <button v-else class="btn-outline" style="border-color: #10b981; background: rgba(16, 185, 129, 0.1); color: #10b981; cursor: default;" type="button">Đã hoàn thành</button>
                 
@@ -942,7 +1020,15 @@ onMounted(async () => {
           </div>
         </div>
 
-        <div class="detail-content-grid">
+        <div v-if="!canAccessCourse(selectedCourse)" class="access-gate panel rich-panel">
+          <p class="eyebrow">Enrollment required</p>
+          <h2>Nội dung trả phí đang được khóa</h2>
+          <p v-if="isEnrollmentPending">Yêu cầu ghi danh của bạn đang chờ duyệt. Sau khi được duyệt, bài học, tài nguyên và công cụ học sẽ mở lại.</p>
+          <p v-else>Gửi yêu cầu ghi danh để EduPress xác nhận thủ công trước khi mở toàn bộ nội dung khóa học.</p>
+          <button class="primary-btn" type="button" @click="enroll(selectedCourse.id)">{{ enrollmentButtonLabel(selectedCourse) }}</button>
+        </div>
+
+        <div v-else class="detail-content-grid">
           <section class="panel rich-panel">
             <p class="eyebrow">Bạn sẽ đạt được</p>
             <h2>Kết quả đầu ra</h2>
