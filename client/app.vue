@@ -743,14 +743,14 @@ onMounted(async () => {
     <!-- Floating study companion -->
     <AICompanion />
     <header class="site-header">
-      <button class="brand" type="button" @click="navigate('home')">
+      <button class="brand" type="button" data-testid="brand-home" @click="navigate('home')">
         <img :src="generatedAsset('edupress-logo.svg')" alt="EduPress" />
         <span class="logo-text">EduPress</span>
       </button>
 
       <nav class="nav-links" aria-label="Primary">
-        <button v-for="item in navItems" :key="item.id" :class="{ active: route === item.id }" type="button" @click="navigate(item.id)">{{ item.label }}</button>
-        <button type="button" :class="{ active: route === 'quiz' }" @click="navigate('quiz')">Quiz</button>
+        <button v-for="item in navItems" :key="item.id" :class="{ active: route === item.id }" type="button" :data-testid="`nav-${item.id}`" @click="navigate(item.id)">{{ item.label }}</button>
+        <button type="button" data-testid="nav-quiz" :class="{ active: route === 'quiz' }" @click="navigate('quiz')">Quiz</button>
       </nav>
 
       <div class="header-actions">
@@ -788,14 +788,14 @@ onMounted(async () => {
 
     <main>
       <template v-if="route === 'home'">
-        <section class="hero-section">
+        <section class="hero-section" data-testid="home-page">
           <div class="hero-copy">
             <p class="eyebrow">Online learning platform</p>
             <h1>Học công nghệ theo lộ trình rõ ràng, có quiz và tiến trình thật.</h1>
             <p>EduPress kết hợp khóa học, bài kiểm tra, hồ sơ học tập và nội dung tin tức để tạo một trải nghiệm LMS đầy đủ hơn bản HTML cũ.</p>
             <div class="hero-actions">
-              <button class="primary-btn" type="button" @click="navigate('courses')">Khám phá khóa học</button>
-              <button class="secondary-btn" type="button" @click="navigate('course-detail', featuredCourse.id)">Xem khóa nổi bật</button>
+              <button class="primary-btn" type="button" data-testid="home-browse-courses" @click="navigate('courses')">Khám phá khóa học</button>
+              <button class="secondary-btn" type="button" data-testid="home-featured-course" @click="navigate('course-detail', featuredCourse.id)">Xem khóa nổi bật</button>
             </div>
             <div class="hero-proof">
               <span>4.8/5 đánh giá</span>
@@ -880,20 +880,20 @@ onMounted(async () => {
         </section>
       </template>
 
-      <section v-if="route === 'courses'" class="content-section page-section">
+      <section v-if="route === 'courses'" class="content-section page-section" data-testid="courses-page">
         <div class="page-hero compact-hero">
           <div>
             <p class="eyebrow">Course catalog</p>
             <h1>Danh sách khóa học</h1>
             <p>Tìm khóa học theo lĩnh vực, cấp độ hoặc giảng viên. Mỗi khóa có lộ trình, tài nguyên và quiz liên quan.</p>
           </div>
-          <input v-model="search" type="search" placeholder="Tìm AI, Web, OOP..." />
+          <input v-model="search" type="search" data-testid="course-search" placeholder="Tìm AI, Web, OOP..." />
         </div>
         
         <LearningUniverse :courses="filteredCourses" @selectCourse="navigate('course-detail', $event)" />
 
         <div class="course-list">
-          <article v-for="course in filteredCourses" :key="course.id" class="course-row-card">
+          <article v-for="course in filteredCourses" :key="course.id" class="course-row-card" :data-testid="`course-card-${course.id}`">
             <img :src="courseImage(course)" :alt="course.title" :style="`view-transition-name: course-img-${course.id}`" />
             <div class="course-row-content">
               <div class="card-topline"><span>{{ course.category }}</span><small>{{ course.level }}</small></div>
@@ -901,15 +901,15 @@ onMounted(async () => {
               <p>{{ course.description }}</p>
               <div class="course-meta-row"><span>{{ course.author }}</span><span>{{ course.lessons }} bài học</span><span>{{ course.students }} học viên</span></div>
               <div class="card-actions">
-                <button class="primary-btn" type="button" @click="navigate('course-detail', course.id)">Xem chi tiết</button>
-                <button class="secondary-btn" type="button" @click="enroll(course.id)">Đăng ký</button>
+                <button class="primary-btn" type="button" :data-testid="`course-detail-${course.id}`" @click="navigate('course-detail', course.id)">Xem chi tiết</button>
+                <button class="secondary-btn" type="button" :data-testid="`course-enroll-${course.id}`" @click="enroll(course.id)">Đăng ký</button>
               </div>
             </div>
           </article>
         </div>
       </section>
 
-      <section v-if="route === 'course-detail'" class="content-section page-section detail-page">
+      <section v-if="route === 'course-detail'" class="content-section page-section detail-page" data-testid="course-detail-page">
         <div class="detail-hero">
           <img :src="courseImage(selectedCourse)" :alt="selectedCourse.title" :style="`view-transition-name: course-img-${selectedCourse.id}`" />
           <div>
@@ -970,7 +970,7 @@ onMounted(async () => {
         </div>
 
         <!-- Live Comments Section (Realtime Event Sourcing) -->
-        <div class="live-comments-section" style="margin-top: 48px;">
+        <div class="live-comments-section" data-testid="comments-section" style="margin-top: 48px;">
           <div class="section-heading">
             <p class="eyebrow">Real-time Discussion</p>
             <h2>Thảo luận trực tiếp</h2>
@@ -978,8 +978,8 @@ onMounted(async () => {
           </div>
           
           <div class="comment-input-area" style="display:flex;gap:12px;margin-bottom:24px;">
-            <input v-model="commentInput" @keyup.enter="submitComment" type="text" placeholder="Viết bình luận của bạn..." style="flex:1;padding:12px 16px;border-radius:var(--radius-sm);border:1px solid var(--border-glass);background:var(--bg-surface);color:var(--text-main);" />
-            <button class="primary-btn" type="button" @click="submitComment">Gửi bình luận</button>
+            <input v-model="commentInput" data-testid="comment-input" @keyup.enter="submitComment" type="text" placeholder="Viết bình luận của bạn..." style="flex:1;padding:12px 16px;border-radius:var(--radius-sm);border:1px solid var(--border-glass);background:var(--bg-surface);color:var(--text-main);" />
+            <button class="primary-btn" type="button" data-testid="comment-submit" @click="submitComment">Gửi bình luận</button>
           </div>
           
           <div class="comments-list" style="display:flex;flex-direction:column;gap:16px;">
@@ -1007,7 +1007,7 @@ onMounted(async () => {
         </div>
       </section>
 
-      <section v-if="route === 'quiz'" class="content-section page-section quiz-layout">
+      <section v-if="route === 'quiz'" class="content-section page-section quiz-layout" data-testid="quiz-page">
         <!-- Header -->
         <div class="quiz-intro">
           <button class="text-btn" style="display:block;margin-bottom:24px;padding-left:0;" type="button" @click="navigate('course-detail', selectedCourseId)">Quay lại khóa học</button>
@@ -1037,7 +1037,7 @@ onMounted(async () => {
         </div>
 
         <!-- Active Question -->
-        <div v-if="!quizFinished" class="quiz-card-v2">
+        <div v-if="!quizFinished" class="quiz-card-v2" data-testid="quiz-card">
           <!-- Top bar: progress + timer + streak -->
           <div class="quiz-top-bar">
             <div class="quiz-progress-track" style="flex:1">
@@ -1070,6 +1070,7 @@ onMounted(async () => {
               v-for="(option, idx) in quizQuestions[quizIndex].options"
               :key="option"
               class="quiz-option-btn"
+              :data-testid="`quiz-option-${idx}`"
               :class="{
                 'selected': !quizAnswered && selectedAnswer === option,
                 'correct': quizAnswered && option === quizQuestions[quizIndex].a,
@@ -1101,13 +1102,13 @@ onMounted(async () => {
           </Transition>
 
           <!-- Submit button (before answering) -->
-          <button v-if="!quizAnswered" class="quiz-submit-btn" type="button" @click="answerQuiz" :disabled="!selectedAnswer">
+          <button v-if="!quizAnswered" class="quiz-submit-btn" type="button" data-testid="quiz-submit" @click="answerQuiz" :disabled="!selectedAnswer">
             Xác nhận đáp án
           </button>
         </div>
 
         <!-- Result Screen -->
-        <div v-else class="quiz-result-v2">
+        <div v-else class="quiz-result-v2" data-testid="quiz-result">
           <div class="result-circle" :class="{ 'perfect': quizScore === quizQuestions.length, 'pass': quizScore >= quizQuestions.length * 0.6 }">
             <span class="result-score">{{ quizScore }}/{{ quizQuestions.length }}</span>
             <span class="result-label">{{ quizScore === quizQuestions.length ? 'Hoàn hảo' : quizScore >= quizQuestions.length * 0.6 ? 'Tốt lắm' : 'Cần ôn thêm' }}</span>

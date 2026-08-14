@@ -168,7 +168,8 @@ modal deploy ai_inference/whisper_modal.py
 ## CI/CD & Testing
 
 The project uses GitHub Actions for continuous integration:
-- **`ai-e2e-cdn.yml`**: Runs autonomous UI tests using GPT-4o Vision to visually verify core user flows, records test videos, and automatically deploys successful builds to Vercel Edge.
+- **`qa-smoke.yml`**: Runs deterministic Playwright smoke tests as the required product gate for homepage, course catalog, course detail, quiz, comments, contact form, and deployment health checks.
+- **`ai-e2e-cdn.yml`**: Runs the same required smoke tests first, then runs Midscene AI visual tests only as an optional non-blocking layer when `OPENAI_API_KEY` is configured.
 - **`deploy-modal.yml`**: Triggers whenever AI Inference code changes, automatically spinning up new Serverless GPU images.
 
 ---

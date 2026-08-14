@@ -4,70 +4,77 @@ const apiBase = process.env.SMOKE_API_BASE;
 
 async function openApp(page) {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.getByLabel('Primary')).toBeVisible();
+  await expect(page.getByTestId('home-page')).toBeVisible();
   await expect(page.locator('.app-frame')).toHaveAttribute('data-mounted', 'true', { timeout: 30000 });
 }
 
-async function navigateByPrimaryNav(page, index, expectedHash) {
-  await page.locator('.nav-links button').nth(index).click();
-  await page.waitForFunction((hash) => window.location.hash === hash, expectedHash);
+async function gotoSection(page, section, targetTestId = `${section}-page`) {
+  await page.getByTestId(`nav-${section}`).click();
+  await expect(page.getByTestId(targetTestId)).toBeVisible();
 }
 
-test.describe('production smoke checks', () => {
-  test('frontend renders the primary learning shell', async ({ page }) => {
+test.describe('deterministic product smoke tests', () => {
+  test('homepage renders the learning shell and primary navigation', async ({ page }) => {
     await openApp(page);
 
-    const primaryNav = page.getByLabel('Primary');
-
-    await expect(page.locator('body')).toContainText('EduPress');
-    await expect(primaryNav.getByRole('button', { name: /Trang chủ/i })).toBeVisible();
-    await expect(primaryNav.getByRole('button', { name: /^Khóa học$/i })).toBeVisible();
-    await expect(primaryNav.getByRole('button', { name: /^Quiz$/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Khám phá khóa học/i })).toBeVisible();
+    await expect(page.getByTestId('brand-home')).toBeVisible();
+    await expect(page.getByTestId('nav-home')).toBeVisible();
+    await expect(page.getByTestId('nav-courses')).toBeVisible();
+    await expect(page.getByTestId('nav-blog')).toBeVisible();
+    await expect(page.getByTestId('nav-contact')).toBeVisible();
+    await expect(page.getByTestId('nav-quiz')).toBeVisible();
+    await expect(page.getByTestId('home-browse-courses')).toBeVisible();
+    await expect(page.getByTestId('home-featured-course')).toBeVisible();
   });
 
-  test('course catalog loads without a blank screen', async ({ page }) => {
+  test('course catalog supports browsing and search', async ({ page }) => {
     await openApp(page);
-    await navigateByPrimaryNav(page, 1, '#courses');
+    await gotoSection(page, 'courses');
 
-    await expect.poll(async () => page.locator('.course-row-card').count()).toBeGreaterThan(0);
-    await expect(page.getByPlaceholder(/Tìm AI, Web, OOP/i)).toBeVisible();
+    await expect(page.getByTestId('course-search')).toBeVisible();
+    await expect.poll(async () => page.locator('[data-testid^="course-card-"]').count()).toBeGreaterThan(0);
+
+    await page.getByTestId('course-search').fill('web');
+    await expect.poll(async () => page.locator('[data-testid^="course-card-"]').count()).toBeGreaterThan(0);
   });
 
-  test('built-in quiz can answer the first question', async ({ page }) => {
+  test('course detail exposes the learning content and comments path', async ({ page }) => {
     await openApp(page);
-    await navigateByPrimaryNav(page, 4, '#quiz');
+    await gotoSection(page, 'courses');
 
-    await expect(page.locator('.quiz-option-btn').first()).toBeVisible();
-    await page.locator('.quiz-option-btn').first().click();
-    await page.locator('.quiz-submit-btn').click();
+    await page.locator('[data-testid^="course-detail-"]').first().click();
+
+    await expect(page.getByTestId('course-detail-page')).toBeVisible();
+    await expect(page.getByTestId('comments-section')).toBeVisible();
+    await expect(page.getByTestId('comment-input')).toBeVisible();
+    await expect(page.getByTestId('comment-submit')).toBeVisible();
+
+    await page.getByTestId('comment-input').fill('Deterministic smoke comment draft');
+    await expect(page.getByTestId('comment-input')).toHaveValue('Deterministic smoke comment draft');
+  });
+
+  test('built-in quiz can answer and explain the first question', async ({ page }) => {
+    await openApp(page);
+    await gotoSection(page, 'quiz');
+
+    await expect(page.getByTestId('quiz-card')).toBeVisible();
+    await page.getByTestId('quiz-option-0').click();
+    await page.getByTestId('quiz-submit').click();
+
     await expect(page.locator('.quiz-explanation')).toBeVisible();
   });
 
-  test('course detail exposes the comments path', async ({ page }) => {
+  test('blog and contact form render and accept a local submission', async ({ page }) => {
     await openApp(page);
-    await navigateByPrimaryNav(page, 1, '#courses');
+    await gotoSection(page, 'blog');
 
-    await page.locator('.course-row-card .primary-btn').first().click();
+    await expect.poll(async () => page.locator('[data-testid^="blog-post-"]').count()).toBeGreaterThan(0);
 
-    await expect(page.locator('.live-comments-section')).toBeVisible();
-    await expect(page.locator('.comment-input-area input')).toBeVisible();
-    await expect(page.locator('.comment-input-area button')).toBeVisible();
-  });
-
-  test('blog and contact extracted pages render', async ({ page }) => {
-    await openApp(page);
-    await navigateByPrimaryNav(page, 2, '#blog');
-
-    await expect(page.locator('.blog-hero')).toBeVisible();
-    await expect.poll(async () => page.locator('.post-card').count()).toBeGreaterThan(0);
-
-    await navigateByPrimaryNav(page, 3, '#contact');
-    await expect(page.locator('.contact-copy')).toBeVisible();
-    await page.locator('.form-card input').first().fill('QA User');
-    await page.locator('.form-card input[type="email"]').fill('qa@example.com');
-    await page.locator('.form-card textarea').fill('Smoke test message');
-    await page.locator('.form-card button[type="submit"]').click();
+    await gotoSection(page, 'contact');
+    await page.getByTestId('contact-name').fill('QA User');
+    await page.getByTestId('contact-email').fill('qa@example.com');
+    await page.getByTestId('contact-message').fill('Smoke test message');
+    await page.getByTestId('contact-submit').click();
     await expect(page.locator('.toast')).toBeVisible();
   });
 

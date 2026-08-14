@@ -40,7 +40,12 @@ jobs:
         continue-on-error: true
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: npm run test:ai
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "OPENAI_API_KEY is not configured. Skipping optional AI E2E tests."
+            exit 0
+          fi
+          npm run test:ai
 
       - name: Upload Playwright report
         if: always()
