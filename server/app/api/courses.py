@@ -64,6 +64,23 @@ def create_course(
     return _serialize_course(course)
 
 
+@router.patch("/{course_id}", response_model=CourseRead)
+def update_course(
+    course_id: int,
+    payload: CourseCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(UserRole.instructor, UserRole.admin)),
+):
+    course = db.get(Course, course_id)
+    if course is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
+    for field, value in payload.model_dump().items():
+        setattr(course, field, value)
+    db.commit()
+    db.refresh(course)
+    return _serialize_course(course)
+
+
 def _serialize_course(course: Course) -> dict:
     return {
         "id": course.id,

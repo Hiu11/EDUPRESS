@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.core.auth import get_current_user
+from app.core.auth import get_current_user, require_roles
 from app.core.config import settings
 from app.core.rate_limit import rate_limit
 from app.core.security import create_access_token, hash_password, verify_password
 from app.db.session import get_db
 from app.models.user import User, UserRole
-from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserRead
+from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserAdminUpdate, UserRead
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -59,6 +59,34 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserRead)
 def read_current_user(current_user: User = Depends(get_current_user)):
     return current_user
+
+
+@router.get("/users", response_model=list[UserRead])
+def list_users_for_admin(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(UserRole.admin)),
+):
+    return db.query(User).order_by(User.id.asc()).all()
+
+
+@router.patch("/users/{user_id}", response_model=UserRead)
+def update_user_for_admin(
+    user_id: int,
+    payload: UserAdminUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(UserRole.admin)),
+):
+    user = db.get(User, user_id)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    updates = payload.model_dump(exclude_unset=True)
+    if "role" in updates and updates["role"] is not None:
+        user.role = updates["role"].value
+    if "is_active" in updates and updates["is_active"] is not None:
+        user.is_active = updates["is_active"]
+    db.commit()
+    db.refresh(user)
+    return user
 
 
 @router.post("/refresh", response_model=TokenResponse)

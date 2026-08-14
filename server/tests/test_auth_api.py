@@ -104,6 +104,44 @@ class AuthApiTest(unittest.TestCase):
         self.assertEqual(created.status_code, 201)
         self.assertEqual(created.json()["title"], "Secure FastAPI")
 
+    def test_admin_can_review_and_update_users(self):
+        self.client.post(
+            "/api/auth/register",
+            json={"name": "Student", "email": "student2@example.com", "password": "password123"},
+        )
+        self.client.post(
+            "/api/auth/register",
+            json={"name": "Admin", "email": "admin@example.com", "password": "password123"},
+        )
+        db = self.testing_session()
+        try:
+            admin = db.query(User).filter(User.email == "admin@example.com").one()
+            student = db.query(User).filter(User.email == "student2@example.com").one()
+            admin.role = UserRole.admin.value
+            db.commit()
+            student_id = student.id
+        finally:
+            db.close()
+
+        admin_login = self.client.post(
+            "/api/auth/login",
+            json={"email": "admin@example.com", "password": "password123"},
+        )
+        admin_token = admin_login.json()["access_token"]
+
+        users = self.client.get("/api/auth/users", headers={"Authorization": f"Bearer {admin_token}"})
+        self.assertEqual(users.status_code, 200)
+        self.assertGreaterEqual(len(users.json()), 2)
+
+        updated = self.client.patch(
+            f"/api/auth/users/{student_id}",
+            json={"role": UserRole.instructor.value, "is_active": False},
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+        self.assertEqual(updated.status_code, 200)
+        self.assertEqual(updated.json()["role"], UserRole.instructor.value)
+        self.assertFalse(updated.json()["is_active"])
+
 
 if __name__ == "__main__":
     unittest.main()
