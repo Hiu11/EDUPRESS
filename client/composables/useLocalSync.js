@@ -1,4 +1,4 @@
-import { get, set } from 'idb-keyval'
+import { del, get, set } from 'idb-keyval'
 import { ref, onMounted, onUnmounted } from 'vue'
 
 export function useLocalSync(key, defaultValue) {
@@ -30,11 +30,22 @@ export function useLocalSync(key, defaultValue) {
     }
   }
 
+  async function removeData() {
+    data.value = defaultValue
+    if (import.meta.client) {
+      try {
+        await del(key)
+      } catch (err) {
+        console.error(`Failed to delete ${key} from IndexedDB`, err)
+      }
+    }
+  }
+
   onMounted(() => {
     loadData()
   })
 
-  return { data, isReady, saveData }
+  return { data, isReady, saveData, removeData }
 }
 
 export function useNetworkStatus() {

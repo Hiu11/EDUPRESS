@@ -11,6 +11,8 @@ from app.api.courses import router as courses_router
 from app.db.base import Base
 from app.db.session import get_db
 from app.models.course import Course  # noqa: F401
+from app.models.enrollment import Enrollment
+from app.models.quiz_history import QuizHistory
 from app.models.user import User, UserRole
 
 
@@ -141,6 +143,66 @@ class AuthApiTest(unittest.TestCase):
         self.assertEqual(updated.status_code, 200)
         self.assertEqual(updated.json()["role"], UserRole.instructor.value)
         self.assertFalse(updated.json()["is_active"])
+
+    def test_user_can_export_and_delete_account_data(self):
+        self.client.post(
+            "/api/auth/register",
+            json={"name": "Privacy User", "email": "privacy@example.com", "password": "password123"},
+        )
+        login = self.client.post(
+            "/api/auth/login",
+            json={"email": "privacy@example.com", "password": "password123"},
+        )
+        token = login.json()["access_token"]
+
+        db = self.testing_session()
+        try:
+            user = db.query(User).filter(User.email == "privacy@example.com").one()
+            course = Course(
+                title="Privacy Basics",
+                author="MindX",
+                category="Operations",
+                description="Learner data controls",
+            )
+            db.add(course)
+            db.commit()
+            db.refresh(course)
+            db.add_all(
+                [
+                    QuizHistory(
+                        user_id=str(user.id),
+                        course_id=str(course.id),
+                        score=4,
+                        total=5,
+                        topic="privacy",
+                        max_streak=3,
+                    ),
+                    Enrollment(user_id=user.id, course_id=course.id, status="active"),
+                ]
+            )
+            db.commit()
+            user_id = user.id
+        finally:
+            db.close()
+
+        export = self.client.get("/api/auth/me/export", headers={"Authorization": f"Bearer {token}"})
+        self.assertEqual(export.status_code, 200)
+        payload = export.json()
+        self.assertEqual(payload["user"]["email"], "privacy@example.com")
+        self.assertEqual(len(payload["quiz_history"]), 1)
+        self.assertEqual(len(payload["enrollments"]), 1)
+        self.assertIn("retention_policy", payload)
+
+        deleted = self.client.delete("/api/auth/me", headers={"Authorization": f"Bearer {token}"})
+        self.assertEqual(deleted.status_code, 204)
+
+        db = self.testing_session()
+        try:
+            self.assertIsNone(db.get(User, user_id))
+            self.assertEqual(db.query(QuizHistory).filter(QuizHistory.user_id == str(user_id)).count(), 0)
+            self.assertEqual(db.query(Enrollment).filter(Enrollment.user_id == user_id).count(), 0)
+        finally:
+            db.close()
 
 
 if __name__ == "__main__":

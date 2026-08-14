@@ -33,3 +33,11 @@ class UserRead(BaseModel):
 class UserAdminUpdate(BaseModel):
     role: UserRole | None = None
     is_active: bool | None = None
+
+
+class LearnerDataExport(BaseModel):
+    user: UserRead
+    quiz_history: list[dict]
+    enrollments: list[dict]
+    comments: list[dict]
+    retention_policy: dict
