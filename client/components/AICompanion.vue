@@ -2,8 +2,15 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { formatSafeMarkdown } from '../utils/safeMarkdown'
 
+const props = defineProps({
+  initialOpen: {
+    type: Boolean,
+    default: false
+  }
+})
+
 // ── State ──────────────────────────────────────────────────────────
-const isOpen       = ref(false)
+const isOpen       = ref(props.initialOpen)
 const isExpanded   = ref(false)
 const selectedText = ref('')
 const mode         = ref('explain')   // 'explain' | 'translate' | 'flashcard'

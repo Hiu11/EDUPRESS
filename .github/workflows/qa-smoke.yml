@@ -35,6 +35,10 @@ jobs:
         working-directory: ./client
         run: npm run build
 
+      - name: Check frontend bundle budget
+        working-directory: ./client
+        run: npm run test:bundle-budget
+
       - name: Run smoke tests
         working-directory: ./client
         run: npm run test:smoke

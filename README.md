@@ -239,6 +239,7 @@ Frontend build and tests:
 ```powershell
 cd client
 npm run build
+npm run test:bundle-budget
 npm run test:smoke
 npm run test:safe-markdown
 ```

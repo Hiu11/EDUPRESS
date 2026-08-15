@@ -1,17 +1,18 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import confetti from 'canvas-confetti'
-import LearningUniverse from './components/LearningUniverse.vue'
-import CinematicPlayer from './components/CinematicPlayer.vue'
-import InBrowserIDE from './components/InBrowserIDE.vue'
-import TrophyRoom from './components/TrophyRoom.vue'
-import AICompanion from './components/AICompanion.vue'
-import SwipeableFlashcards from './components/SwipeableFlashcards.vue'
-import ContentOperationsDashboard from './components/ContentOperationsDashboard.vue'
-import WhiteboardPro from './components/WhiteboardPro.vue'
-import BlogPage from './components/BlogPage.vue'
-import ContactPage from './components/ContactPage.vue'
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { categories, courseRoadmaps, courses, defaultQuizQuestions, learningSteps, navItems, posts, testimonials } from './data/learningContent'
+
+const AICompanion = defineAsyncComponent(() => import('./components/AICompanion.vue'))
+const BlogPage = defineAsyncComponent(() => import('./components/BlogPage.vue'))
+const CinematicPlayer = defineAsyncComponent(() => import('./components/CinematicPlayer.vue'))
+const ContactPage = defineAsyncComponent(() => import('./components/ContactPage.vue'))
+const ContentOperationsDashboard = defineAsyncComponent(() => import('./components/ContentOperationsDashboard.vue'))
+const InBrowserIDE = defineAsyncComponent(() => import('./components/InBrowserIDE.vue'))
+const LearningUniverse = defineAsyncComponent(() => import('./components/LearningUniverse.vue'))
+const PodcastPlayer = defineAsyncComponent(() => import('./components/PodcastPlayer.vue'))
+const SwipeableFlashcards = defineAsyncComponent(() => import('./components/SwipeableFlashcards.vue'))
+const TrophyRoom = defineAsyncComponent(() => import('./components/TrophyRoom.vue'))
+const WhiteboardPro = defineAsyncComponent(() => import('./components/WhiteboardPro.vue'))
 
 const config = useRuntimeConfig()
 const { asset, generatedAsset, courseImage } = useAssetPaths()
@@ -35,6 +36,7 @@ const showIDE = ref(false)
 const showFlashcards = ref(false)
 const showOperationsDashboard = ref(false)
 const showWhiteboard = ref(false)
+const showAICompanion = ref(false)
 
 const { data: users, saveData: saveUsersDB, removeData: removeUsersDB } = useLocalSync('users', [])
 const { data: currentUserEmail, saveData: saveEmailDB, removeData: removeEmailDB } = useLocalSync('loggedInUser', '')
@@ -628,6 +630,12 @@ function retryQuizSync() {
   syncQuizHistoryToDB(score, total, topic, maxStreak)
 }
 
+async function launchCelebration() {
+  if (!import.meta.client) return
+  const { default: confetti } = await import('canvas-confetti')
+  confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } })
+}
+
 function answerQuiz() {
   if (!selectedAnswer.value) return setNotice('Chọn một đáp án trước đã.')
   stopTimer()
@@ -663,9 +671,7 @@ function nextQuestion() {
     const total = quizQuestions.value.length
     const topic = quizWeakTopic.value || quizQuestions.value[0]?.topic_tag || ''
     
-    if (score === total && import.meta.client) {
-      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } })
-    }
+    if (score === total) launchCelebration()
 
     saveQuizHistoryDB([
       { score, total, topic, maxStreak: quizMaxStreak.value, date: new Date().toISOString() },
@@ -874,8 +880,8 @@ onMounted(async () => {
       </div>
     </Transition>
 
-    <!-- Floating study companion -->
-    <AICompanion />
+    <button v-if="!showAICompanion" class="ai-companion-lite" type="button" @click="showAICompanion = true">AI</button>
+    <AICompanion v-else initial-open />
     <header class="site-header">
       <button class="brand" type="button" data-testid="brand-home" @click="navigate('home')">
         <img :src="generatedAsset('edupress-logo.svg')" alt="EduPress" />
@@ -1617,6 +1623,28 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.ai-companion-lite {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 900;
+  width: 64px;
+  height: 64px;
+  border: 1px solid rgba(79, 70, 229, 0.28);
+  border-radius: 50%;
+  background: #4f46e5;
+  color: #ffffff;
+  font-weight: 800;
+  box-shadow: 0 16px 36px rgba(79, 70, 229, 0.28);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ai-companion-lite:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 44px rgba(79, 70, 229, 0.34);
+}
+
 .legal-page {
   display: flex;
   flex-direction: column;
