@@ -185,6 +185,33 @@ The backend applies per-client throttles to public and expensive endpoints. Thro
 
 Protected endpoints include auth register/login, quiz generation and sync, caption transcription, comment writes, SSE stream connections, and frontend error reporting.
 
+## Privacy and Learner Data Controls
+
+The frontend includes Privacy Policy and Terms pages from the footer. The learner profile also includes local browser data controls for the demo passkey flow.
+
+Storage locations:
+
+| Data | Location | Notes |
+| --- | --- | --- |
+| Demo users and logged-in user marker | Browser IndexedDB | Used by the local passkey-style frontend flow. |
+| Local quiz history and course interactions | Browser IndexedDB | Exportable and clearable from the profile data controls panel. |
+| Production users and roles | PostgreSQL | Managed by the backend auth API. |
+| Production enrollments and quiz history | PostgreSQL | Included in authenticated learner data export. |
+| Comment read model | MongoDB | User comments are removed during backend account deletion when MongoDB is available. |
+
+Backend data controls:
+
+```bash
+curl -H "Authorization: Bearer $TOKEN" "$API_BASE/api/auth/me/export"
+curl -X DELETE -H "Authorization: Bearer $TOKEN" "$API_BASE/api/auth/me"
+```
+
+Retention policy:
+
+- Browser demo data remains on the learner device until the learner exports or clears it from the profile page.
+- Backend account, enrollment, quiz, and comment data is retained while the account is active and removed when the learner deletes the account.
+- Production backups should have a documented rotation schedule, limited operational access, and a restore process tested outside the live database.
+
 ## Observability
 
 The backend returns `X-Request-ID` on requests and writes structured logs with method, path, status, duration, and error context.

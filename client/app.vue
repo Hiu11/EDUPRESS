@@ -36,10 +36,10 @@ const showFlashcards = ref(false)
 const showOperationsDashboard = ref(false)
 const showWhiteboard = ref(false)
 
-const { data: users, saveData: saveUsersDB } = useLocalSync('users', [])
-const { data: currentUserEmail, saveData: saveEmailDB } = useLocalSync('loggedInUser', '')
-const { data: quizHistory, saveData: saveQuizHistoryDB } = useLocalSync('quizHistory', [])
-const { data: courseInteractions, saveData: saveInteractionsDB } = useLocalSync('courseInteractions', {})
+const { data: users, saveData: saveUsersDB, removeData: removeUsersDB } = useLocalSync('users', [])
+const { data: currentUserEmail, saveData: saveEmailDB, removeData: removeEmailDB } = useLocalSync('loggedInUser', '')
+const { data: quizHistory, saveData: saveQuizHistoryDB, removeData: removeQuizHistoryDB } = useLocalSync('quizHistory', [])
+const { data: courseInteractions, saveData: saveInteractionsDB, removeData: removeInteractionsDB } = useLocalSync('courseInteractions', {})
 const { route, selectedCourseId, navigate, syncHashRoute } = useHashNavigation({
   onCourseDetail: (courseId) => {
     loadCourseComments(courseId)
@@ -360,6 +360,48 @@ function updateProfile() {
 }
 
 
+function buildLearnerDataExport() {
+  return {
+    exported_at: new Date().toISOString(),
+    source: 'EduPress browser profile',
+    user: currentUser.value,
+    quiz_history: quizHistory.value,
+    course_interactions: courseInteractions.value,
+    storage_locations: {
+      browser: ['IndexedDB: users', 'IndexedDB: loggedInUser', 'IndexedDB: quizHistory', 'IndexedDB: courseInteractions'],
+      backend: ['PostgreSQL: users, enrollments, quiz_history', 'MongoDB: comments_read_model'],
+    },
+    retention_policy: {
+      local_browser_storage: 'Browser demo data stays until the learner clears local data or deletes this local profile.',
+      backend_storage: 'Production account, enrollment, quiz, and comment data is retained while the account is active and removed on account deletion.',
+      backups: 'Production backups need a documented rotation schedule and restricted operational access.',
+    },
+  }
+}
+
+function exportLearnerData() {
+  if (!currentUser.value || !import.meta.client) return navigate('auth')
+  const blob = new Blob([JSON.stringify(buildLearnerDataExport(), null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = `edupress-data-${currentUser.value.email || 'learner'}.json`
+  anchor.click()
+  URL.revokeObjectURL(url)
+  setNotice('Da tao file xuat du lieu cuc bo.')
+}
+
+async function clearLocalLearnerData() {
+  if (!import.meta.client) return
+  const confirmed = window.confirm('Xoa ho so, lich su quiz va tuong tac khoa hoc luu trong trinh duyet nay?')
+  if (!confirmed) return
+  await Promise.all([removeUsersDB(), removeEmailDB(), removeQuizHistoryDB(), removeInteractionsDB()])
+  localStorage.removeItem('quizHistory')
+  profileForm.value = { name: '', phone: '', school: '', bio: '' }
+  navigate('home')
+  setNotice('Da xoa du lieu cuc bo tren trinh duyet nay.')
+}
+
 function isPaidCourse(course) {
   return course?.access_type === 'paid' || Number(course?.price_cents || 0) > 0
 }
@@ -625,10 +667,10 @@ function nextQuestion() {
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } })
     }
 
-    localStorage.setItem('quizHistory', JSON.stringify([
+    saveQuizHistoryDB([
       { score, total, topic, maxStreak: quizMaxStreak.value, date: new Date().toISOString() },
       ...quizHistory.value
-    ]))
+    ])
 
     syncQuizHistoryToDB(score, total, topic, quizMaxStreak.value)
   } else {
@@ -1332,6 +1374,60 @@ onMounted(async () => {
         </form>
       </section>
 
+      <section v-if="route === 'privacy'" class="content-section page-section legal-page">
+        <button class="text-btn legal-back" type="button" @click="navigate('home')">Ve trang chu</button>
+        <div class="legal-hero">
+          <p class="eyebrow">Privacy policy</p>
+          <h1>Chinh sach quyen rieng tu</h1>
+          <p>EduPress tach ro du lieu luu tren trinh duyet, du lieu backend va du lieu tu dich vu tich hop de nguoi hoc biet minh dang chia se gi.</p>
+        </div>
+        <div class="legal-grid">
+          <article>
+            <h2>Du lieu chung toi luu</h2>
+            <p>Ho so nguoi dung, trang thai dang nhap demo, lich su quiz va tuong tac khoa hoc co the luu trong IndexedDB cua trinh duyet. Backend san xuat luu tai khoan, ghi danh va lich su quiz trong PostgreSQL; binh luan doc nhanh luu trong MongoDB.</p>
+          </article>
+          <article>
+            <h2>Muc dich su dung</h2>
+            <p>Du lieu duoc dung de duy tri dang nhap, hien thi tien trinh hoc, tao quiz phu hop, kiem tra quyen truy cap khoa hoc va dieu phoi binh luan.</p>
+          </article>
+          <article>
+            <h2>Xuat va xoa du lieu</h2>
+            <p>Nguoi hoc co the xuat du lieu cuc bo tu trang ho so. API backend cung cap duong dan xuat du lieu tai khoan va xoa tai khoan cho luong dang nhap san xuat.</p>
+          </article>
+          <article>
+            <h2>Luu tru va sao luu</h2>
+            <p>Du lieu tai khoan duoc giu khi tai khoan hoat dong. Ban sao luu san xuat can co lich quay vong, gioi han truy cap va khong dung cho muc dich ngoai van hanh.</p>
+          </article>
+        </div>
+      </section>
+
+      <section v-if="route === 'terms'" class="content-section page-section legal-page">
+        <button class="text-btn legal-back" type="button" @click="navigate('home')">Ve trang chu</button>
+        <div class="legal-hero">
+          <p class="eyebrow">Terms</p>
+          <h1>Dieu khoan su dung</h1>
+          <p>Ban dieu khoan nay dat nen cho prototype EduPress: hoc tap cong bang, noi dung dung quyen va van hanh minh bach ve du lieu.</p>
+        </div>
+        <div class="legal-grid">
+          <article>
+            <h2>Tai khoan</h2>
+            <p>Nguoi hoc chiu trach nhiem ve thong tin dang ky va viec bao ve phien dang nhap cua minh. Tai khoan co the bi khoa neu co hanh vi lam dung.</p>
+          </article>
+          <article>
+            <h2>Noi dung khoa hoc</h2>
+            <p>Noi dung duoc cung cap cho muc dich hoc tap. Viec sao chep, phan phoi lai hoac su dung ngoai pham vi duoc cho phep can co su dong y cua don vi so huu noi dung.</p>
+          </article>
+          <article>
+            <h2>Binh luan va cong dong</h2>
+            <p>Binh luan co the duoc kiem duyet. Noi dung gay hai, spam hoac vi pham quyen rieng tu co the bi an hoac xoa.</p>
+          </article>
+          <article>
+            <h2>Dich vu tich hop</h2>
+            <p>Cac tinh nang AI, phien am va thanh toan la tich hop tuy chon. Moi tich hop san xuat can duoc cau hinh bang khoa bao mat va chinh sach nha cung cap phu hop.</p>
+          </article>
+        </div>
+      </section>
+
       <section v-if="route === 'profile'" class="content-section page-section profile-page">
         <button class="text-btn" style="display: block; margin-bottom: 32px; padding-left: 0; align-self: flex-start; text-align: left; margin-right: auto;" type="button" @click="navigate('home')">Về trang chủ</button>
 
@@ -1406,6 +1502,17 @@ onMounted(async () => {
             </div>
           </div>
 
+          <div class="bento-item bento-privacy rich-panel">
+            <p class="eyebrow">Data controls</p>
+            <h2>Du lieu ca nhan</h2>
+            <p class="text-muted">Xuat ho so, lich su quiz va tuong tac khoa hoc dang luu tren trinh duyet nay. Khi can reset demo, ban co the xoa du lieu cuc bo.</p>
+            <div class="privacy-actions">
+              <button class="secondary-btn" type="button" @click="exportLearnerData">Xuat du lieu</button>
+              <button class="danger-btn" type="button" @click="clearLocalLearnerData">Xoa du lieu cuc bo</button>
+            </div>
+            <button class="text-btn privacy-link" type="button" @click="navigate('privacy')">Xem chinh sach du lieu</button>
+          </div>
+
           <!-- 5. All Enrolled Courses (Span 4) -->
           <div class="bento-item bento-courses rich-panel">
             <p class="eyebrow">Thư viện của bạn</p>
@@ -1465,6 +1572,12 @@ onMounted(async () => {
             <span>0900 123 456</span>
             <span>MindX Technology School</span>
           </div>
+          <div>
+            <h3>Phap ly</h3>
+            <button type="button" @click="navigate('privacy')">Chinh sach rieng tu</button>
+            <button type="button" @click="navigate('terms')">Dieu khoan su dung</button>
+            <button type="button" @click="navigate('profile')">Kiem soat du lieu</button>
+          </div>
         </div>
       </div>
     </footer>
@@ -1504,6 +1617,96 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.legal-page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.legal-back {
+  align-self: flex-start;
+}
+
+.legal-hero {
+  max-width: 780px;
+}
+
+.legal-hero h1 {
+  margin: 10px 0 16px;
+}
+
+.legal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.legal-grid article,
+.bento-privacy {
+  border: 1px solid var(--border-glass);
+}
+
+.legal-grid article {
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  padding: 28px;
+  box-shadow: var(--shadow-glass);
+}
+
+.legal-grid h2 {
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+}
+
+.legal-grid p,
+.bento-privacy p {
+  max-width: none;
+}
+
+.bento-privacy {
+  grid-column: span 2;
+}
+
+.privacy-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.privacy-link {
+  align-self: flex-start;
+  margin-top: 14px;
+  padding-left: 0;
+}
+
+.danger-btn {
+  border: 1px solid rgba(185, 28, 28, 0.28);
+  border-radius: var(--radius-sm);
+  background: rgba(185, 28, 28, 0.06);
+  color: #b91c1c;
+  min-height: 44px;
+  padding: 0 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.danger-btn:hover {
+  border-color: #b91c1c;
+  background: rgba(185, 28, 28, 0.1);
+}
+
+@media (max-width: 768px) {
+  .legal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bento-privacy {
+    grid-column: span 1;
+  }
+}
+
 .roadmap-links {
   display: flex;
   flex-direction: column;
