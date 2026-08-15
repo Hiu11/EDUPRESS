@@ -9,6 +9,7 @@
     "preview": "nuxt preview",
     "test:e2e": "playwright test",
     "test:ai": "playwright test ai-test.spec.ts",
+    "test:bundle-budget": "node scripts/check-bundle-budget.mjs",
     "test:smoke": "playwright test production-smoke.spec.ts --workers=1",
     "test:safe-markdown": "node --test tests/unit/safeMarkdown.test.js"
   },
