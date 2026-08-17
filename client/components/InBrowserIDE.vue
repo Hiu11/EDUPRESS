@@ -437,7 +437,7 @@ function startDragRight(e) {
     <div class="ide-topbar">
       <div class="ide-topbar-left">
         <span class="ide-logo">EduPress Practice</span>
-        <span class="ide-badge">In-Browser Sandbox</span>
+        <span class="ide-badge">Sandbox</span>
       </div>
       <div class="ide-topbar-center">
         <div class="ai-status-pill" :class="aiState">
@@ -475,7 +475,7 @@ function startDragRight(e) {
             :class="['file-item', { active: activeFile.name === file.name }]"
             @click="switchFile(file)"
           >
-            <span class="file-icon">{{ file.icon }}</span>
+          <span class="file-icon">{{ file.lang.toUpperCase() }}</span>
             <span class="file-name">{{ file.name }}</span>
           </li>
         </ul>
@@ -532,7 +532,7 @@ function startDragRight(e) {
           <span class="preview-dot yellow"></span>
           <span class="preview-dot green"></span>
           <span class="preview-title">Preview</span>
-          <button class="preview-refresh" @click="runCode" title="Refresh">⟳</button>
+          <button class="preview-refresh" @click="runCode" title="Refresh">Refresh</button>
         </div>
         <iframe
           class="preview-frame"
@@ -590,20 +590,20 @@ function startDragRight(e) {
 .ide-badge {
   font-size: 0.65rem;
   font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: rgba(99,102,241,0.2);
-  border: 1px solid rgba(99,102,241,0.4);
-  color: #a5b4fc;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid #30363d;
+  color: #8b949e;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .run-btn {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, #22c55e, #16a34a);
+  background: #238636;
   color: white;
   border: none;
   padding: 8px 24px;
@@ -612,15 +612,15 @@ function startDragRight(e) {
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 0 20px rgba(34,197,94,0.3);
+  box-shadow: none;
 
   span { font-size: 1rem; }
 
-  &:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(34,197,94,0.5); }
+  &:hover { background: #2ea043; }
 
   &.running {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    box-shadow: 0 0 20px rgba(99,102,241,0.4);
+    background: #30363d;
+    box-shadow: none;
     span { animation: spin 0.6s linear infinite; }
   }
 
@@ -697,12 +697,12 @@ function startDragRight(e) {
   &:hover { background: rgba(255,255,255,0.04); color: #e6edf3; }
 
   &.active {
-    background: rgba(99,102,241,0.1);
-    border-left-color: #6366f1;
+    background: rgba(255,255,255,0.06);
+    border-left-color: #8b949e;
     color: #e6edf3;
   }
 
-  .file-icon { font-size: 1rem; }
+  .file-icon { min-width: 32px; font-size: 0.65rem; color: #6e7681; }
   .file-name  { font-size: 0.85rem; }
 }
 
@@ -774,7 +774,7 @@ function startDragRight(e) {
 
   &.active {
     color: #e6edf3;
-    border-bottom-color: #6366f1;
+    border-bottom-color: #8b949e;
     background: #0d1117;
   }
 }
@@ -823,15 +823,15 @@ function startDragRight(e) {
 
 .preview-refresh {
   background: transparent;
-  border: none;
-  color: #999;
-  font-size: 1rem;
+  border: 1px solid #d0d7de;
+  color: #57606a;
+  font-size: 0.72rem;
   cursor: pointer;
   padding: 2px 6px;
   border-radius: 4px;
   transition: all 0.15s;
 
-  &:hover { background: #e0e0e0; color: #333; }
+  &:hover { background: #eaeef2; color: #24292f; }
 }
 
 .preview-frame {
@@ -847,7 +847,7 @@ function startDragRight(e) {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 6px 16px;
-  border-radius: 100px;
+  border-radius: 8px;
   font-size: 0.8rem;
   font-weight: 600;
   color: #8b949e;
@@ -868,8 +868,6 @@ function startDragRight(e) {
     color: #fb7185;
     border-color: rgba(251, 113, 133, 0.4);
     background: rgba(251, 113, 133, 0.1);
-    box-shadow: 0 0 15px rgba(251, 113, 133, 0.2);
-    animation: pulseAlert 2s infinite;
   }
 
   &.idle {
@@ -880,22 +878,16 @@ function startDragRight(e) {
   .ai-laser {
     position: absolute;
     top: 0; left: -100%;
-    width: 50%;
+    width: 36%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.4), transparent);
-    animation: laserScan 1s infinite linear;
+    background: rgba(96, 165, 250, 0.22);
+    animation: laserScan 1.4s infinite linear;
   }
 }
 
 @keyframes laserScan {
   0% { left: -100%; }
   100% { left: 200%; }
-}
-
-@keyframes pulseAlert {
-  0% { box-shadow: 0 0 0 0 rgba(251, 113, 133, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(251, 113, 133, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(251, 113, 133, 0); }
 }
 
 // ── Review Log Panel ───────────────────────────────────────────────

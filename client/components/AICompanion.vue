@@ -138,7 +138,6 @@ function onOverlayClick(e) {
     title="Trợ lý học tập"
   >
     <span class="ai-fab-icon">{{ isOpen ? 'Đóng' : 'Hỗ trợ' }}</span>
-    <span class="ai-fab-pulse"></span>
   </button>
 
   <!-- Backdrop -->
@@ -165,7 +164,7 @@ function onOverlayClick(e) {
         </div>
         <div class="ai-header-actions">
           <button class="ai-ctrl-btn" @click="isExpanded = !isExpanded" :title="isExpanded ? 'Thu nhỏ' : 'Mở rộng'">
-            {{ isExpanded ? '⊡' : '⊞' }}
+            {{ isExpanded ? 'Thu' : 'Mở' }}
           </button>
           <button class="ai-ctrl-btn" @click="isOpen = false" title="Đóng">Đóng</button>
         </div>
@@ -267,37 +266,24 @@ function onOverlayClick(e) {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  border: none;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: white;
-  font-weight: 900;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: #ffffff;
+  color: #111827;
+  font-weight: 800;
   font-size: 0.85rem;
   cursor: pointer;
-  box-shadow: 0 8px 32px rgba(99,102,241,0.5);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   position: fixed;
 
-  &:hover { transform: scale(1.1); box-shadow: 0 12px 40px rgba(99,102,241,0.65); }
-  &.open  { background: linear-gradient(135deg, #4f46e5, #7c3aed); }
+  &:hover { transform: translateY(-1px); border-color: #dc2626; box-shadow: 0 14px 30px rgba(15, 23, 42, 0.18); }
+  &.open  { background: #111827; color: #ffffff; }
 }
 
 .ai-fab-icon { position: relative; z-index: 1; font-size: 1rem; font-weight: 900; }
-
-.ai-fab-pulse {
-  position: absolute;
-  inset: -4px;
-  border-radius: 50%;
-  border: 2px solid rgba(99,102,241,0.4);
-  animation: pulse-ring 2s ease-out infinite;
-}
-
-@keyframes pulse-ring {
-  0%   { transform: scale(1);   opacity: 0.6; }
-  100% { transform: scale(1.5); opacity: 0; }
-}
 
 // ── Backdrop ──────────────────────────────────────────────────────
 .ai-backdrop {
@@ -321,14 +307,9 @@ function onOverlayClick(e) {
   gap: 0;
   overflow: hidden;
 
-  // Glassmorphism
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  border-left: 1px solid rgba(255,255,255,0.5);
-  box-shadow:
-    -20px 0 60px rgba(99,102,241,0.12),
-    -4px 0 20px rgba(0,0,0,0.08);
+  background: #ffffff;
+  border-left: 1px solid rgba(15, 23, 42, 0.12);
+  box-shadow: -12px 0 32px rgba(15, 23, 42, 0.12);
 
   transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -341,8 +322,8 @@ function onOverlayClick(e) {
   align-items: center;
   justify-content: space-between;
   padding: 20px 20px 16px;
-  border-bottom: 1px solid rgba(99,102,241,0.1);
-  background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.06));
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+  background: #ffffff;
   flex-shrink: 0;
 }
 
@@ -355,43 +336,43 @@ function onOverlayClick(e) {
 .ai-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-radius: 10px;
+  background: #111827;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-weight: 900;
   font-size: 0.75rem;
-  box-shadow: 0 4px 12px rgba(99,102,241,0.35);
 }
 
-.ai-title    { font-weight: 800; font-size: 0.95rem; color: #1e1b4b; letter-spacing: -0.02em; }
-.ai-subtitle { font-size: 0.72rem; color: #6366f1; font-weight: 600; margin-top: 1px; }
+.ai-title    { font-weight: 800; font-size: 0.95rem; color: #111827; letter-spacing: 0; }
+.ai-subtitle { font-size: 0.72rem; color: #6b7280; font-weight: 600; margin-top: 1px; }
 
 .ai-header-actions { display: flex; gap: 6px; }
 
 .ai-ctrl-btn {
-  width: 30px; height: 30px;
+  min-width: 38px; height: 30px;
+  padding: 0 8px;
   border-radius: 8px;
-  border: 1px solid rgba(99,102,241,0.15);
-  background: rgba(99,102,241,0.06);
-  color: #6366f1;
-  font-size: 1.1rem;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  background: #ffffff;
+  color: #374151;
+  font-size: 0.78rem;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: all 0.2s ease;
 
-  &:hover { background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.35); }
+  &:hover { background: #f9fafb; border-color: rgba(15, 23, 42, 0.28); }
 }
 
 // ── Selection chip ────────────────────────────────────────────────
 .ai-selection-chip {
   margin: 16px;
   padding: 12px 14px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.06));
-  border: 1px solid rgba(99,102,241,0.18);
+  border-radius: 10px;
+  background: #f9fafb;
+  border: 1px solid rgba(15, 23, 42, 0.1);
   flex-shrink: 0;
 }
 
@@ -401,7 +382,7 @@ function onOverlayClick(e) {
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #6366f1;
+  color: #6b7280;
   margin-bottom: 4px;
 }
 
@@ -416,8 +397,8 @@ function onOverlayClick(e) {
   margin: 20px 16px;
   padding: 20px;
   border-radius: 12px;
-  background: rgba(99,102,241,0.04);
-  border: 1px dashed rgba(99,102,241,0.2);
+  background: #f9fafb;
+  border: 1px dashed rgba(15, 23, 42, 0.16);
   text-align: center;
   font-size: 0.85rem;
   color: #6b7280;
@@ -437,7 +418,7 @@ function onOverlayClick(e) {
   flex: 1;
   padding: 8px;
   border-radius: 8px;
-  border: 1px solid rgba(99,102,241,0.15);
+  border: 1px solid rgba(15, 23, 42, 0.12);
   background: transparent;
   color: #6b7280;
   font-size: 0.8rem;
@@ -445,13 +426,12 @@ function onOverlayClick(e) {
   cursor: pointer;
   transition: all 0.2s ease;
 
-  &:hover { background: rgba(99,102,241,0.06); color: #6366f1; }
+  &:hover { background: #f9fafb; color: #111827; }
 
   &.active {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: #111827;
     color: white;
     border-color: transparent;
-    box-shadow: 0 4px 12px rgba(99,102,241,0.3);
   }
 }
 
@@ -479,9 +459,9 @@ function onOverlayClick(e) {
   color: #1f2937;
   line-height: 1.7;
   padding: 16px;
-  background: rgba(255,255,255,0.7);
+  background: #ffffff;
   border-radius: 12px;
-  border: 1px solid rgba(99,102,241,0.1);
+  border: 1px solid rgba(15, 23, 42, 0.1);
 }
 
 .ai-cursor {
@@ -529,7 +509,7 @@ function onOverlayClick(e) {
   line-height: 1.5;
 
   .user & {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: #111827;
     color: white;
     border-bottom-right-radius: 4px;
   }
@@ -571,7 +551,7 @@ function onOverlayClick(e) {
 .ai-send-btn {
   padding: 10px 18px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: #111827;
   color: white;
   font-size: 0.82rem;
   font-weight: 700;
@@ -580,7 +560,7 @@ function onOverlayClick(e) {
   transition: all 0.2s ease;
   white-space: nowrap;
 
-  &:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(99,102,241,0.4); transform: translateY(-1px); }
+  &:hover:not(:disabled) { box-shadow: 0 8px 18px rgba(15, 23, 42, 0.18); transform: translateY(-1px); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
