@@ -261,13 +261,13 @@ function scrollToActiveLine() {
             <span class="title-pill">{{ courseTitle }}</span>
           </div>
           
-          <!-- NotebookLM / Siri Style Orbs -->
+          <!-- Playback control -->
           <div class="orb-container" :class="{ active: isPlaying }" @click="isPlaying ? stopPodcast() : playPodcast()">
             <div class="orb host-orb" :class="{ speaking: isPlaying && transcript[currentLineIdx]?.speaker === 'host' }"></div>
             <div class="orb expert-orb" :class="{ speaking: isPlaying && transcript[currentLineIdx]?.speaker === 'expert' }"></div>
             
             <div class="play-overlay" v-if="!isPlaying">
-              <span class="play-icon">▶</span>
+              <span class="play-icon">Play</span>
             </div>
           </div>
           
@@ -323,8 +323,8 @@ function scrollToActiveLine() {
   position: absolute;
   inset: 0;
   z-index: 0;
-  opacity: 0.6;
-  filter: blur(100px);
+  opacity: 0.18;
+  filter: blur(80px);
   transition: all 1s ease;
 
   .bg-blob {
@@ -333,16 +333,16 @@ function scrollToActiveLine() {
     transition: all 1s ease;
   }
   
-  .blob-1 { width: 60vw; height: 60vw; top: -10vw; left: -10vw; background: rgba(96, 165, 250, 0.2); mix-blend-mode: screen; }
-  .blob-2 { width: 50vw; height: 50vw; bottom: -10vw; right: -10vw; background: rgba(192, 132, 252, 0.2); mix-blend-mode: screen; }
+  .blob-1 { width: 60vw; height: 60vw; top: -10vw; left: -10vw; background: rgba(148, 163, 184, 0.18); mix-blend-mode: normal; }
+  .blob-2 { width: 50vw; height: 50vw; bottom: -10vw; right: -10vw; background: rgba(148, 163, 184, 0.12); mix-blend-mode: normal; }
 
   &.host {
-    .blob-1 { background: rgba(96, 165, 250, 0.5); transform: scale(1.2); }
+    .blob-1 { background: rgba(96, 165, 250, 0.22); transform: scale(1.04); }
     .blob-2 { opacity: 0.2; }
   }
   &.expert {
     .blob-1 { opacity: 0.2; }
-    .blob-2 { background: rgba(192, 132, 252, 0.5); transform: scale(1.2); }
+    .blob-2 { background: rgba(192, 132, 252, 0.2); transform: scale(1.04); }
   }
 }
 
@@ -441,59 +441,54 @@ function scrollToActiveLine() {
 
 .header-pills {
   display: flex; gap: 12px; margin-bottom: 40px;
-  .badge { background: #a78bfa; color: #000; font-weight: 700; padding: 6px 12px; border-radius: 100px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; }
-  .title-pill { background: rgba(255,255,255,0.1); padding: 6px 16px; border-radius: 100px; font-size: 0.85rem; }
+  .badge { background: rgba(255,255,255,0.08); color: #e5e7eb; font-weight: 650; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; text-transform: none; letter-spacing: 0; }
+  .title-pill { background: rgba(255,255,255,0.08); padding: 6px 16px; border-radius: 8px; font-size: 0.85rem; }
 }
 
-/* ── Glowing Orbs ── */
+/* ── Playback state ── */
 .orb-container {
-  position: relative; width: 160px; height: 160px; cursor: pointer;
+  position: relative; width: 152px; height: 152px; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   
   .orb {
-    position: absolute; width: 100%; height: 100%;
-    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
-    mix-blend-mode: screen;
-    filter: blur(10px);
-    opacity: 0.7;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: absolute; width: 68%; height: 68%;
+    border-radius: 50%;
+    mix-blend-mode: normal;
+    filter: none;
+    opacity: 0.42;
+    transition: transform 0.25s ease, opacity 0.25s ease, border-color 0.25s ease;
   }
   
   .host-orb {
-    background: linear-gradient(45deg, #3b82f6, #60a5fa);
-    animation: morph 8s ease-in-out infinite alternate;
+    background: #1d4ed8;
+    transform: translateX(-22px);
   }
   
   .expert-orb {
-    background: linear-gradient(45deg, #a855f7, #c084fc);
-    animation: morph 8s ease-in-out infinite alternate-reverse;
+    background: #7c3aed;
+    transform: translateX(22px);
   }
   
   &.active {
-    .host-orb.speaking { transform: scale(1.4) rotate(45deg); opacity: 1; filter: blur(5px); box-shadow: 0 0 40px #60a5fa; }
-    .expert-orb.speaking { transform: scale(1.4) rotate(-45deg); opacity: 1; filter: blur(5px); box-shadow: 0 0 40px #c084fc; }
+    .host-orb.speaking { transform: translateX(-22px) scale(1.08); opacity: 0.85; }
+    .expert-orb.speaking { transform: translateX(22px) scale(1.08); opacity: 0.85; }
   }
   
   .play-overlay {
     position: absolute; z-index: 10;
     width: 64px; height: 64px; border-radius: 50%;
-    background: rgba(255,255,255,0.2); backdrop-filter: blur(5px);
+    background: rgba(255,255,255,0.9); color: #111827;
     display: flex; align-items: center; justify-content: center;
-    .play-icon { font-size: 1.5rem; margin-left: 4px; }
+    .play-icon { font-size: 0.78rem; font-weight: 800; letter-spacing: 0; }
   }
-}
-
-@keyframes morph {
-  0% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
-  100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
 }
 
 .speaker-labels {
   display: flex; gap: 32px; margin-top: 40px;
-  .label { font-size: 0.85rem; font-weight: 600; opacity: 0.4; transition: all 0.3s; text-transform: uppercase; letter-spacing: 0.1em; }
+  .label { font-size: 0.85rem; font-weight: 600; opacity: 0.4; transition: all 0.3s; text-transform: none; letter-spacing: 0; }
   .label.active { opacity: 1; }
-  .host-label.active { color: #60a5fa; text-shadow: 0 0 10px #60a5fa; }
-  .expert-label.active { color: #c084fc; text-shadow: 0 0 10px #c084fc; }
+  .host-label.active { color: #93c5fd; }
+  .expert-label.active { color: #c4b5fd; }
 }
 
 /* ── Apple Music Style Lyrics ── */

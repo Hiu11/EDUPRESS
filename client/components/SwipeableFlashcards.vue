@@ -198,11 +198,6 @@ function restart() {
 
 <template>
   <div class="flashcard-overlay">
-    <!-- Premium Glowing Background -->
-    <div class="glow-orb orb-1"></div>
-    <div class="glow-orb orb-2"></div>
-    <div class="glow-orb orb-3"></div>
-
     <div class="flashcard-header">
       <div class="header-left">
         <div class="stats">
@@ -223,8 +218,8 @@ function restart() {
     <div class="flashcard-container">
       <div v-if="isFinished" class="finished-state">
         <div class="trophy-icon">Hoàn thành</div>
-        <h2 class="gradient-text">Mastered!</h2>
-        <p>Bạn đã thuộc lòng bộ thẻ này. Chúc mừng!</p>
+        <h2 class="gradient-text">Đã ôn xong</h2>
+        <p>Bạn đã đi hết bộ thẻ. Có thể làm lại để củng cố phần còn yếu.</p>
         <button class="premium-btn mt-4" @click="restart">Ôn tập lại</button>
       </div>
 
@@ -246,7 +241,6 @@ function restart() {
         >
           <!-- Front Side -->
           <div class="card-face card-front">
-            <div class="card-shine"></div>
             <div class="card-badge">CÂU HỎI</div>
             <h3 class="card-text">{{ currentCard.front }}</h3>
             <div class="hint">Phím Space / Click để lật</div>
@@ -254,7 +248,6 @@ function restart() {
           
           <!-- Back Side -->
           <div class="card-face card-back">
-            <div class="card-shine"></div>
             <div class="card-badge answer">ĐÁP ÁN</div>
             <h3 class="card-text">{{ currentCard.back }}</h3>
             <div class="hint">Vuốt hoặc dùng Phím Mũi tên</div>
@@ -302,19 +295,13 @@ function restart() {
   position: fixed;
   inset: 0;
   z-index: 10000;
-  background: #0b1120;
+  background: #101827;
   display: flex;
   flex-direction: column;
-  animation: fadeIn 0.4s ease;
+  animation: fadeIn 0.25s ease;
   touch-action: none;
   overflow: hidden;
 }
-
-// Background Orbs
-.glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); z-index: 0; pointer-events: none; opacity: 0.5; }
-.orb-1 { width: 400px; height: 400px; background: #6366f1; top: -100px; left: -100px; }
-.orb-2 { width: 500px; height: 500px; background: #ec4899; bottom: -200px; right: -100px; }
-.orb-3 { width: 300px; height: 300px; background: #14b8a6; top: 40%; left: 50%; transform: translateX(-50%); }
 
 .flashcard-header {
   position: relative; z-index: 10;
@@ -331,18 +318,18 @@ function restart() {
     background: rgba(255,255,255,0.1); border-radius: 999px; overflow: hidden;
   }
   .progress-fill {
-    height: 100%; background: linear-gradient(90deg, #6366f1, #10b981);
+    height: 100%; background: #10b981;
     transition: width 0.3s ease; border-radius: 999px;
   }
   
-  .badge-count { font-size: 0.95rem; font-weight: 800; color: #10b981; }
+  .badge-count { font-size: 0.95rem; font-weight: 800; color: #d1d5db; }
 
   .close-btn {
     display: flex; align-items: center; gap: 8px;
     background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
     color: white; padding: 8px 20px; border-radius: 999px; font-weight: 600;
     cursor: pointer; backdrop-filter: blur(10px); transition: all 0.25s;
-    &:hover { background: rgba(255,255,255,0.15); transform: translateY(-2px); }
+    &:hover { background: rgba(255,255,255,0.15); }
   }
 }
 
@@ -352,21 +339,21 @@ function restart() {
 }
 
 .finished-state {
-  text-align: center; color: white; animation: slideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-  .trophy-icon { font-size: 6rem; filter: drop-shadow(0 0 20px rgba(250, 204, 21, 0.5)); margin-bottom: 16px; animation: float 3s ease-in-out infinite; }
-  .gradient-text { font-size: 3rem; margin-bottom: 12px; background: linear-gradient(135deg, #34d399, #10b981); -webkit-background-clip: text; color: transparent; font-weight: 900; }
+  text-align: center; color: white; animation: slideUp 0.35s ease;
+  .trophy-icon { font-size: 1rem; color: #d1d5db; margin-bottom: 16px; }
+  .gradient-text { font-size: 2.4rem; margin-bottom: 12px; color: #ffffff; font-weight: 800; }
   p { color: #94a3b8; font-size: 1.1rem; }
   .premium-btn {
-    margin-top: 32px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none; padding: 16px 36px; border-radius: 999px; font-size: 1.1rem; font-weight: 700; cursor: pointer;
-    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4); transition: all 0.3s;
-    &:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(99, 102, 241, 0.6); }
+    margin-top: 32px; background: #ffffff; color: #111827; border: none; padding: 14px 28px; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24); transition: transform 0.2s ease, box-shadow 0.2s ease;
+    &:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28); }
   }
 }
 
 .card-stack { position: relative; width: min(90%, 420px); aspect-ratio: 3/4; perspective: 1500px; }
 
 .card-bg {
-  position: absolute; inset: 0; border-radius: 32px; backdrop-filter: blur(10px);
+  position: absolute; inset: 0; border-radius: 18px; backdrop-filter: blur(10px);
   background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.4);
   pointer-events: none; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -374,24 +361,23 @@ function restart() {
 .card-bg-2 { transform: translateY(32px) scale(0.90); z-index: 0; opacity: 0.6; }
 
 .flashcard {
-  position: absolute; inset: 0; z-index: 2; border-radius: 32px; cursor: grab; transform-style: preserve-3d; touch-action: none; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  position: absolute; inset: 0; z-index: 2; border-radius: 18px; cursor: grab; transform-style: preserve-3d; touch-action: none; box-shadow: 0 18px 38px rgba(0,0,0,0.42);
   &.is-dragging { cursor: grabbing; transition: none; }
-  &.is-animating { transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  &.is-animating { transition: transform 0.35s ease; }
 }
 
 .card-face {
-  position: absolute; inset: 0; border-radius: 32px; padding: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; backface-visibility: hidden;
-  background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7)); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.5); overflow: hidden;
+  position: absolute; inset: 0; border-radius: 18px; padding: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; backface-visibility: hidden;
+  background: #ffffff; border: 1px solid rgba(255,255,255,0.5); overflow: hidden;
 }
-.card-shine { position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.8), transparent); transform: skewX(-20deg); animation: shine 4s infinite; }
 .card-front { z-index: 2; }
-.card-back  { transform: rotateY(180deg); background: linear-gradient(135deg, #1e293b, #0f172a); border-color: rgba(99,102,241,0.3); color: white; }
+.card-back  { transform: rotateY(180deg); background: #111827; border-color: rgba(255,255,255,0.12); color: white; }
 
 .card-badge {
-  position: absolute; top: 32px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; font-weight: 900; letter-spacing: 0.2em; padding: 6px 16px; border-radius: 999px;
-  background: rgba(99, 102, 241, 0.1); color: #4f46e5; border: 1px solid rgba(99, 102, 241, 0.2);
+  position: absolute; top: 32px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; padding: 6px 14px; border-radius: 8px;
+  background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb;
 }
-.card-back .card-badge.answer { background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.2); }
+.card-back .card-badge.answer { background: rgba(255,255,255,0.08); color: #d1d5db; border-color: rgba(255,255,255,0.12); }
 .card-text { font-size: 1.8rem; font-weight: 800; color: #0f172a; line-height: 1.4; z-index: 1; }
 .card-back .card-text { color: white; }
 .hint { position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); font-size: 0.85rem; color: #94a3b8; font-weight: 600; pointer-events: none; }
@@ -399,27 +385,23 @@ function restart() {
 .swipe-feedback { position: absolute; inset: 0; pointer-events: none; border-radius: 32px; display: flex; align-items: flex-start; padding: 40px; z-index: 3; }
 .feedback-left  { justify-content: flex-end; }
 .feedback-right { justify-content: flex-start; }
-.stamp { font-size: 2.5rem; font-weight: 900; padding: 8px 24px; border-radius: 16px; border: 6px solid; text-transform: uppercase; letter-spacing: 0.1em; }
-.stamp-left { color: #f43f5e; border-color: #f43f5e; transform: rotate(20deg); box-shadow: inset 0 0 0 4px rgba(244, 63, 94, 0.2), 0 0 20px rgba(244, 63, 94, 0.4); text-shadow: 0 0 10px rgba(244, 63, 94, 0.4); }
-.stamp-right { color: #10b981; border-color: #10b981; transform: rotate(-20deg); box-shadow: inset 0 0 0 4px rgba(16, 185, 129, 0.2), 0 0 20px rgba(16, 185, 129, 0.4); text-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+.stamp { font-size: 1.6rem; font-weight: 800; padding: 8px 18px; border-radius: 10px; border: 2px solid; text-transform: uppercase; letter-spacing: 0.06em; background: rgba(255,255,255,0.9); }
+.stamp-left { color: #be123c; border-color: #be123c; transform: rotate(12deg); }
+.stamp-right { color: #047857; border-color: #047857; transform: rotate(-12deg); }
 
 .controls { position: absolute; bottom: 40px; display: flex; align-items: center; justify-content: center; gap: 24px; z-index: 5; }
 .ctrl-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .kb-hint { font-size: 0.7rem; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: 0.1em; }
 
 .ctrl-btn {
-  border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; background: white; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); position: relative;
-  &::before { content: ''; position: absolute; inset: -4px; border-radius: 50%; z-index: -1; background: inherit; filter: blur(12px); opacity: 0.6; transition: all 0.3s; }
-  &:hover { transform: scale(1.15); }
-  &:hover::before { filter: blur(20px); opacity: 0.8; }
+  border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; background: white; transition: transform 0.2s ease, box-shadow 0.2s ease; position: relative;
+  &:hover { transform: translateY(-1px); }
   &:active { transform: scale(0.9); }
 }
-.btn-left { width: 72px; height: 72px; color: #f43f5e; box-shadow: 0 10px 25px rgba(244, 63, 94, 0.3); svg { width: 36px; height: 36px; } }
-.btn-right { width: 72px; height: 72px; color: #10b981; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3); svg { width: 40px; height: 40px; } }
-.btn-flip { width: 56px; height: 56px; color: #3b82f6; box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3); svg { width: 28px; height: 28px; transform: scaleX(-1); } }
+.btn-left { width: 68px; height: 68px; color: #be123c; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2); svg { width: 32px; height: 32px; } }
+.btn-right { width: 68px; height: 68px; color: #047857; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2); svg { width: 34px; height: 34px; } }
+.btn-flip { width: 54px; height: 54px; color: #374151; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18); svg { width: 26px; height: 26px; transform: scaleX(-1); } }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-@keyframes shine { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
 </style>

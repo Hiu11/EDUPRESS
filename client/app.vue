@@ -880,7 +880,7 @@ onMounted(async () => {
       </div>
     </Transition>
 
-    <button v-if="!showAICompanion" class="ai-companion-lite" type="button" @click="showAICompanion = true">AI</button>
+    <button v-if="!showAICompanion" class="ai-companion-lite" type="button" @click="showAICompanion = true">Hỗ trợ</button>
     <AICompanion v-else initial-open />
     <header class="site-header">
       <button class="brand" type="button" data-testid="brand-home" @click="navigate('home')">
@@ -903,7 +903,7 @@ onMounted(async () => {
           <span class="theme-dot" aria-hidden="true"></span>
           <span>{{ themeLabel }}</span>
         </button>
-        <span :class="['status-pill', apiStatus]">{{ apiStatusLabel }}</span>
+        <span :class="['status-pill', apiStatus]">Dữ liệu: {{ apiStatusLabel }}</span>
         <button v-if="canManageContent" class="primary-btn" type="button" @click="showOperationsDashboard = true">Quản trị nội dung</button>
         <button class="practice-btn" type="button" @click="showIDE = true">Thực hành</button>
         <button v-if="currentUser" class="user-chip" type="button" @click="navigate('profile')">{{ currentUser.name || currentUser.email }}</button>
@@ -967,8 +967,8 @@ onMounted(async () => {
               <div class="progress-track"><i :style="{ width: `${featuredCourse.progress}%` }"></i></div>
             </article>
             <article class="floating-card quiz-badge">
-              <strong>Quiz</strong>
-              <span>Phản hồi tức thì</span>
+              <strong>Bài kiểm tra</strong>
+              <span>Chấm điểm sau khi nộp</span>
             </article>
           </div>
         </section>
@@ -1196,16 +1196,16 @@ onMounted(async () => {
           <div class="quiz-meta-bar">
             <span class="quiz-meta-pill">{{ quizQuestions.length }} câu hỏi</span>
             <span class="quiz-meta-pill">{{ quizHistory.length }} lượt đã làm</span>
-            <span v-if="quizWeakTopic || quizQuestions[0]?.topic_tag" class="quiz-meta-pill topic-pill">{{ quizWeakTopic || quizQuestions[0]?.topic_tag }}</span>
+            <span v-if="quizWeakTopic || quizQuestions[0]?.topic_tag" class="quiz-meta-pill topic-pill">Chủ đề: {{ quizWeakTopic || quizQuestions[0]?.topic_tag }}</span>
             <span v-if="quizQuestions[0]?.difficulty" :class="['quiz-meta-pill', 'diff-pill', quizQuestions[0].difficulty]">
               {{ quizQuestions[0].difficulty === 'easy' ? 'Cơ bản' : quizQuestions[0].difficulty === 'hard' ? 'Nâng cao' : 'Trung bình' }}
             </span>
             <button class="ai-gen-btn" type="button" @click="generateAutoQuiz" :disabled="isGeneratingQuiz">
               <span v-if="isGeneratingQuiz" class="gen-spinner"></span>
-              <span>{{ isGeneratingQuiz ? 'Đang tạo...' : 'Tạo bộ câu hỏi' }}</span>
+              <span>{{ isGeneratingQuiz ? 'Đang chuẩn bị...' : 'Tạo bộ câu hỏi' }}</span>
             </button>
           </div>
-          <p class="quiz-keyboard-hint">Phím tắt: <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd> để chọn, <kbd>Enter</kbd> để xác nhận</p>
+          <p class="quiz-keyboard-hint">Có thể chọn bằng phím <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd> và nộp bằng <kbd>Enter</kbd>.</p>
         </div>
 
         <!-- Active Question -->
@@ -1324,7 +1324,7 @@ onMounted(async () => {
             <button class="primary-btn" type="button" @click="restartQuiz">Làm lại từ đầu</button>
             <button v-if="quizAnswers.filter(a => !a.isRight).length > 0" class="btn-outline" type="button" @click="retryWrongAnswers">Làm lại câu sai</button>
             <button class="ai-gen-btn" type="button" @click="generateAutoQuiz" :disabled="isGeneratingQuiz">
-              {{ isGeneratingQuiz ? 'Đang tạo...' : 'Tạo câu hỏi mới' }}
+              {{ isGeneratingQuiz ? 'Đang chuẩn bị...' : 'Tạo câu hỏi mới' }}
             </button>
           </div>
           
@@ -1628,21 +1628,23 @@ onMounted(async () => {
   right: 24px;
   bottom: 24px;
   z-index: 900;
-  width: 64px;
-  height: 64px;
-  border: 1px solid rgba(79, 70, 229, 0.28);
-  border-radius: 50%;
-  background: #4f46e5;
-  color: #ffffff;
-  font-weight: 800;
-  box-shadow: 0 16px 36px rgba(79, 70, 229, 0.28);
+  min-width: 92px;
+  height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-main);
+  font-weight: 700;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
 }
 
 .ai-companion-lite:hover {
   transform: translateY(-2px);
-  box-shadow: 0 20px 44px rgba(79, 70, 229, 0.34);
+  border-color: var(--primary);
+  background: var(--bg-base);
 }
 
 .legal-page {
