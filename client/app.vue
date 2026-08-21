@@ -2,17 +2,19 @@
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { categories, courseRoadmaps, courses, defaultQuizQuestions, learningSteps, navItems, posts, testimonials } from './data/learningContent'
 
-const AICompanion = defineAsyncComponent(() => import('./components/AICompanion.vue'))
+const clientOnlyComponent = (loader) => import.meta.client ? defineAsyncComponent(loader) : null
+
+const AICompanion = clientOnlyComponent(() => import('./components/AICompanion.vue'))
 const BlogPage = defineAsyncComponent(() => import('./components/BlogPage.vue'))
-const CinematicPlayer = defineAsyncComponent(() => import('./components/CinematicPlayer.vue'))
+const CinematicPlayer = clientOnlyComponent(() => import('./components/CinematicPlayer.vue'))
 const ContactPage = defineAsyncComponent(() => import('./components/ContactPage.vue'))
-const ContentOperationsDashboard = defineAsyncComponent(() => import('./components/ContentOperationsDashboard.vue'))
-const InBrowserIDE = defineAsyncComponent(() => import('./components/InBrowserIDE.vue'))
-const LearningUniverse = defineAsyncComponent(() => import('./components/LearningUniverse.vue'))
-const PodcastPlayer = defineAsyncComponent(() => import('./components/PodcastPlayer.vue'))
-const SwipeableFlashcards = defineAsyncComponent(() => import('./components/SwipeableFlashcards.vue'))
-const TrophyRoom = defineAsyncComponent(() => import('./components/TrophyRoom.vue'))
-const WhiteboardPro = defineAsyncComponent(() => import('./components/WhiteboardPro.vue'))
+const ContentOperationsDashboard = clientOnlyComponent(() => import('./components/ContentOperationsDashboard.vue'))
+const InBrowserIDE = clientOnlyComponent(() => import('./components/InBrowserIDE.vue'))
+const LearningUniverse = clientOnlyComponent(() => import('./components/LearningUniverse.vue'))
+const PodcastPlayer = clientOnlyComponent(() => import('./components/PodcastPlayer.vue'))
+const SwipeableFlashcards = clientOnlyComponent(() => import('./components/SwipeableFlashcards.vue'))
+const TrophyRoom = clientOnlyComponent(() => import('./components/TrophyRoom.vue'))
+const WhiteboardPro = clientOnlyComponent(() => import('./components/WhiteboardPro.vue'))
 
 const config = useRuntimeConfig()
 const { asset, generatedAsset, courseImage } = useAssetPaths()
