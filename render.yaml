@@ -26,6 +26,8 @@ services:
         sync: false # Requires manual entry in the Render Dashboard (MongoDB Atlas URL)
       - key: MODAL_WHISPER_URL
         sync: false # Optional Modal Whisper endpoint
+      - key: ADMIN_EMAIL
+        value: Tronghieudo2k4@gmail.com
 
   # Managed Redis for Pub/Sub
   - type: redis
