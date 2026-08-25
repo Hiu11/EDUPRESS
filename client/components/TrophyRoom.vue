@@ -423,8 +423,18 @@ const showScene = computed(() => unlockedBadges.value.length > 0)
 
 .badge-lock {
   position: absolute;
-  bottom: -6px; right: -6px;
-  font-size: 0.9rem;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-surface, #fff);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid rgba(0,0,0,0.1);
+  color: var(--text-muted, #64748b);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .badge-card strong { display: block; font-size: 0.95rem; margin-bottom: 4px; }

@@ -938,7 +938,6 @@ onMounted(async () => {
           <span class="theme-dot" aria-hidden="true"></span>
           <span>{{ themeLabel }}</span>
         </button>
-        <span v-if="apiStatus === 'online'" :class="['status-pill', apiStatus]">Kết nối: Đã đồng bộ</span>
         <button v-if="canManageContent" class="primary-btn" type="button" @click="showOperationsDashboard = true">Quản trị nội dung</button>
         <button class="practice-btn" type="button" @click="showIDE = true">Thực hành</button>
         <button v-if="currentUser" class="user-chip" type="button" @click="navigate('profile')">{{ currentUser.name || currentUser.email }}</button>
