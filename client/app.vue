@@ -39,6 +39,7 @@ const showFlashcards = ref(false)
 const showOperationsDashboard = ref(false)
 const showWhiteboard = ref(false)
 const showAICompanion = ref(false)
+const selectedPost = ref(null)
 
 const { data: users, saveData: saveUsersDB, removeData: removeUsersDB } = useLocalSync('users', [])
 const { data: currentUserEmail, saveData: saveEmailDB, removeData: removeEmailDB } = useLocalSync('loggedInUser', '')
@@ -392,18 +393,18 @@ function exportLearnerData() {
   anchor.download = `edupress-data-${currentUser.value.email || 'learner'}.json`
   anchor.click()
   URL.revokeObjectURL(url)
-  setNotice('Da tao file xuat du lieu cuc bo.')
+  setNotice('Đã tạo file xuất dữ liệu cục bộ.')
 }
 
 async function clearLocalLearnerData() {
   if (!import.meta.client) return
-  const confirmed = window.confirm('Xoa ho so, lich su quiz va tuong tac khoa hoc luu trong trinh duyet nay?')
+  const confirmed = window.confirm('Xóa hồ sơ, lịch sử quiz và tương tác khóa học lưu trong trình duyệt này?')
   if (!confirmed) return
   await Promise.all([removeUsersDB(), removeEmailDB(), removeQuizHistoryDB(), removeInteractionsDB()])
   localStorage.removeItem('quizHistory')
   profileForm.value = { name: '', phone: '', school: '', bio: '' }
   navigate('home')
-  setNotice('Da xoa du lieu cuc bo tren trinh duyet nay.')
+  setNotice('Đã xóa dữ liệu cục bộ trên trình duyệt này.')
 }
 
 function isPaidCourse(course) {
@@ -831,8 +832,12 @@ function tryMarkCompleted() {
 
 function sendContact() {
   if (!contactForm.value.name || !contactForm.value.email || !contactForm.value.message) return setNotice('Vui lòng nhập đủ thông tin liên hệ.')
+  const { name, email, message } = contactForm.value
+  const subject = encodeURIComponent(`[EduPress] Liên hệ từ ${name}`)
+  const body = encodeURIComponent(`Từ: ${name}\nEmail: ${email}\n\n${message}`)
+  window.open(`mailto:support@edupress.vn?subject=${subject}&body=${body}`, '_blank')
   contactForm.value = { name: '', email: '', message: '' }
-  setNotice('EduPress đã nhận phản hồi của bạn.')
+  setNotice('Đã mở ứng dụng email. Vui lòng gửi email để hoàn tất liên hệ.')
 }
 
 onMounted(async () => {
@@ -905,7 +910,7 @@ onMounted(async () => {
           <span class="theme-dot" aria-hidden="true"></span>
           <span>{{ themeLabel }}</span>
         </button>
-        <span :class="['status-pill', apiStatus]">Dữ liệu: {{ apiStatusLabel }}</span>
+        <span v-if="apiStatus === 'online'" :class="['status-pill', apiStatus]">Kết nối: Đã đồng bộ</span>
         <button v-if="canManageContent" class="primary-btn" type="button" @click="showOperationsDashboard = true">Quản trị nội dung</button>
         <button class="practice-btn" type="button" @click="showIDE = true">Thực hành</button>
         <button v-if="currentUser" class="user-chip" type="button" @click="navigate('profile')">{{ currentUser.name || currentUser.email }}</button>
@@ -1339,7 +1344,26 @@ onMounted(async () => {
         </div>
       </section>
 
-      <BlogPage v-if="route === 'blog'" :posts="contentPosts" :asset="asset" @home="navigate('home')" />
+      <BlogPage
+        v-if="route === 'blog' && !selectedPost"
+        :posts="contentPosts"
+        :asset="asset"
+        @home="navigate('home')"
+        @select-post="selectedPost = $event"
+      />
+
+      <section v-if="route === 'blog' && selectedPost" class="content-section page-section" data-testid="blog-detail-page">
+        <button class="text-btn" style="display:block;margin-bottom:32px;padding-left:0;" type="button" @click="selectedPost = null">← Quay lại tin tức</button>
+        <div style="max-width:780px;margin:0 auto;">
+          <img :src="asset(selectedPost.image)" :alt="selectedPost.title" style="width:100%;border-radius:16px;margin-bottom:32px;max-height:400px;object-fit:cover;" />
+          <p class="eyebrow" style="margin-bottom:8px;">{{ selectedPost.category }} · {{ selectedPost.date }}</p>
+          <h1 style="margin-bottom:24px;">{{ selectedPost.title }}</h1>
+          <p style="font-size:1.15rem;line-height:1.8;color:var(--text-muted);margin-bottom:24px;">{{ selectedPost.excerpt }}</p>
+          <p style="line-height:1.9;margin-bottom:20px;">EduPress không ngừng cập nhật các xu hướng mới nhất trong giáo dục và công nghệ để hỗ trợ người học và giảng viên tiếp cận tri thức một cách hiệu quả nhất. Các phương pháp học tập hiện đại nư microlearning, spaced repetition và AI-assisted feedback đang tạo ra sự thay đổi lớn trong cách tiếp cận kiến thức.</p>
+          <p style="line-height:1.9;margin-bottom:32px;">Hãy tiếp tục theo dõi blog EduPress để không bỏ lỡ những thông tin hữu ích về phương pháp học tập, công nghệ giáo dục và các khóa học mới được cập nhật thường xuyên.</p>
+          <button class="secondary-btn" type="button" @click="selectedPost = null">← Xem thêm bài viết khác</button>
+        </div>
+      </section>
 
       <ContactPage v-if="route === 'contact'" :contact-form="contactForm" @home="navigate('home')" @submit="sendContact" />
 
@@ -1512,13 +1536,13 @@ onMounted(async () => {
 
           <div class="bento-item bento-privacy rich-panel">
             <p class="eyebrow">Data controls</p>
-            <h2>Du lieu ca nhan</h2>
-            <p class="text-muted">Xuat ho so, lich su quiz va tuong tac khoa hoc dang luu tren trinh duyet nay. Khi can reset demo, ban co the xoa du lieu cuc bo.</p>
+            <h2>Dữ liệu cá nhân</h2>
+            <p class="text-muted">Xuất hồ sơ, lịch sử quiz và tương tác khóa học đang lưu trên trình duyệt này. Khi cần reset demo, bạn có thể xóa dữ liệu cục bộ.</p>
             <div class="privacy-actions">
-              <button class="secondary-btn" type="button" @click="exportLearnerData">Xuat du lieu</button>
-              <button class="danger-btn" type="button" @click="clearLocalLearnerData">Xoa du lieu cuc bo</button>
+              <button class="secondary-btn" type="button" @click="exportLearnerData">Xuất dữ liệu</button>
+              <button class="danger-btn" type="button" @click="clearLocalLearnerData">Xóa dữ liệu cục bộ</button>
             </div>
-            <button class="text-btn privacy-link" type="button" @click="navigate('privacy')">Xem chinh sach du lieu</button>
+            <button class="text-btn privacy-link" type="button" @click="navigate('privacy')">Xem chính sách dữ liệu</button>
           </div>
 
           <!-- 5. All Enrolled Courses (Span 4) -->
@@ -1581,10 +1605,10 @@ onMounted(async () => {
             <span>MindX Technology School</span>
           </div>
           <div>
-            <h3>Phap ly</h3>
-            <button type="button" @click="navigate('privacy')">Chinh sach rieng tu</button>
-            <button type="button" @click="navigate('terms')">Dieu khoan su dung</button>
-            <button type="button" @click="navigate('profile')">Kiem soat du lieu</button>
+            <h3>Pháp lý</h3>
+            <button type="button" @click="navigate('privacy')">Chính sách riêng tư</button>
+            <button type="button" @click="navigate('terms')">Điều khoản sử dụng</button>
+            <button type="button" @click="navigate('profile')">Kiểm soát dữ liệu</button>
           </div>
         </div>
       </div>

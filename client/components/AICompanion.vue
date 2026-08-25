@@ -98,19 +98,53 @@ async function sendChat() {
   if (!msg || isStreaming.value) return
   chatInput.value = ''
   chatHistory.value.push({ role: 'user', text: msg })
-
-  const mockChat = `Câu hỏi của bạn rất hay! Dựa trên ngữ cảnh "${selectedText.value?.slice(0,30)}...", tôi có thể giải thích thêm rằng: ${msg.length > 10 ? 'Đây là một chủ đề phức tạp cần được phân tích từ nhiều góc độ khác nhau.' : 'Vui lòng cung cấp thêm thông tin để tôi có thể hỗ trợ tốt hơn.'} Hãy thử áp dụng vào bài tập thực hành để củng cố kiến thức!`
-
   chatHistory.value.push({ role: 'ai', text: '' })
-  isStreaming.value = true
-  const words = mockChat.split(' ')
   const last = chatHistory.value[chatHistory.value.length - 1]
-  for (let i = 0; i < words.length; i++) {
-    await new Promise(r => setTimeout(r, 30))
-    last.text += (i === 0 ? '' : ' ') + words[i]
-    chatEndRef.value?.scrollIntoView({ behavior: 'smooth' })
+
+  try {
+    const config = useRuntimeConfig()
+    const res = await fetch(`${config.public.apiBase}/api/ai-companion`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: msg, mode: 'chat', context: selectedText.value || '' }),
+      signal: AbortSignal.timeout(6000),
+    })
+    if (!res.ok || !res.body) throw new Error('No stream')
+    isStreaming.value = true
+    const reader = res.body.getReader()
+    const decoder = new TextDecoder()
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      last.text += decoder.decode(value, { stream: true })
+      chatEndRef.value?.scrollIntoView({ behavior: 'smooth' })
+    }
+    isStreaming.value = false
+  } catch {
+    // Contextual fallback — more helpful than generic response
+    const ctx = selectedText.value?.slice(0, 40)
+    const lower = msg.toLowerCase()
+    let reply = ''
+    if (lower.includes('là gì') || lower.includes('what is') || lower.includes('giải thích')) {
+      reply = ctx
+        ? `"${ctx}..." là một khái niệm quan trọng. Hãy thử bôi đen đoạn văn cụ thể rồi nhấn "Giải thích" để tôi phân tích chi tiết hơn nhé!`
+        : 'Hãy bôi đen đoạn văn bạn muốn giải thích, tôi sẽ phân tích ngay cho bạn.'
+    } else if (lower.includes('ví dụ') || lower.includes('example')) {
+      reply = 'Để có ví dụ cụ thể, hãy bôi đen khái niệm bạn muốn tìm hiểu rồi chọn chế độ "Giải thích" — tôi sẽ đưa ra ví dụ thực tế kèm ứng dụng.'
+    } else if (lower.includes('khóa học') || lower.includes('course')) {
+      reply = 'EduPress có nhiều khóa học từ AI, Web Development, đến Cyber Security. Hãy vào mục "Khóa học" để xem chi tiết lộ trình và đăng ký học nhé!'
+    } else {
+      reply = `Câu hỏi thú vị! ${msg.length > 15 ? 'Bạn có thể bôi đen nội dung liên quan trên trang để tôi giải thích chi tiết hơn, hoặc thử vào phần Quiz để kiểm tra kiến thức ngay.' : 'Hãy cho tôi biết thêm chi tiết để tôi hỗ trợ tốt hơn nhé!'}`
+    }
+    isStreaming.value = true
+    const words = reply.split(' ')
+    for (let i = 0; i < words.length; i++) {
+      await new Promise(r => setTimeout(r, 28))
+      last.text += (i === 0 ? '' : ' ') + words[i]
+      chatEndRef.value?.scrollIntoView({ behavior: 'smooth' })
+    }
+    isStreaming.value = false
   }
-  isStreaming.value = false
 }
 
 // ── Lifecycle ─────────────────────────────────────────────────────
