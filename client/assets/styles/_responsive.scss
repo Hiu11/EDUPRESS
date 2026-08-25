@@ -39,6 +39,16 @@
   .site-header {
     flex-direction: column;
     padding: 16px;
+    gap: 16px;
+  }
+
+  .nav-links {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .header-actions {
+    justify-content: center;
   }
 
   .bento-dashboard {
