@@ -41,9 +41,28 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title=settings.app_name, lifespan=lifespan)
 
+def _build_allowed_origins() -> list[str]:
+    """Return the full list of CORS-allowed origins.
+
+    Always includes:
+    - The configured CLIENT_ORIGIN (production / staging Vercel domain)
+    - All *.vercel.app subdomains for Vercel preview deployments
+    - Local development origins (localhost / 127.0.0.1 on ports 3000 and 5173)
+    """
+    origins = [
+        settings.client_origin,
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5173",
+    ]
+    return list(dict.fromkeys(origins))  # deduplicate, preserve order
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.client_origin, "http://127.0.0.1:3000"],
+    allow_origins=_build_allowed_origins(),
+    allow_origin_regex=r"https://edupress.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
