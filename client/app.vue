@@ -930,18 +930,17 @@ onMounted(async () => {
 
       <div class="header-actions">
         <button
-          class="theme-toggle"
+          class="theme-toggle ghost-btn"
           type="button"
           @click="cycleTheme"
           title="Đổi giao diện"
         >
           <span class="theme-dot" aria-hidden="true"></span>
-          <span>{{ themeLabel }}</span>
         </button>
-        <button v-if="canManageContent" class="primary-btn" type="button" @click="showOperationsDashboard = true">Quản trị nội dung</button>
+        <button v-if="canManageContent" class="ghost-btn admin-btn" type="button" @click="showOperationsDashboard = true">Quản trị</button>
         <button class="practice-btn" type="button" @click="showIDE = true">Thực hành</button>
-        <button v-if="currentUser" class="user-chip" type="button" @click="navigate('profile')">{{ currentUser.name || currentUser.email }}</button>
-        <button v-if="currentUser" class="logout-link" type="button" @click="logout">Đăng xuất</button>
+        <button v-if="currentUser" class="text-btn user-chip" type="button" @click="navigate('profile')">{{ currentUser.name || currentUser.email }}</button>
+        <button v-if="currentUser" class="text-btn logout-link" type="button" @click="logout">Đăng xuất</button>
         <button v-else class="primary-btn" type="button" @click="navigate('auth')">Đăng nhập</button>
       </div>
     </header>
