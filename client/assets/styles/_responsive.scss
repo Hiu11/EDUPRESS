@@ -127,6 +127,27 @@
   .hero-section {
     padding-bottom: 90px; // Make room for the floating card at bottom: -30px
   }
+
+  // Compress Footer on Mobile
+  .site-footer {
+    padding: 40px 0;
+  }
+  
+  .footer-inner {
+    gap: 32px;
+  }
+  
+  .footer-columns {
+    gap: 24px;
+    
+    h3 {
+      margin-bottom: 12px;
+    }
+    
+    button, span {
+      padding: 4px 0;
+    }
+  }
 }
 
 @media (max-width: 480px) {
