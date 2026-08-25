@@ -54,7 +54,7 @@
   article {
     @extend %card-base;
     @extend %card-hover;
-    padding: 32px;
+    padding: 24px;
     text-align: center;
   }
 
@@ -70,7 +70,7 @@
     display: block;
     margin-top: 16px;
     font-family: var(--font-heading);
-    font-size: 3.5rem;
+    font-size: 2.5rem;
     background: var(--gradient-text);
     -webkit-background-clip: text;
     background-clip: text;
@@ -88,7 +88,7 @@
 .category-card {
   @extend %card-base;
   @extend %card-hover;
-  padding: 32px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
 
@@ -97,14 +97,14 @@
     background: rgba(0,0,0,0.06);
     padding: 6px 12px;
     border-radius: 8px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 700;
     color: var(--text-main);
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
 
-  h3 { font-size: 1.5rem; margin-bottom: 12px; }
-  p  { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; }
+  h3 { font-size: 1.2rem; margin-bottom: 8px; }
+  p  { color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; }
 }
 
 // ── Course Grid ───────────────────────────────────────────────────
@@ -123,7 +123,7 @@
 
   img {
     width: 100%;
-    height: 240px;
+    height: 180px;
     object-fit: cover;
     border-bottom: 1px solid var(--border-glass);
     transition: transform 0.5s ease;
@@ -131,16 +131,16 @@
 
   &:hover img { transform: scale(1.05); }
 
-  h3 { font-size: 1.4rem; margin-bottom: 12px; line-height: 1.3; }
-  p  { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; flex: 1; }
+  h3 { font-size: 1.15rem; margin-bottom: 8px; line-height: 1.3; }
+  p  { color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; flex: 1; }
 }
 
 .course-body {
-  padding: 32px;
+  padding: 20px 24px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 
   p { margin-bottom: 0; }
 }
@@ -177,16 +177,16 @@
   @extend %card-base;
   @extend %card-hover;
   display: grid;
-  grid-template-columns: 280px 1fr;
-  margin-bottom: 24px;
-  padding: 20px;
-  gap: 32px;
+  grid-template-columns: 220px 1fr;
+  margin-bottom: 20px;
+  padding: 16px;
+  gap: 20px;
   background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-base) 100%);
   border: 1px solid rgba(0,0,0,0.05);
   box-shadow: 0 10px 40px rgba(0,0,0,0.04);
 
   img {
-    height: 220px;
+    height: 180px;
     width: 100%;
     object-fit: cover;
     border-radius: var(--radius-md);
@@ -199,23 +199,23 @@
 }
 
 .course-row-content {
-  padding: 8px 0;
+  padding: 4px 0;
   display: flex;
   flex-direction: column;
 
   h2 {
-    font-size: 1.5rem;
-    font-weight: 900;
-    margin-bottom: 12px;
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 8px;
     color: var(--text-main);
     transition: color 0.3s ease;
   }
 
   p {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: var(--text-muted);
-    margin-bottom: 24px;
-    line-height: 1.6;
+    margin-bottom: 16px;
+    line-height: 1.5;
     flex: 1;
   }
 }
@@ -332,7 +332,7 @@
 
 .testimonial-card {
   @extend %card-base;
-  padding: 40px;
+  padding: 32px 24px;
   position: relative;
   background: var(--bg-surface);
   border-radius: var(--radius-md);
@@ -342,24 +342,25 @@
   &::before {
     content: '""';
     font-family: var(--font-heading);
-    font-size: 4rem;
+    font-size: 3rem;
     color: rgba(0,0,0,0.04);
     position: absolute;
-    top: -5px; left: 15px;
+    top: 5px; left: 15px;
     z-index: 0;
     line-height: 1;
   }
 
   p {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-style: italic;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     position: relative;
     z-index: 2;
+    line-height: 1.5;
   }
 
-  strong { display: block; font-size: 1.1rem; color: var(--text-main); }
-  span   { display: block; font-size: 0.9rem; color: var(--secondary); margin-top: 4px; }
+  strong { display: block; font-size: 1rem; color: var(--text-main); }
+  span   { display: block; font-size: 0.85rem; color: var(--secondary); margin-top: 4px; }
 }
 
 // ── Post Card ─────────────────────────────────────────────────────

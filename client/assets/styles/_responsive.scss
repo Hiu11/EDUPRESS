@@ -71,3 +71,40 @@
     input { width: 100%; }
   }
 }
+
+@media (max-width: 480px) {
+  .bento-course-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .site-header {
+    padding: 12px;
+  }
+
+  .card-topline {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .course-row-card {
+    padding: 12px;
+    gap: 12px;
+
+    img { height: 160px; }
+  }
+
+  h1, .hero-section h1 { font-size: 2.2rem; }
+  h2, .section-heading h2 { font-size: 1.6rem; }
+  
+  .metric-grid strong { font-size: 2rem; }
+  
+  .category-card { padding: 20px; }
+  .course-body { padding: 16px; }
+  
+  .hero-proof, .detail-meta {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+}

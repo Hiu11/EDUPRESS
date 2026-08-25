@@ -11,6 +11,7 @@ export function useAssetPaths() {
   }
 
   function courseImage(course) {
+    if (!course || !course.image) return generatedAsset('course-web-bg.png')
     return generatedAsset(course.image)
   }
 
