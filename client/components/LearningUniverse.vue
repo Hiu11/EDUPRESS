@@ -12,6 +12,8 @@ const props = defineProps({
 
 const emit = defineEmits(['selectCourse'])
 
+const { courseImage } = useAssetPaths()
+
 // Cấu hình quỹ đạo tự động dựa trên số lượng khóa học
 const orbits = ref([])
 
@@ -116,7 +118,7 @@ function setCourseRef(el, index) {
         <Html center transform :distanceFactor="14">
           <div class="floating-course-card" @click="emit('selectCourse', course.id)">
             <div class="card-image-wrapper">
-              <img :src="`/generated-assets/${course.image}`" :alt="course.title" />
+              <img :src="courseImage(course)" :alt="course.title" />
               <span class="badge">{{ course.category }}</span>
             </div>
             <div class="content">

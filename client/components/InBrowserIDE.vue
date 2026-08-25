@@ -580,6 +580,18 @@ function startDragRight(e) {
   gap: 12px;
 }
 
+@media (max-width: 768px) {
+  .ide-topbar {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 8px;
+    gap: 8px;
+  }
+  .ide-badge, .kbd-hint, .ide-topbar-center {
+    display: none; // Hide on mobile for space
+  }
+}
+
 .ide-logo {
   font-size: 0.95rem;
   font-weight: 700;
@@ -654,6 +666,10 @@ function startDragRight(e) {
   overflow: hidden;
 
   &.no-select { user-select: none; }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
 }
 
 // ── File Explorer ──────────────────────────────────────────────────
@@ -664,6 +680,12 @@ function startDragRight(e) {
   border-right: 1px solid #30363d;
   flex-shrink: 0;
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    width: 100% !important;
+    border-right: none;
+    border-bottom: 1px solid #30363d;
+  }
 }
 
 .explorer-header {
@@ -681,6 +703,14 @@ function startDragRight(e) {
   flex: 1;
   overflow-y: auto;
   padding: 8px 0;
+
+  @media (max-width: 768px) {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0;
+  }
 }
 
 .file-item {
@@ -733,6 +763,16 @@ function startDragRight(e) {
     height: 40px;
     background: rgba(255,255,255,0.15);
     border-radius: 999px;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 6px;
+    cursor: row-resize;
+    .splitter-handle {
+      width: 40px;
+      height: 2px;
+    }
   }
 }
 
@@ -792,6 +832,14 @@ function startDragRight(e) {
   border-left: 1px solid #30363d;
   flex-shrink: 0;
   min-width: 240px;
+
+  @media (max-width: 768px) {
+    width: 100% !important;
+    border-left: none;
+    border-top: 1px solid #30363d;
+    min-height: 200px;
+    flex: 1;
+  }
 }
 
 .preview-header {
