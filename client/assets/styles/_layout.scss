@@ -52,7 +52,27 @@
   display: inline-block;
 }
 
-// ── Nav ──────────────────────────────────────────────────────────
+.mobile-menu-btn {
+  display: none; // Hidden on desktop
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  
+  &:hover {
+    background: rgba(var(--color-bg-glass), 0.05);
+  }
+}
+
+.nav-wrapper {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .nav-links {
   display: flex;
   align-items: center;

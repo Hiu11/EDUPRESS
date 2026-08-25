@@ -37,18 +37,40 @@
   }
 
   .site-header {
-    flex-direction: column;
+    flex-wrap: wrap; // Allows the dropdown to flow to next line
     padding: 16px;
-    gap: 16px;
+  }
+
+  .mobile-menu-btn {
+    display: block; // Show hamburger on mobile
+  }
+
+  .nav-wrapper {
+    display: none; // Hidden by default
+    flex-direction: column;
+    width: 100%;
+    gap: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-glass);
+    margin-top: 16px;
+    
+    &.is-open {
+      display: flex; // Show when open
+    }
   }
 
   .nav-links {
-    flex-wrap: wrap;
-    gap: 12px;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 4px;
+    
+    button { text-align: center; padding: 12px; }
   }
   
   .header-actions {
     justify-content: center;
+    width: 100%;
   }
 
   .bento-dashboard {

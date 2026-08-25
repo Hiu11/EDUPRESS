@@ -39,6 +39,7 @@ const showFlashcards = ref(false)
 const showOperationsDashboard = ref(false)
 const showWhiteboard = ref(false)
 const showAICompanion = ref(false)
+const mobileMenuOpen = ref(false)
 const selectedPost = ref(null)
 
 const { data: users, saveData: saveUsersDB, removeData: removeUsersDB } = useLocalSync('users', [])
@@ -923,25 +924,32 @@ onMounted(async () => {
         <span class="logo-text">EduPress</span>
       </button>
 
-      <nav class="nav-links" aria-label="Primary">
-        <button v-for="item in navItems" :key="item.id" :class="{ active: route === item.id }" type="button" :data-testid="`nav-${item.id}`" @click="navigate(item.id)">{{ item.label }}</button>
-        <button type="button" data-testid="nav-quiz" :class="{ active: route === 'quiz' }" @click="navigate('quiz')">Quiz</button>
-      </nav>
+      <button class="mobile-menu-btn" type="button" @click="mobileMenuOpen = !mobileMenuOpen" aria-label="Toggle Menu">
+        <svg v-if="!mobileMenuOpen" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        <svg v-else width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
 
-      <div class="header-actions">
-        <button
-          class="theme-toggle ghost-btn"
-          type="button"
-          @click="cycleTheme"
-          title="Đổi giao diện"
-        >
-          <span class="theme-dot" aria-hidden="true"></span>
-        </button>
-        <button v-if="canManageContent" class="ghost-btn admin-btn" type="button" @click="showOperationsDashboard = true">Quản trị</button>
-        <button class="practice-btn" type="button" @click="showIDE = true">Thực hành</button>
-        <button v-if="currentUser" class="text-btn user-chip" type="button" @click="navigate('profile')">{{ currentUser.name || currentUser.email }}</button>
-        <button v-if="currentUser" class="text-btn logout-link" type="button" @click="logout">Đăng xuất</button>
-        <button v-else class="primary-btn" type="button" @click="navigate('auth')">Đăng nhập</button>
+      <div :class="['nav-wrapper', { 'is-open': mobileMenuOpen }]">
+        <nav class="nav-links" aria-label="Primary">
+          <button v-for="item in navItems" :key="item.id" :class="{ active: route === item.id }" type="button" :data-testid="`nav-${item.id}`" @click="navigate(item.id); mobileMenuOpen = false">{{ item.label }}</button>
+          <button type="button" data-testid="nav-quiz" :class="{ active: route === 'quiz' }" @click="navigate('quiz'); mobileMenuOpen = false">Quiz</button>
+        </nav>
+
+        <div class="header-actions">
+          <button
+            class="theme-toggle ghost-btn"
+            type="button"
+            @click="cycleTheme"
+            title="Đổi giao diện"
+          >
+            <span class="theme-dot" aria-hidden="true"></span>
+          </button>
+          <button v-if="canManageContent" class="ghost-btn admin-btn" type="button" @click="showOperationsDashboard = true; mobileMenuOpen = false">Quản trị</button>
+          <button class="practice-btn" type="button" @click="showIDE = true; mobileMenuOpen = false">Thực hành</button>
+          <button v-if="currentUser" class="text-btn user-chip" type="button" @click="navigate('profile'); mobileMenuOpen = false">{{ currentUser.name || currentUser.email }}</button>
+          <button v-if="currentUser" class="text-btn logout-link" type="button" @click="logout(); mobileMenuOpen = false">Đăng xuất</button>
+          <button v-else class="primary-btn" type="button" @click="navigate('auth'); mobileMenuOpen = false">Đăng nhập</button>
+        </div>
       </div>
     </header>
 
