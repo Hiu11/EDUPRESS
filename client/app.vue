@@ -457,7 +457,7 @@ function blockPaidCourseAccess(course) {
 }
 
 
-function enroll(courseId) {
+async function enroll(courseId) {
   if (!currentUser.value) {
     setNotice('Bạn cần đăng nhập để đăng ký khóa học.')
     return navigate('auth')
@@ -466,6 +466,8 @@ function enroll(courseId) {
   const state = courseEnrollmentState(course)
   if (state === 'enrolled') return setNotice('Bạn đang học khóa này.')
   if (state === 'pending') return setNotice('Yêu cầu ghi danh đang chờ duyệt.')
+
+  // Update local state immediately for responsive UX
   saveUsers(users.value.map((user) => {
     if (user.email !== currentUserEmail.value) return user
     if (isPaidCourse(course)) {
@@ -474,6 +476,21 @@ function enroll(courseId) {
     return { ...user, registeredCourses: [...new Set([...(user.registeredCourses || []), courseId])] }
   }))
   setNotice(isPaidCourse(course) ? 'Đã gửi yêu cầu ghi danh. EduPress sẽ duyệt thủ công.' : 'Đã đăng ký khóa học.')
+
+  // Sync to backend (fire-and-forget — local state is source of truth for demo)
+  try {
+    await fetch(`${config.public.apiBase}/api/enrollments/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_email: currentUserEmail.value,
+        course_id: courseId,
+        enrollment_type: isPaidCourse(course) ? 'pending' : 'enrolled',
+      }),
+    })
+  } catch {
+    // Backend sync failure is non-blocking — local state already saved
+  }
 }
 
 function markCompleted(courseId) {
