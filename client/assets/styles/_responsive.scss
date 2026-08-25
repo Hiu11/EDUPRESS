@@ -24,7 +24,7 @@
     grid-template-columns: 1fr;
   }
 
-  .hero-media { height: 400px; }
+  .hero-media { height: 500px; }
 }
 
 @media (max-width: 768px) {
@@ -101,6 +101,31 @@
     gap: 24px;
 
     input { width: 100%; }
+  }
+
+  .bento-stats-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .hero-media {
+    height: 380px;
+    margin: 40px 0;
+  }
+  
+  .course-progress-card {
+    left: 10px;
+    bottom: -30px;
+    width: calc(100% - 20px);
+  }
+  
+  .quiz-badge {
+    right: 10px;
+    top: -20px;
+  }
+
+  .hero-section {
+    padding-bottom: 90px; // Make room for the floating card at bottom: -30px
   }
 }
 

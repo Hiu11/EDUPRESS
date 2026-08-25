@@ -582,13 +582,16 @@ function startDragRight(e) {
 
 @media (max-width: 768px) {
   .ide-topbar {
-    flex-wrap: wrap;
-    height: auto;
-    padding: 8px;
+    flex-wrap: nowrap; // Don't wrap, keep it 1 line
+    padding: 0 12px;
     gap: 8px;
   }
-  .ide-badge, .kbd-hint, .ide-topbar-center {
-    display: none; // Hide on mobile for space
+  .ide-badge, .kbd-hint, .ai-status-pill {
+    display: none !important; // Hide non-essentials on mobile
+  }
+  .run-btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
   }
 }
 
