@@ -293,7 +293,9 @@ async function register() {
     const credential = await navigator.credentials.create({ publicKey: publicKeyCredentialCreationOptions });
     const passkeyId = credential.id;
     
-    saveUsers([...users.value, { ...payload, passkeyId: passkeyId, role: 'student', registeredCourses: [], pendingEnrollments: [], completedCourses: [] }])
+    const adminEmail = config.public.adminEmail || ''
+    const role = adminEmail && payload.email === adminEmail.toLowerCase() ? 'admin' : 'student'
+    saveUsers([...users.value, { ...payload, passkeyId: passkeyId, role, registeredCourses: [], pendingEnrollments: [], completedCourses: [] }])
     saveEmailDB(payload.email)
     registerForm.value = { name: '', email: '' }
     loginForm.value = { email: '' }
@@ -867,8 +869,17 @@ onMounted(async () => {
 
   isMounted.value = true
   syncHashRoute()
-  
   syncProfileForm()
+
+  // Auto-promote admin account from env var (one-time migration for existing users)
+  const adminEmail = config.public.adminEmail || ''
+  if (adminEmail && users.value.length) {
+    const needsPromotion = users.value.some(u => u.email === adminEmail.toLowerCase() && u.role !== 'admin')
+    if (needsPromotion) {
+      saveUsers(users.value.map(u => u.email === adminEmail.toLowerCase() ? { ...u, role: 'admin' } : u))
+    }
+  }
+
   try {
     const response = await fetch(`${config.public.apiBase}/health`)
     if (!response.ok) throw new Error('Health check failed')

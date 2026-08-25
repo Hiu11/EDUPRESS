@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
+from sqlalchemy.orm import Session
 
 from app.api.courses import router as courses_router
 from app.api.enrollments import router as enrollments_router
@@ -33,6 +34,28 @@ async def lifespan(app: FastAPI):
     await connect_to_mongo()
     await event_producer.start()
     await event_consumer.start()
+
+    # Secure admin bootstrap — promote ADMIN_EMAIL user to admin on startup
+    # ADMIN_EMAIL is a server-side Render env var, never exposed to the client
+    if settings.admin_email:
+        try:
+            from app.db.session import SessionLocal
+            from app.models.user import User, UserRole
+            with SessionLocal() as db:
+                admin = db.query(User).filter(
+                    User.email == settings.admin_email.strip().lower()
+                ).first()
+                if admin and admin.role != UserRole.admin.value:
+                    admin.role = UserRole.admin.value
+                    db.commit()
+                    logger.info("[Bootstrap] Admin role granted", extra={"email": settings.admin_email})
+                elif admin:
+                    logger.info("[Bootstrap] Admin already set", extra={"email": settings.admin_email})
+                else:
+                    logger.warning("[Bootstrap] ADMIN_EMAIL not found in DB yet — register first", extra={"email": settings.admin_email})
+        except Exception as e:
+            logger.error("[Bootstrap] Admin promotion failed", extra={"error": str(e)})
+
     yield
     # Shutdown
     await event_consumer.stop()

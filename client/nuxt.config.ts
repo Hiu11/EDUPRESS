@@ -15,7 +15,8 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8000'
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8000',
+      adminEmail: process.env.NUXT_PUBLIC_ADMIN_EMAIL || '',
     }
   },
   

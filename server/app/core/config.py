@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     # Serverless GPU URLs
     modal_whisper_url: str = ""
 
+    # Bootstrap admin — set ADMIN_EMAIL on Render Dashboard only (never in client env)
+    admin_email: str = ""
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     @property
