@@ -1441,55 +1441,55 @@ onMounted(async () => {
       </section>
 
       <section v-if="route === 'privacy'" class="content-section page-section legal-page">
-        <button class="text-btn legal-back" type="button" @click="navigate('home')">Ve trang chu</button>
+        <button class="text-btn legal-back" type="button" @click="navigate('home')">Về trang chủ</button>
         <div class="legal-hero">
           <p class="eyebrow">Privacy policy</p>
-          <h1>Chinh sach quyen rieng tu</h1>
-          <p>EduPress tach ro du lieu luu tren trinh duyet, du lieu backend va du lieu tu dich vu tich hop de nguoi hoc biet minh dang chia se gi.</p>
+          <h1>Chính sách quyền riêng tư</h1>
+          <p>EduPress tách rõ dữ liệu lưu trên trình duyệt, dữ liệu backend và dữ liệu từ dịch vụ tích hợp để người học biết mình đang chia sẻ gì.</p>
         </div>
         <div class="legal-grid">
           <article>
-            <h2>Du lieu chung toi luu</h2>
-            <p>Ho so nguoi dung, trang thai dang nhap demo, lich su quiz va tuong tac khoa hoc co the luu trong IndexedDB cua trinh duyet. Backend san xuat luu tai khoan, ghi danh va lich su quiz trong PostgreSQL; binh luan doc nhanh luu trong MongoDB.</p>
+            <h2>Dữ liệu chúng tôi lưu</h2>
+            <p>Hồ sơ người dùng, trạng thái đăng nhập demo, lịch sử quiz và tương tác khóa học có thể lưu trong IndexedDB của trình duyệt. Backend sản xuất lưu tài khoản, ghi danh và lịch sử quiz trong PostgreSQL; bình luận đọc nhanh lưu trong MongoDB.</p>
           </article>
           <article>
-            <h2>Muc dich su dung</h2>
-            <p>Du lieu duoc dung de duy tri dang nhap, hien thi tien trinh hoc, tao quiz phu hop, kiem tra quyen truy cap khoa hoc va dieu phoi binh luan.</p>
+            <h2>Mục đích sử dụng</h2>
+            <p>Dữ liệu được dùng để duy trì đăng nhập, hiển thị tiến trình học, tạo quiz phù hợp, kiểm tra quyền truy cập khóa học và điều phối bình luận.</p>
           </article>
           <article>
-            <h2>Xuat va xoa du lieu</h2>
-            <p>Nguoi hoc co the xuat du lieu cuc bo tu trang ho so. API backend cung cap duong dan xuat du lieu tai khoan va xoa tai khoan cho luong dang nhap san xuat.</p>
+            <h2>Xuất và xóa dữ liệu</h2>
+            <p>Người học có thể xuất dữ liệu cục bộ từ trang hồ sơ. API backend cung cấp đường dẫn xuất dữ liệu tài khoản và xóa tài khoản cho luồng đăng nhập sản xuất.</p>
           </article>
           <article>
-            <h2>Luu tru va sao luu</h2>
-            <p>Du lieu tai khoan duoc giu khi tai khoan hoat dong. Ban sao luu san xuat can co lich quay vong, gioi han truy cap va khong dung cho muc dich ngoai van hanh.</p>
+            <h2>Lưu trữ và sao lưu</h2>
+            <p>Dữ liệu tài khoản được giữ khi tài khoản hoạt động. Bản sao lưu sản xuất cần có lịch quay vòng, giới hạn truy cập và không dùng cho mục đích ngoài vận hành.</p>
           </article>
         </div>
       </section>
 
       <section v-if="route === 'terms'" class="content-section page-section legal-page">
-        <button class="text-btn legal-back" type="button" @click="navigate('home')">Ve trang chu</button>
+        <button class="text-btn legal-back" type="button" @click="navigate('home')">Về trang chủ</button>
         <div class="legal-hero">
           <p class="eyebrow">Terms</p>
-          <h1>Dieu khoan su dung</h1>
-          <p>Ban dieu khoan nay dat nen cho prototype EduPress: hoc tap cong bang, noi dung dung quyen va van hanh minh bach ve du lieu.</p>
+          <h1>Điều khoản sử dụng</h1>
+          <p>Bản điều khoản này đặt nền cho prototype EduPress: học tập công bằng, nội dung đúng quyền và vận hành minh bạch về dữ liệu.</p>
         </div>
         <div class="legal-grid">
           <article>
-            <h2>Tai khoan</h2>
-            <p>Nguoi hoc chiu trach nhiem ve thong tin dang ky va viec bao ve phien dang nhap cua minh. Tai khoan co the bi khoa neu co hanh vi lam dung.</p>
+            <h2>Tài khoản</h2>
+            <p>Người học chịu trách nhiệm về thông tin đăng ký và việc bảo vệ phiên đăng nhập của mình. Tài khoản có thể bị khóa nếu có hành vi lạm dụng.</p>
           </article>
           <article>
-            <h2>Noi dung khoa hoc</h2>
-            <p>Noi dung duoc cung cap cho muc dich hoc tap. Viec sao chep, phan phoi lai hoac su dung ngoai pham vi duoc cho phep can co su dong y cua don vi so huu noi dung.</p>
+            <h2>Nội dung khóa học</h2>
+            <p>Nội dung được cung cấp cho mục đích học tập. Việc sao chép, phân phối lại hoặc sử dụng ngoài phạm vi được cho phép cần có sự đồng ý của đơn vị sở hữu nội dung.</p>
           </article>
           <article>
-            <h2>Binh luan va cong dong</h2>
-            <p>Binh luan co the duoc kiem duyet. Noi dung gay hai, spam hoac vi pham quyen rieng tu co the bi an hoac xoa.</p>
+            <h2>Bình luận và cộng đồng</h2>
+            <p>Bình luận có thể được kiểm duyệt. Nội dung gây hại, spam hoặc vi phạm quyền riêng tư có thể bị ẩn hoặc xóa.</p>
           </article>
           <article>
-            <h2>Dich vu tich hop</h2>
-            <p>Cac tinh nang AI, phien am va thanh toan la tich hop tuy chon. Moi tich hop san xuat can duoc cau hinh bang khoa bao mat va chinh sach nha cung cap phu hop.</p>
+            <h2>Dịch vụ tích hợp</h2>
+            <p>Các tính năng AI, phiên âm và thanh toán là tích hợp tùy chọn. Mọi tích hợp sản xuất cần được cấu hình bằng khóa bảo mật và chính sách nhà cung cấp phù hợp.</p>
           </article>
         </div>
       </section>
