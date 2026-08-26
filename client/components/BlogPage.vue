@@ -11,7 +11,7 @@ const emit = defineEmits(['home', 'select-post'])
         <button class="text-btn" style="display: block; margin-bottom: 32px; padding-left: 0;" type="button" @click="emit('home')">Về trang chủ</button>
         <div class="blog-hero">
           <img :src="asset('blog-banner.jpg')" alt="EduPress blog" />
-          <div><p class="eyebrow">EduPress Blog</p><h1>Tin tức giáo dục và công nghệ</h1><p>Nhiều hình ảnh hơn bản trước, giữ lại chất tin tức của EduPress cũ nhưng trình bày gọn và hiện đại hơn.</p></div>
+          <div><p class="eyebrow">Tin tức EduPress</p><h1>Tin tức giáo dục và công nghệ</h1><p>Nhiều hình ảnh hơn bản trước, giữ lại chất tin tức của EduPress cũ nhưng trình bày gọn và hiện đại hơn.</p></div>
         </div>
         <div class="post-grid">
           <article

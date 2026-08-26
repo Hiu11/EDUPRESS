@@ -986,7 +986,7 @@ onMounted(async () => {
       <template v-if="route === 'home'">
         <section class="hero-section" data-testid="home-page">
           <div class="hero-copy">
-            <p class="eyebrow">Online learning platform</p>
+            <p class="eyebrow">Nền tảng học trực tuyến</p>
             <h1>Học công nghệ theo lộ trình rõ ràng, có quiz và tiến trình thật.</h1>
             <p>EduPress kết hợp khóa học, bài kiểm tra, hồ sơ học tập và nội dung tin tức để tạo một trải nghiệm LMS đầy đủ hơn bản HTML cũ.</p>
             <div class="hero-actions">
@@ -1058,7 +1058,7 @@ onMounted(async () => {
 
         <section class="content-section learning-path">
           <div>
-            <p class="eyebrow">Learning path</p>
+            <p class="eyebrow">Lộ trình học tập</p>
             <h2>Một quy trình học rõ ràng từ đăng ký đến hoàn thành</h2>
             <p>Phần này thay cho các trang profile, quiz và course detail rời rạc của bản cũ, gom thành trải nghiệm LMS mạch lạc hơn.</p>
           </div>
@@ -1079,7 +1079,7 @@ onMounted(async () => {
       <section v-if="route === 'courses'" class="content-section page-section" data-testid="courses-page">
         <div class="page-hero compact-hero">
           <div>
-            <p class="eyebrow">Course catalog</p>
+            <p class="eyebrow">Danh mục khóa học</p>
             <h1>Danh sách khóa học</h1>
             <p>Tìm khóa học theo lĩnh vực, cấp độ hoặc giảng viên. Mỗi khóa có lộ trình, tài nguyên và quiz liên quan.</p>
           </div>
@@ -1148,7 +1148,7 @@ onMounted(async () => {
         </div>
 
         <div v-if="!canAccessCourse(selectedCourse)" class="access-gate panel rich-panel">
-          <p class="eyebrow">Enrollment required</p>
+          <p class="eyebrow">Yêu cầu ghi danh</p>
           <h2>Nội dung trả phí đang được khóa</h2>
           <p v-if="isEnrollmentPending">Yêu cầu ghi danh của bạn đang chờ duyệt. Sau khi được duyệt, bài học, tài nguyên và công cụ học sẽ mở lại.</p>
           <p v-else>Gửi yêu cầu ghi danh để EduPress xác nhận thủ công trước khi mở toàn bộ nội dung khóa học.</p>
@@ -1162,7 +1162,7 @@ onMounted(async () => {
             <ul class="check-list"><li v-for="item in selectedCourse.outcomes" :key="item">{{ item }}</li></ul>
           </section>
           <section class="panel rich-panel">
-            <p class="eyebrow">Curriculum</p>
+            <p class="eyebrow">Chương trình học</p>
             <h2>Nội dung khóa học</h2>
             <ol class="module-list"><li v-for="item in selectedCourse.syllabus" :key="item">{{ item }}</li></ol>
           </section>
@@ -1404,7 +1404,7 @@ onMounted(async () => {
       <section v-if="route === 'auth'" class="content-section page-section auth-layout">
         <div class="auth-art">
           <button class="text-btn" style="display: block; margin-bottom: 32px; padding-left: 0;" type="button" @click="navigate('home')">Về trang chủ</button>
-          <p class="eyebrow">Account</p><h1>{{ authMode === 'login' ? 'Chào mừng quay lại' : 'Tạo tài khoản học tập' }}</h1><p>Đăng nhập bằng sinh trắc học để bảo mật tuyệt đối và loại bỏ hoàn toàn mật khẩu.</p>
+          <p class="eyebrow">Tài khoản</p><h1>{{ authMode === 'login' ? 'Chào mừng quay lại' : 'Tạo tài khoản học tập' }}</h1><p>Đăng nhập bằng sinh trắc học để bảo mật tuyệt đối và loại bỏ hoàn toàn mật khẩu.</p>
         </div>
         <form v-if="authMode === 'login'" class="form-card" @submit.prevent="loginMagicLink">
           <input v-model="loginForm.email" type="email" placeholder="Email" />
@@ -1443,7 +1443,7 @@ onMounted(async () => {
       <section v-if="route === 'privacy'" class="content-section page-section legal-page">
         <button class="text-btn legal-back" type="button" @click="navigate('home')">Về trang chủ</button>
         <div class="legal-hero">
-          <p class="eyebrow">Privacy policy</p>
+          <p class="eyebrow">Chính sách dữ liệu</p>
           <h1>Chính sách quyền riêng tư</h1>
           <p>EduPress tách rõ dữ liệu lưu trên trình duyệt, dữ liệu backend và dữ liệu từ dịch vụ tích hợp để người học biết mình đang chia sẻ gì.</p>
         </div>
@@ -1470,7 +1470,7 @@ onMounted(async () => {
       <section v-if="route === 'terms'" class="content-section page-section legal-page">
         <button class="text-btn legal-back" type="button" @click="navigate('home')">Về trang chủ</button>
         <div class="legal-hero">
-          <p class="eyebrow">Terms</p>
+          <p class="eyebrow">Điều khoản</p>
           <h1>Điều khoản sử dụng</h1>
           <p>Bản điều khoản này đặt nền cho prototype EduPress: học tập công bằng, nội dung đúng quyền và vận hành minh bạch về dữ liệu.</p>
         </div>
@@ -1498,7 +1498,7 @@ onMounted(async () => {
         <button class="text-btn" style="display: block; margin-bottom: 32px; padding-left: 0; align-self: flex-start; text-align: left; margin-right: auto;" type="button" @click="navigate('home')">Về trang chủ</button>
 
         <div v-if="!currentUser" class="profile-summary">
-          <p class="eyebrow">Learner profile</p>
+          <p class="eyebrow">Hồ sơ học viên</p>
           <h1>Bạn chưa đăng nhập</h1>
           <p>Đăng nhập để xem Dashboard học tập và quản lý lộ trình của bạn.</p>
           <button class="primary-btn" type="button" @click="navigate('auth')">Đăng nhập ngay</button>
@@ -1507,7 +1507,7 @@ onMounted(async () => {
         <div v-else class="bento-dashboard">
           <!-- 1. Welcome & Stats (Span 2) -->
           <div class="bento-item bento-welcome rich-panel">
-            <p class="eyebrow">Dashboard</p>
+            <p class="eyebrow">Tổng quan</p>
             <h2>Chào {{ currentUser.name }},</h2>
             <p class="text-muted">Tiếp tục hành trình học tập của bạn cùng EduPress hôm nay nhé!</p>
             <div class="bento-stats-row">
@@ -1569,7 +1569,7 @@ onMounted(async () => {
           </div>
 
           <div class="bento-item bento-privacy rich-panel">
-            <p class="eyebrow">Data controls</p>
+            <p class="eyebrow">Kiểm soát dữ liệu</p>
             <h2>Dữ liệu cá nhân</h2>
             <p class="text-muted">Xuất hồ sơ, lịch sử quiz và tương tác khóa học đang lưu trên trình duyệt này. Khi cần reset demo, bạn có thể xóa dữ liệu cục bộ.</p>
             <div class="privacy-actions">
