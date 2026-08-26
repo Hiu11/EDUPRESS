@@ -60,11 +60,11 @@ export function useNetworkStatus() {
       networkState.value = 'offline'
     } else if (wasOffline && isOnline.value) {
       networkState.value = 'syncing'
-      console.log('[Background Sync] Mạng đã kết nối lại. Đang đồng bộ CRDTs ngầm lên server...')
+      // console.log('[Background Sync] Mạng đã kết nối lại. Đang đồng bộ CRDTs ngầm lên server...')
       
       setTimeout(() => {
         networkState.value = 'synced'
-        console.log('[Background Sync] Đồng bộ 100% hoàn tất (0-Latency).')
+        // console.log('[Background Sync] Đồng bộ 100% hoàn tất (0-Latency).')
         
         setTimeout(() => {
           networkState.value = 'online'

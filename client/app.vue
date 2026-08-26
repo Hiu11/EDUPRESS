@@ -1393,7 +1393,7 @@ onMounted(async () => {
           <p class="eyebrow" style="margin-bottom:8px;">{{ selectedPost.category }} · {{ selectedPost.date }}</p>
           <h1 style="margin-bottom:24px;">{{ selectedPost.title }}</h1>
           <p style="font-size:1.15rem;line-height:1.8;color:var(--text-muted);margin-bottom:24px;">{{ selectedPost.excerpt }}</p>
-          <p style="line-height:1.9;margin-bottom:20px;">EduPress không ngừng cập nhật các xu hướng mới nhất trong giáo dục và công nghệ để hỗ trợ người học và giảng viên tiếp cận tri thức một cách hiệu quả nhất. Các phương pháp học tập hiện đại nư microlearning, spaced repetition và AI-assisted feedback đang tạo ra sự thay đổi lớn trong cách tiếp cận kiến thức.</p>
+          <p style="line-height:1.9;margin-bottom:20px;">EduPress không ngừng cập nhật các xu hướng mới nhất trong giáo dục và công nghệ để hỗ trợ người học và giảng viên tiếp cận tri thức một cách hiệu quả nhất. Các phương pháp học tập hiện đại như microlearning, spaced repetition và AI-assisted feedback đang tạo ra sự thay đổi lớn trong cách tiếp cận kiến thức.</p>
           <p style="line-height:1.9;margin-bottom:32px;">Hãy tiếp tục theo dõi blog EduPress để không bỏ lỡ những thông tin hữu ích về phương pháp học tập, công nghệ giáo dục và các khóa học mới được cập nhật thường xuyên.</p>
           <button class="secondary-btn" type="button" @click="selectedPost = null">← Xem thêm bài viết khác</button>
         </div>

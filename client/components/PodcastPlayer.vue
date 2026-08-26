@@ -94,7 +94,7 @@ function initAmbientMusic() {
 function playPodcast() {
   if (isPlaying.value) return
   isPlaying.value = true
-  ambientAudio?.play().catch(e => console.log('Audio autoplay blocked'))
+  ambientAudio?.play().catch(e => { /* Audio autoplay blocked */ })
   
   playLine(0)
 }
