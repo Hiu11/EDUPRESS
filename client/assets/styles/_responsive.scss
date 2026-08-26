@@ -24,28 +24,13 @@
     grid-template-columns: 1fr;
   }
 
-  .hero-media { height: 500px; }
-}
-
-@media (max-width: 768px) {
-  .metric-grid,
-  .course-grid,
-  .testimonial-section,
-  .post-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .footer-columns {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .site-header {
     flex-wrap: wrap; // Allows the dropdown to flow to next line
     padding: 16px;
   }
 
   .mobile-menu-btn {
-    display: block; // Show hamburger on mobile
+    display: block; // Show hamburger on mobile/tablet
   }
 
   .nav-wrapper {
@@ -75,6 +60,23 @@
     justify-content: center;
     width: 100%;
   }
+
+  .hero-media { height: 500px; }
+}
+
+@media (max-width: 768px) {
+  .metric-grid,
+  .course-grid,
+  .testimonial-section,
+  .post-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .footer-columns {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+
 
   .bento-dashboard {
     grid-template-columns: 1fr;
@@ -112,23 +114,29 @@
   }
 
   .hero-media {
-    height: 380px;
-    margin: 40px 0;
+    height: 300px;
+    margin: 20px 0;
+  }
+
+  .detail-hero img {
+    height: 240px;
   }
   
   .course-progress-card {
     left: 10px;
-    bottom: -30px;
+    bottom: -20px;
     width: calc(100% - 20px);
+    padding: 12px;
   }
   
   .quiz-badge {
     right: 10px;
-    top: -20px;
+    top: -15px;
+    padding: 12px;
   }
 
   .hero-section {
-    padding-bottom: 90px; // Make room for the floating card at bottom: -30px
+    padding-bottom: 60px; // Make room for the floating card
   }
 
   // Compress Footer on Mobile and prevent floating button overlap
