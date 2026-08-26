@@ -877,6 +877,16 @@ function sendContact() {
   setNotice('Đã mở ứng dụng email. Vui lòng gửi email để hoàn tất liên hệ.')
 }
 
+function updateProfile() {
+  if (!currentUser.value) return setNotice('Vui lòng đăng nhập.')
+  currentUser.value.name = profileForm.value.name || currentUser.value.name
+  currentUser.value.phone = profileForm.value.phone || ''
+  currentUser.value.school = profileForm.value.school || ''
+  currentUser.value.bio = profileForm.value.bio || ''
+  saveUsersDB(users.value)
+  setNotice('Đã lưu thông tin hồ sơ.')
+}
+
 onMounted(async () => {
   window.addEventListener('error', (event) => {
     captureFrontendError(event.error || event.message, { type: 'window_error', filename: event.filename, line: event.lineno })
