@@ -877,6 +877,32 @@ function sendContact() {
   setNotice('Đã mở ứng dụng email. Vui lòng gửi email để hoàn tất liên hệ.')
 }
 
+function exportLearnerData() {
+  if (!currentUser.value) return setNotice('Vui lòng đăng nhập.')
+  const data = JSON.stringify(currentUser.value, null, 2)
+  const blob = new Blob([data], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `edupress-data-${currentUser.value.id}.json`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+  setNotice('Đã xuất dữ liệu học tập.')
+}
+
+function clearLocalLearnerData() {
+  if (confirm('Bạn có chắc chắn muốn xóa toàn bộ dữ liệu cục bộ? Hành động này không thể hoàn tác.')) {
+    localStorage.removeItem('edupress_users')
+    localStorage.removeItem('edupress_current_user')
+    users.value = []
+    currentUser.value = null
+    setNotice('Đã xóa dữ liệu. Trang web sẽ tải lại.')
+    setTimeout(() => window.location.reload(), 1500)
+  }
+}
+
 onMounted(async () => {
   window.addEventListener('error', (event) => {
     captureFrontendError(event.error || event.message, { type: 'window_error', filename: event.filename, line: event.lineno })
