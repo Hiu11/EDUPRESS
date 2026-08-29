@@ -850,23 +850,6 @@ function tryMarkCompleted() {
   }
 }
 
-function markCompleted(courseId) {
-  if (!currentUser.value) return setNotice('Vui lòng đăng nhập để lưu tiến độ.')
-  if (!currentUser.value.completedCourses) currentUser.value.completedCourses = []
-  
-  if (!currentUser.value.completedCourses.includes(courseId)) {
-    currentUser.value.completedCourses.push(courseId)
-    // Remove from in-progress list
-    if (currentUser.value.registeredCourses) {
-      currentUser.value.registeredCourses = currentUser.value.registeredCourses.filter(id => id !== courseId)
-    }
-    saveUsersDB(users.value)
-  }
-  
-  showCompletionModal.value = false
-  setNotice('🎉 Chúc mừng! Bạn đã hoàn thành khóa học.')
-}
-
 function sendContact() {
   if (!contactForm.value.name || !contactForm.value.email || !contactForm.value.message) return setNotice('Vui lòng nhập đủ thông tin liên hệ.')
   const { name, email, message } = contactForm.value
