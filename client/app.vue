@@ -216,6 +216,7 @@ async function loadCourseComments(courseId) {
 }
 
 async function submitComment() {
+  if (!currentUser.value) return setNotice('Vui lòng đăng nhập để gửi bình luận.')
   if (!commentInput.value.trim() || !selectedCourseId.value) return
   const content = commentInput.value.trim()
   commentInput.value = ""
@@ -860,6 +861,7 @@ function sendContact() {
   setNotice('Đã mở ứng dụng email. Vui lòng gửi email để hoàn tất liên hệ.')
 }
 
+
 onMounted(async () => {
   window.addEventListener('error', (event) => {
     captureFrontendError(event.error || event.message, { type: 'window_error', filename: event.filename, line: event.lineno })
@@ -1185,7 +1187,7 @@ onMounted(async () => {
         <!-- Live Comments Section (Realtime Event Sourcing) -->
         <div class="live-comments-section" data-testid="comments-section" style="margin-top: 48px;">
           <div class="section-heading">
-            <p class="eyebrow">Real-time Discussion</p>
+            <p class="eyebrow">Thảo luận</p>
             <h2>Thảo luận trực tiếp</h2>
             <p>Hệ thống Backend Kafka CQRS: Gửi bình luận sẽ đẩy Event qua Kafka, người khác nhận được qua SSE ngay lập tức.</p>
           </div>
@@ -1335,7 +1337,7 @@ onMounted(async () => {
             </div>
             <div class="result-stat">
               <span class="stat-num">{{ quizMaxStreak }}</span>
-              <span class="stat-label">Streak cao nhất</span>
+              <span class="stat-label">Chuỗi dài nhất</span>
             </div>
             <div class="result-stat">
               <span class="stat-num">{{ quizAnswers.filter(a => a.isRight).length }}</span>
@@ -1558,7 +1560,7 @@ onMounted(async () => {
           <!-- 4. Security (Span 2) -->
           <div class="bento-item bento-security rich-panel">
             <p class="eyebrow">Bảo mật đa tầng</p>
-            <h2>Passkey Auth</h2>
+            <h2>Sinh trắc học</h2>
             <div class="mt-4 p-4 rounded-xl border border-[var(--border-glass)] bg-[var(--bg-glass)]">
               <div class="flex items-center gap-3 mb-2">
                 <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></div>
