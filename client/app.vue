@@ -123,6 +123,46 @@ async function fetchJson(path) {
   return response.json()
 }
 
+async function authFetch(path, options = {}) {
+  const token = localStorage.getItem('edupress_jwt_token')
+  const headers = { ...options.headers }
+  if (token) headers['Authorization'] = `Bearer ${token}`
+  const response = await fetch(`${config.public.apiBase}${path}`, { ...options, headers })
+  if (!response.ok) throw new Error(`Request failed: ${path}`)
+  return response.json()
+}
+
+async function _backendSyncAuth(email, name = '') {
+  try {
+    const password = email + "EduPress!2026"
+    // Try login first
+    let res = await fetch(`${config.public.apiBase}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    })
+    if (!res.ok && res.status === 401) {
+      // Register if not found
+      await fetch(`${config.public.apiBase}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name: name || email, password })
+      })
+      res = await fetch(`${config.public.apiBase}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+    }
+    if (res.ok) {
+      const data = await res.json()
+      localStorage.setItem('edupress_jwt_token', data.access_token)
+    }
+  } catch (e) {
+    console.error("Backend auth sync failed:", e)
+  }
+}
+
 function captureFrontendError(error, context = {}) {
   if (!import.meta.client) return
   const payload = {
@@ -221,12 +261,11 @@ async function submitComment() {
   const content = commentInput.value.trim()
   commentInput.value = ""
   try {
-    await fetch(`${config.public.apiBase}/api/comments`, {
+    await authFetch(`/api/comments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         post_id: selectedCourseId.value,
-        user_id: currentUser.value?.name || currentUser.value?.email || "Guest",
         content: content
       })
     })
@@ -299,6 +338,7 @@ async function register() {
     const role = adminEmail && payload.email === adminEmail.toLowerCase() ? 'admin' : 'student'
     saveUsers([...users.value, { ...payload, passkeyId: passkeyId, role, registeredCourses: [], pendingEnrollments: [], completedCourses: [] }])
     saveEmailDB(payload.email)
+    await _backendSyncAuth(payload.email, payload.name)
     registerForm.value = { name: '', email: '' }
     loginForm.value = { email: '' }
     syncProfileForm()
@@ -326,6 +366,7 @@ async function login() {
     if (!found) return setNotice('Không tìm thấy tài khoản cho Passkey này.')
     
     saveEmailDB(found.email)
+    await _backendSyncAuth(found.email, found.name)
     loginForm.value = { email: '' }
     registerForm.value = { name: '', email: '' }
     syncProfileForm()
@@ -345,6 +386,8 @@ function loginMagicLink() {
   // Simulate clicking magic link
   setTimeout(() => {
     saveEmailDB(email)
+    const found = users.value.find((user) => user.email === email)
+    _backendSyncAuth(email, found?.name)
     loginForm.value = { email: '' }
     syncProfileForm()
     navigate('profile')
@@ -355,6 +398,7 @@ function loginMagicLink() {
 
 function logout() {
   saveEmailDB('')
+  localStorage.removeItem('edupress_jwt_token')
   profileForm.value = { name: '', phone: '', school: '', bio: '' }
   loginForm.value = { email: '' }
   registerForm.value = { name: '', email: '' }
@@ -481,19 +525,18 @@ async function enroll(courseId) {
   }))
   setNotice(isPaidCourse(course) ? 'Đã gửi yêu cầu ghi danh. EduPress sẽ duyệt thủ công.' : 'Đã đăng ký khóa học.')
 
-  // Sync to backend (fire-and-forget — local state is source of truth for demo)
+  // Sync to backend
   try {
-    await fetch(`${config.public.apiBase}/api/enrollments/`, {
+    await authFetch(`/api/enrollments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        user_email: currentUserEmail.value,
         course_id: courseId,
-        enrollment_type: isPaidCourse(course) ? 'pending' : 'enrolled',
+        note: `Frontend mock enrollment request`
       }),
     })
-  } catch {
-    // Backend sync failure is non-blocking — local state already saved
+  } catch (e) {
+    console.error("Backend enrollment failed:", e)
   }
 }
 
@@ -619,11 +662,10 @@ async function syncQuizHistoryToDB(score, total, topic, maxStreak) {
   syncError.value = ''
   syncSuccess.value = false
   try {
-    const res = await fetch(`${config.public.apiBase}/api/quiz/sync`, {
+    const res = await authFetch(`/api/quiz/sync`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        user_id: currentUser.value?.id || 'guest',
         course_id: selectedCourseId.value || 'course_1',
         score,
         total,
@@ -631,8 +673,8 @@ async function syncQuizHistoryToDB(score, total, topic, maxStreak) {
         max_streak: maxStreak
       })
     })
-    const data = await res.json()
-    if (!res.ok || !data.success) {
+    const data = res
+    if (!data.success) {
       const message = data?.detail?.message || data?.message || 'Không thể đồng bộ điểm. Vui lòng thử lại.'
       throw new Error(message)
     }
