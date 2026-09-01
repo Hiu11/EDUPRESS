@@ -88,11 +88,9 @@ const isPlaying   = ref(false)
 const currentTime = ref(0)
 const duration    = ref(0)
 const playerReady = ref(false)
-const videoRef    = ref(null)
-const canvasRef   = ref(null)
+let ytPlayer      = null
 let rafId         = null  // requestAnimationFrame ID for time sync
 
-// Active transcript line (synced via real YT currentTime)
 const activeIndex = computed(() => {
   let idx = 0
   for (let i = 0; i < lines.value.length; i++) {
@@ -101,23 +99,17 @@ const activeIndex = computed(() => {
   return idx
 })
 
-const ambientColor = ref('rgba(0,0,0,0.8)')
-function updateAmbientColor() {
-  if (!videoRef.value || !canvasRef.value) return
-  const ctx = canvasRef.value.getContext('2d', { willReadFrequently: true })
-  try {
-    ctx.drawImage(videoRef.value, 0, 0, 1, 1)
-    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data
-    ambientColor.value = `rgba(${r}, ${g}, ${b}, 0.8)`
-  } catch(e) {}
-}
-
-function pollAmbient() {
-  if (isPlaying.value) {
-    updateAmbientColor()
-  }
-  rafId = requestAnimationFrame(pollAmbient)
-}
+const ambientPalette = [
+  'rgba(220, 38, 38, 0.45)',
+  'rgba(234, 88, 12, 0.4)',
+  'rgba(99, 102, 241, 0.35)',
+  'rgba(16, 185, 129, 0.3)',
+  'rgba(245, 158, 11, 0.35)',
+]
+const ambientColor = computed(() => {
+  const idx = Math.floor(currentTime.value / 15) % ambientPalette.length
+  return ambientPalette[idx]
+})
 
 const progressPct = computed(() =>
   duration.value ? Math.min(100, (currentTime.value / duration.value) * 100) : 0
@@ -128,50 +120,91 @@ function fmt(s) {
   return `${String(Math.floor(sec / 60)).padStart(2,'0')}:${String(sec % 60).padStart(2,'0')}`
 }
 
+function startPolling() {
+  function poll() {
+    if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function') {
+      currentTime.value = ytPlayer.getCurrentTime()
+      if (!duration.value && ytPlayer.getDuration) {
+        duration.value = ytPlayer.getDuration()
+      }
+    }
+    rafId = requestAnimationFrame(poll)
+  }
+  rafId = requestAnimationFrame(poll)
+}
+
+function stopPolling() {
+  if (rafId) { cancelAnimationFrame(rafId); rafId = null }
+}
+
+function initYTPlayer() {
+  if (!window.YT || !window.YT.Player) return
+  ytPlayer = new window.YT.Player('yt-player-target', {
+    videoId: videoId.value,
+    playerVars: {
+      autoplay: 1,
+      rel: 0,
+      modestbranding: 1,
+      enablejsapi: 1,
+      controls: 0, // Disable native controls and CC
+      disablekb: 1,
+      origin: window.location.origin,
+    },
+    events: {
+      onReady(e) {
+        playerReady.value = true
+        duration.value = e.target.getDuration()
+        startPolling()
+      },
+      onStateChange(e) {
+        // YT.PlayerState: PLAYING=1, PAUSED=2, ENDED=0
+        isPlaying.value = e.data === 1
+        if (e.data === 0) stopPolling()  // ended
+      },
+    },
+  })
+}
+
+function loadYTApi() {
+  if (window.YT && window.YT.Player) { initYTPlayer(); return }
+  if (window._ytApiLoading) {
+    const prev = window.onYouTubeIframeAPIReady
+    window.onYouTubeIframeAPIReady = () => { prev?.(); initYTPlayer() }
+    return
+  }
+  window._ytApiLoading = true
+  window.onYouTubeIframeAPIReady = initYTPlayer
+  const s = document.createElement('script')
+  s.src = 'https://www.youtube.com/iframe_api'
+  document.head.appendChild(s)
+}
+
 async function startVideo() {
   started.value = true
-  playerReady.value = true
   await nextTick()
-  if (videoRef.value) {
-    videoRef.value.play()
-  }
-  // Reload captions in case mount call failed
+  loadYTApi()
   if (!lines.value.length) loadCaptions(videoId.value)
-  rafId = requestAnimationFrame(pollAmbient)
 }
 
 function togglePlay() {
-  if (!videoRef.value) return
-  if (isPlaying.value) { videoRef.value.pause() }
-  else { videoRef.value.play() }
+  if (!ytPlayer) return
+  if (isPlaying.value) { ytPlayer.pauseVideo() }
+  else { ytPlayer.playVideo() }
 }
 
 function seek(e) {
-  if (!videoRef.value || !duration.value) return
+  if (!ytPlayer || !duration.value) return
   const rect = e.currentTarget.getBoundingClientRect()
   const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
-  videoRef.value.currentTime = ratio * duration.value
+  ytPlayer.seekTo(ratio * duration.value, true)
 }
 
 function seekToTime(time) {
-  if (!videoRef.value) return
-  videoRef.value.currentTime = time
+  if (!ytPlayer) return
+  ytPlayer.seekTo(time, true)
   if (!isPlaying.value) {
-    videoRef.value.play()
+    ytPlayer.playVideo()
   }
-}
-
-function onTimeUpdate() {
-  if (videoRef.value) currentTime.value = videoRef.value.currentTime
-}
-function onLoadedMetadata() {
-  if (videoRef.value) duration.value = videoRef.value.duration
-}
-function onPlay() { isPlaying.value = true }
-function onPause() { isPlaying.value = false }
-function onEnded() {
-  isPlaying.value = false
-  if (rafId) cancelAnimationFrame(rafId)
 }
 
 function handleKeydown(e) {
@@ -180,10 +213,14 @@ function handleKeydown(e) {
     togglePlay()
   } else if (e.code === 'ArrowRight') {
     e.preventDefault()
-    if (videoRef.value) videoRef.value.currentTime = Math.min(duration.value, videoRef.value.currentTime + 5)
+    if (ytPlayer && ytPlayer.getCurrentTime) {
+      ytPlayer.seekTo(Math.min(duration.value, ytPlayer.getCurrentTime() + 5), true)
+    }
   } else if (e.code === 'ArrowLeft') {
     e.preventDefault()
-    if (videoRef.value) videoRef.value.currentTime = Math.max(0, videoRef.value.currentTime - 5)
+    if (ytPlayer && ytPlayer.getCurrentTime) {
+      ytPlayer.seekTo(Math.max(0, ytPlayer.getCurrentTime() - 5), true)
+    }
   }
 }
 
@@ -193,7 +230,8 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
-  if (rafId) cancelAnimationFrame(rafId)
+  stopPolling()
+  if (ytPlayer) { ytPlayer.destroy(); ytPlayer = null }
   if (document.fullscreenElement) document.exitFullscreen()
 })
 </script>
@@ -217,20 +255,8 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Native HTML5 Video Player -->
-        <video
-          v-show="started"
-          ref="videoRef"
-          src="/generated-assets/sample-lesson.mp4"
-          crossorigin="anonymous"
-          class="cinema-video"
-          @timeupdate="onTimeUpdate"
-          @loadedmetadata="onLoadedMetadata"
-          @play="onPlay"
-          @pause="onPause"
-          @ended="onEnded"
-          @click="togglePlay"
-        ></video>
+        <!-- YT Player mounts here after startVideo() -->
+        <div v-show="started" id="yt-player-target" class="cinema-video"></div>
 
         <!-- Loading indicator -->
         <div v-if="started && !playerReady" class="player-loading">
