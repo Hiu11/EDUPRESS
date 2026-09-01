@@ -1,14 +1,14 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 const apiBase = process.env.SMOKE_API_BASE;
 
-async function openApp(page) {
+async function openApp(page: Page) {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.getByTestId('home-page')).toBeVisible();
   await expect(page.locator('.app-frame')).toHaveAttribute('data-mounted', 'true', { timeout: 30000 });
 }
 
-async function gotoSection(page, section, targetTestId = `${section}-page`) {
+async function gotoSection(page: Page, section: string, targetTestId = `${section}-page`) {
   await page.getByTestId(`nav-${section}`).click();
   await expect(page.getByTestId(targetTestId)).toBeVisible();
 }
